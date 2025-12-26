@@ -786,8 +786,8 @@
           
           <div class="checkbox-group">
             <label class="checkbox-label">
-              <input type="checkbox" id="rememberMe">
-              <span>Remember me</span>
+              <!-- <input type="checkbox" id="rememberMe"> -->
+              <!-- <span>Remember me</span> -->
             </label>
           </div>
           
@@ -1062,9 +1062,9 @@
 
     // Init
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('loginPhone').value = '9876543210';
-        document.getElementById('loginPassword').value = 'demo123';
-        document.getElementById('rememberMe').checked = true;
+        document.getElementById('loginPhone').value = '';
+        document.getElementById('loginPassword').value = '';
+        // document.getElementById('rememberMe').checked = true;
 
         const updateArrows = () => {
             const centered = !container.classList.contains("right-panel-active");

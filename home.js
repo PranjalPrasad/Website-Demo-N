@@ -1953,7 +1953,7 @@ function fixUploadModalOpeners() {
         });
     });
 }
-// NEW: Function to check if user is logged in
+
 // NEW: Function to check if user is logged in - FIXED FOR currentUser
 function checkIfUserLoggedIn() {
     // Check for the specific structure from your session storage
