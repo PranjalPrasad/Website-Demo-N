@@ -10,6 +10,124 @@
     <!-- <link rel="stylesheet" href="./index.css"> -->
     <!-- <link rel="stylesheet" href="Header/header.css"> -->
     <link rel="stylesheet" href="/Footer/footer.css">
+    <script>
+        // Function to load header and initialize
+        function loadHeader() {
+            fetch('./Header/header.html')
+                .then(response => {
+                    if (!response.ok) throw new Error('Header not found');
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                    console.log('✓ Header HTML loaded');
+                    
+                    // Load header.js after HTML is inserted
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = './Header/header.js';
+                        script.onload = () => {
+                            console.log('✓ Header JS loaded');
+                            resolve();
+                        };
+                        script.onerror = () => reject(new Error('Failed to load header.js'));
+                        document.body.appendChild(script);
+                    });
+                })
+                .catch(error => console.error('✗ Error loading header:', error));
+        }
+
+        // Function to load footer
+        function loadFooter() {
+            fetch('./Footer/footer.html')
+                .then(response => {
+                    if (!response.ok) throw new Error('Footer not found');
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('footer-placeholder').innerHTML = data;
+                    console.log('✓ Footer loaded');
+                })
+                .catch(error => console.error('✗ Error loading footer:', error));
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                loadHeader();
+                loadFooter();
+            });
+        } else {
+            loadHeader();
+            loadFooter();
+        }
+    </script>
+
+
+<script>
+// FULLY WORKING UPLOAD PRESCRIPTION MODAL - 100% FIXED
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('uploadModal');
+    const doctorNameInput = document.getElementById('doctorName');
+    const fileInput = document.getElementById('prescriptionFileInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const submitBtn = document.getElementById('submitPrescriptionBtn');
+
+    if (!modal || !doctorNameInput || !fileInput || !submitBtn) {
+        console.warn('Upload modal elements not found');
+        return;
+    }
+
+    // Check if form is valid
+    function checkFormValid() {
+        const hasDoctorName = doctorNameInput.value.trim().length > 0;
+        const hasFile = fileInput.files && fileInput.files.length > 0;
+        submitBtn.disabled = !(hasDoctorName && hasFile);
+    }
+
+    // File selected
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files && fileInput.files[0]) {
+            selectedFileName.textContent = fileInput.files[0].name;
+            fileNameDisplay.classList.remove('hidden');
+        } else {
+            fileNameDisplay.classList.add('hidden');
+        }
+        checkFormValid();
+    });
+
+    // Doctor name input
+    doctorNameInput.addEventListener('input', checkFormValid);
+
+    // Submit prescription
+    submitBtn.addEventListener('click', function () {
+        if (submitBtn.disabled) return;
+
+        const file = fileInput.files[0];
+        const doctorName = doctorNameInput.value.trim();
+
+        // Success message
+        alert(`Prescription Submitted Successfully!\n\nDoctor: ${doctorName}\nFile: ${file.name}\n\nOur pharmacist will review and contact you shortly.`);
+
+        // Reset and close
+        modal.classList.add('hidden');
+        doctorNameInput.value = '';
+        fileInput.value = '';
+        fileNameDisplay.classList.add('hidden');
+        submitBtn.disabled = true;
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+
+    console.log('Upload Prescription Modal - Fully Working');
+});
+</script>
     
     <script>
         tailwind.config = {
@@ -730,6 +848,7 @@
       left: 1rem !important;
       right: 1rem !important;
       width: auto !important;
+      z-index: 1000;
     }
   }
 
@@ -879,511 +998,337 @@
     </style>
 </head>
 <body class="">
-    <!-- Header Placeholder (loads header.html dynamically) -->
-    <div id="header-placeholder"></div>
-    <!-- Main container -->
-    <div class="">
-        <!-- Enhanced Banner Section with Search and Carousel -->
-        <section class="relative max-w-8xl h-[800px]  " id= "mainBannerSection">
-            <!-- Image Background -->
-            <div class="absolute inset-0 overflow-hidden">
-                <img id="mainBackgroundImage" src="" alt="Background" class="w-full h-full object-cover">
-               
-            </div>
-            <!-- Content Container -->
-            <div class="relative z-10 px-1 mt-24 ">
-                <!-- Search Container -->
-                <div class="flex items-start justify-center mb-1">
-                    <div class="search-container w-full max-w-4xl p-6 mt-20px rounded-2xl">
-                        <h1 class="text-white text-2xl md:text-4xl font-bold text-center mt-24 md:mb-4 drop-shadow-lg">
-                            Find Your Medications
-                        </h1>
-                        <h4 class="text-white text-2xl md:text-2xl font-bold text-center mb-6 md:mb-8">
-                            <span class="text-yellow-300">Get Medicines Fast</span> With Superfast Delivery In Your City
-                        </h4>
-                        <!-- Search Bar -->
-                        <!-- SEARCH BAR WITH WHITE TEXT DROPDOWN (like your screenshot) -->
-<div class="relative max-w-4xl mx-auto px-4 mt-2">
-  <div class="relative">
-    <input 
-      type="text" 
-      id="searchInput"
-      placeholder="Search medicines, vitamins, health products..."
-      class="w-full px-8 py-2 pr-16 text-lg rounded-full bg-white border-4 border-white shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 transition-all duration-300 text-gray-800 placeholder-gray-500"
-      autocomplete="off"
-    >
-    <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full transition-all duration-200 shadow-lg">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
-    </button>
-  </div>
-
-  <!-- SEARCH SUGGESTIONS DROPDOWN (WHITE TEXT ON DARK BLUE) -->
-  <div id="searchSuggestions" class="absolute top-full left-0 right-0 mt-3 bg-gradient-to-b from-white to-white rounded-3xl shadow-sm border-2 border-white/20 overflow-hidden hidden z-50">
-    
-    <!-- Header -->
-    <div class="px-8 py-2 border-b border-white/10">
-      <h3 class="text-gray-700 font-bold text-lg">Popular Searches</h3>
-    </div>
-
-    <!-- Suggestions List -->
-    <div class="py-2">
-      <!-- Vitamin D3 -->
-      <div class="flex items-center px-8 py-4 hover:bg-white/30 cursor-pointer transition-all group">
-        <div class="bg-yellow-400/30 p-3 rounded-xl mr-5 group-hover:bg-yellow-400/30 transition">
-          <svg class="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-11.66l-.7.7m-13.32 0l-.7-.7m14.02 7.36l-.7-.7m-13.32 0l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-gray-700 font-semibold text-lg">Vitamin D3</p>
-          <p class="text-gray-500 text-sm">Supplements • Immunity Booster</p>
-        </div>
+  <!-- Header Placeholder (loads header.html dynamically) -->
+  <div id="header-placeholder"></div>
+  <!-- Main container -->
+  <div class="">
+    <!-- Enhanced Banner Section with Search and Carousel -->
+    <section class="relative max-w-8xl h-[800px]  " id="mainBannerSection">
+      <!-- Image Background -->
+      <div class="absolute inset-0 overflow-hidden">
+        <img id="" src="/Images/IMG/pharmacyBanner11.jpg" alt="" class="w-full h-full object-cover">
+  
       </div>
+      <!-- Content Container -->
+      <div class="relative z-10 px-1 mt-24 ">
+        <!-- Search Container -->
+        <div class="flex items-start justify-center mb-1">
+          <div class="search-container w-full max-w-4xl p-6 mt-20px rounded-2xl">
+            <h1 class="text-white text-2xl md:text-4xl font-bold text-center mt-24 md:mb-4 drop-shadow-lg">
+              Find Your Medications
+            </h1>
+            <h4 class="text-white text-2xl md:text-2xl font-bold text-center mb-6 md:mb-8">
+              <span class="text-yellow-300">Get Medicines Fast</span> With Superfast Delivery In Your City
+            </h4>
 
-      <!-- Blood Pressure Monitor -->
-      <div class="flex items-center px-8 py-4 hover:bg-white/10 cursor-pointer transition-all group">
-        <div class="bg-red-400/30 p-3 rounded-xl mr-5 group-hover:bg-red-500/30 transition">
-          <svg class="w-6 h-6 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 19.5l15-15m-15 0l15 15"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-gray-700 font-semibold text-lg">Blood Pressure Monitor</p>
-          <p class="text-gray-500 text-sm">Medical Devices • Home Use</p>
-        </div>
-      </div>
-
-      <!-- Omega-3 Fish Oil -->
-      <div class="flex items-center px-8 py-4 hover:bg-white/10 cursor-pointer transition-all group">
-        <div class="bg-green-400/30 p-3 rounded-xl mr-5 group-hover:bg-green-500/30 transition">
-          <svg class="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V7a2 2 0 012-2h14a2 2 0 012 2v10m-18 0h18"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-gray-700 font-semibold text-lg">Omega-3 Fish Oil</p>
-          <p class="text-gray-500 text-sm">Heart Health • Joint Support</p>
-        </div>
-      </div>
-
-      <!-- Pain Relievers -->
-      <div class="flex items-center px-8 py-4 hover:bg-white/10 cursor-pointer transition-all group">
-        <div class="bg-orange-400/30 p-3 rounded-xl mr-5 group-hover:bg-orange-500/30 transition">
-          <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-gray-700 font-semibold text-lg">Pain Relievers</p>
-          <p class="text-gray-500 text-sm">Headache • Body Pain • Fever</p>
-        </div>
-      </div>
-
-      <!-- First Aid Kit -->
-      <div class="flex items-center px-8 py-4 hover:bg-white/10 cursor-pointer transition-all group">
-        <div class="bg-purple-400/30 p-3 rounded-xl mr-5 group-hover:bg-purple-500/30 transition">
-          <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-gray-700 font-semibold text-lg">First Aid Kit</p>
-          <p class="text-gray-500 text-sm">Emergency • Home & Travel</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="px-8 py-5 bg-gray-300 border-t border-white/10">
-      <p class="text-black-300 text-sm">Press Enter to search • Use ↑↓ arrows to navigate</p>
-    </div>
-  </div>
-</div>
-
-
-                    </div>
+            <!-- Search Bar -->
+            <!-- SEARCH BAR WITH WHITE TEXT DROPDOWN (like your screenshot) -->
+            <div class="relative max-w-4xl mx-auto px-4 mt-2">
+              <div class="relative">
+                <input type="text" id="searchInput" placeholder="Search medicines, vitamins, health products..."
+                  class="w-full px-8 py-2 pr-16 text-lg rounded-full bg-white border-4 border-white shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 transition-all duration-300 text-gray-800 placeholder-gray-500"
+                  autocomplete="off">
+                <button
+                  class="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full transition-all duration-200 shadow-lg">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </button>
+  
+  
+                <!-- SEARCH SUGGESTIONS DROPDOWN (WHITE TEXT ON DARK BLUE) -->
+                <div id="searchSuggestions"
+                  class="absolute top-full left-0 right-0 mt-3 bg-gradient-to-b from-white to-white rounded-3xl shadow-sm border-2 border-white/20 overflow-hidden hidden z-50">
+  
                 </div>
-<!-- Order Options (Below Search Bar) -->
-<div class="flex flex-col items-center">
- 
-  <div class="flex flex-wrap justify-center gap-3 ">
-    <!-- WhatsApp Button -->
-    <!-- Doctor Consultation WhatsApp Button - FULLY WORKING -->
-<a href="https://wa.me/919876543210?text=Hello%2C%20I%20have%20a%20query%20regarding%20doctor%20consultation" 
-   target="_blank" 
-   rel="noopener noreferrer"
-   class="flex items-center px-4 py-2  border rounded-lg shadow-md bg-white/50 hover:bg-green-500 hover:text-black transition">
-    
-    <!-- WhatsApp Icon -->
-    <svg class="w-5 h-5 text-white mr-2" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 5.044h-.004c-1.997-.001-3.952-.785-5.377-2.212l-.386-.406 3.783-.985.405.384c1.244 1.181 2.898 1.83 4.658 1.83.345 0 .69-.021 1.03-.062l.428.111-3.783.985-.386-.406c-.297-.312-.474-.667-.578-1.03z"/>
-    </svg>
-    
-    <span class="font-medium text-white">Doctor Consultation</span>
-</a>
-    <!-- Upload Prescription Button -->
-    <a href="#upload-prescription"
-       class="flex items-center px-4 py-2  border rounded-lg shadow-md bg-white/50 hover:bg-green-500 hover:text-black transition">
-        <svg class="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 16v-8m0 0l-4 4m4-4l4 4M4 20h16"/>
-        </svg>
-        <span class="font-medium text-white">Upload Prescription</span>
-    </a>
-  </div>
-</div>
-<!-- Upload Prescription Modal -->
-<div id="uploadModal" class="bg-black/50 hidden fixed inset-0 flex items-center justify-center z-50">
-    <div class="overflow-auto bg-gray-100 rounded-2xl shadow-2xl w-11/12 max-w-3xl p-8 h-[400px] lg:mt-[167px] relative">
-        <button id="closeUploadModal" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl font-bold">
-            ✕
-        </button>
-        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Left Side -->
-            <div class="space-y-6">
+  
+              </div>
+            </div>
+  
+  
+          </div>
+        </div>
+  
+        <!-- Order Options (Below Search Bar) -->
+        <div class="flex flex-col items-center">
+  
+          <div class="flex flex-wrap justify-center gap-3 ">
+            <!-- WhatsApp Button -->
+            <!-- Doctor Consultation WhatsApp Button - FULLY WORKING -->
+            <a href="https://wa.me/919876543210?text=Hello%2C%20I%20have%20a%20query%20regarding%20doctor%20consultation"
+              target="_blank" rel="noopener noreferrer"
+              class="flex items-center px-4 py-2  border rounded-lg shadow-md bg-white/50 hover:bg-green-500 hover:text-black transition">
+  
+              <!-- WhatsApp Icon -->
+              <svg class="w-5 h-5 text-white mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 5.044h-.004c-1.997-.001-3.952-.785-5.377-2.212l-.386-.406 3.783-.985.405.384c1.244 1.181 2.898 1.83 4.658 1.83.345 0 .69-.021 1.03-.062l.428.111-3.783.985-.386-.406c-.297-.312-.474-.667-.578-1.03z" />
+              </svg>
+  
+              <span class="font-medium text-white">Doctor Consultation</span>
+            </a>
+            <!-- Upload Prescription Button -->
+            <a href="#upload-prescription"
+              class="flex items-center px-4 py-2  border rounded-lg shadow-md bg-white/50 hover:bg-green-500 hover:text-black transition">
+              <svg class="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 16v-8m0 0l-4 4m4-4l4 4M4 20h16" />
+              </svg>
+              <span class="font-medium text-white">Upload Prescription</span>
+            </a>
+          </div>
+        </div>
+        <!-- Upload Prescription Modal -->
+        <div id="uploadModal" class="bg-black/50 hidden fixed inset-0 flex items-center justify-center z-50">
+          <div
+            class="overflow-auto bg-gray-100 rounded-2xl shadow-2xl w-11/12 max-w-3xl p-8 h-[400px] lg:mt-[167px] relative">
+            <button id="closeUploadModal" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl font-bold">
+              ✕
+            </button>
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Left Side -->
+              <div class="space-y-6">
                 <h2 class="text-2xl font-bold text-gray-800">Upload Your Prescription</h2>
-
+  
                 <!-- Doctor Name -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Doctor's Name <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="doctorName" placeholder="Enter doctor's name"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Doctor's Name <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="doctorName" placeholder="Enter doctor's name"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                 </div>
-
+  
                 <!-- File Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Upload Prescription <span class="text-red-500">*</span>
-                    </label>
-
-                    <!-- Clickable Upload Area -->
-                    <div id="uploadFileArea" 
-                         class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-400 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                            <p class="text-xs text-gray-500 mt-1">Image or PDF (max 10MB)</p>
-                        </div>
-                        <input type="file" id="prescriptionFileInput" accept="image/*,.pdf" class="hidden">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Prescription <span class="text-red-500">*</span>
+                  </label>
+  
+                  <!-- Clickable Upload Area -->
+                  <div id="uploadFileArea"
+                    class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-400 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg class="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                      </svg>
+                      <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                      <p class="text-xs text-gray-500 mt-1">Image or PDF (max 10MB)</p>
                     </div>
-
-                    <!-- Show Selected File Name -->
-                    <div id="selectedFileName" class="mt-3 text-sm text-gray-700 hidden">
-                        Selected: <span id="fileNameText" class="font-semibold text-blue-600"></span>
-                    </div>
+                    <input type="file" id="prescriptionFileInput" accept="image/*,.pdf" class="hidden">
+                  </div>
+  
+                  <!-- Show Selected File Name -->
+                  <div id="selectedFileName" class="mt-3 text-sm text-gray-700 hidden">
+                    Selected: <span id="fileNameText" class="font-semibold text-blue-600"></span>
+                  </div>
                 </div>
-
+  
                 <!-- Submit Button -->
                 <button id="submitPrescriptionBtn"
-                        class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        disabled>
-                    <i class="fas fa-paper-plane mr-2"></i>Submit Prescription
+                  class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled>
+                  <i class="fas fa-paper-plane mr-2"></i>Submit Prescription
                 </button>
-            </div>
-
-            <!-- Right Side - Instructions -->
-            <div class="space-y-6">
+              </div>
+  
+              <!-- Right Side - Instructions -->
+              <div class="space-y-6">
                 <div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">How It Works</h3>
-                    <ol class="space-y-4 text-gray-700">
-                        <li class="flex gap-3">
-                            <span class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">1</span>
-                            <span>Upload clear photo of your prescription</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">2</span>
-                            <span>Our pharmacist will verify and add medicines to your cart</span>
-                        </li>
-                        <li class="flex gap-3">
-                            <span class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">3</span>
-                            <span>Choose delivery slot and complete payment</span>
-                        </li>
-                    </ol>
+                  <h3 class="text-xl font-bold text-gray-800 mb-4">How It Works</h3>
+                  <ol class="space-y-4 text-gray-700">
+                    <li class="flex gap-3">
+                      <span
+                        class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                      <span>Upload clear photo of your prescription</span>
+                    </li>
+                    <li class="flex gap-3">
+                      <span
+                        class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                      <span>Our pharmacist will verify and add medicines to your cart</span>
+                    </li>
+                    <li class="flex gap-3">
+                      <span
+                        class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                      <span>Choose delivery slot and complete payment</span>
+                    </li>
+                  </ol>
                 </div>
-
+  
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <h4 class="font-bold text-red-800 mb-2">Important:</h4>
-                    <ul class="text-sm text-red-700 space-y-1">
-                        <li>• Upload clear, uncropped image</li>
-                        <li>• Doctor's name & signature must be visible</li>
-                        <li>• Do not upload medicine packets</li>
-                    </ul>
+                  <h4 class="font-bold text-red-800 mb-2">Important:</h4>
+                  <ul class="text-sm text-red-700 space-y-1">
+                    <li>• Upload clear, uncropped image</li>
+                    <li>• Doctor's name & signature must be visible</li>
+                    <li>• Do not upload medicine packets</li>
+                  </ul>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-</div>
-
-
- <!-- Carousel Container -->
-                <div class="w-full max-w-5xl mx-auto">
-                    <div class="carousel-container p-8  rounded-2xl ">
-                        <!-- Carousel -->
-                        <div class="relative w-full  overflow-hidden rounded-xl">
-                            <!-- Slides (will be inserted dynamically) -->
-                            <div id="carousel" class="flex transition-transform duration-700  mb-12 ease-in-out">
-                            </div>
-                            <!-- Prev Button -->
-                            <button id="prev" class="absolute top-1/2 left-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10">
-                                &#10094;
-                            </button>
-                            <!-- Next Button -->
-                            <button id="next" class="absolute top-1/2 right-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10">
-                                &#10095;
-                            </button>
-                            <!-- Indicators (will be inserted dynamically) -->
-                            <div id="dotsContainer" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  
+  
+        <!-- Carousel Container -->
+        <div class="w-full max-w-5xl mx-auto">
+          <div class="carousel-container p-8  rounded-2xl ">
+            <!-- Carousel -->
+            <div class="relative w-full  overflow-hidden rounded-xl">
+              <!-- Slides (will be inserted dynamically) -->
+              <div id="carousel" class="flex transition-transform duration-700  mb-12 ease-in-out">
+              </div>
+              <!-- Prev Button -->
+              <button id="prev"
+                class="absolute top-1/2 left-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10">
+                &#10094;
+              </button>
+              <!-- Next Button -->
+              <button id="next"
+                class="absolute top-1/2 right-3 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10">
+                &#10095;
+              </button>
+              <!-- Indicators (will be inserted dynamically) -->
+              <div id="dotsContainer" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+              </div>
             </div>
-        </section>
-         <div class="container mx-auto px-4 mt-16">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-12 ">Browse by Health Categories</h2>
-        
-        <!-- Categories Section -->
-        <div class="relative max-w-7xl mx-auto mb-8">
-            <!-- Navigation Arrows -->
-            <button id="scrollLeft" class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-500 hover:text-white transition-all duration-300">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-        <button id="scrollRight" class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-500 hover:text-white transition-all duration-300">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-            
-            <!-- Categories Container -->
-            <div id="categoryContainer" class="category-scroll flex overflow-x-auto py-6 px-2 gap-8 scroll-smooth">
-                <!-- Categories will be dynamically inserted here -->
-            </div>
-            
-            <!-- Scroll Indicator -->
-            <div id="scrollIndicator" class="flex justify-center mt-8 space-x-2">
-                <!-- Indicator dots will be added dynamically -->
-            </div>
+          </div>
         </div>
-    </div>
-
-
-<!-- Feminine Hygiene Carousel -->
-   <section class="myntra-section mb-8">
-        <h2 class="myntra-title text-2xl font-bold text-center text-gray-800 mb-12">Feminine Hygiene</h2>
-        <div class="myntra-carousel">
-            <button class="myntra-arrow myntra-arrow-left" id="fem-prev">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="myntra-track" id="feminine-track"></div>
-            <button class="myntra-arrow myntra-arrow-right" id="fem-next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+      </div>
     </section>
-
+    <div class="container mx-auto px-4 mt-16">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-12 ">Browse by Health Categories</h2>
+  
+      <!-- Categories Section -->
+      <div class="relative max-w-7xl mx-auto mb-8">
+        <!-- Navigation Arrows -->
+        <button id="scrollLeft"
+          class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-500 hover:text-white transition-all duration-300">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="scrollRight"
+          class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-blue-500 hover:text-white transition-all duration-300">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+  
+        <!-- Categories Container -->
+        <div id="categoryContainer" class="category-scroll flex overflow-x-auto py-6 px-2 gap-8 scroll-smooth">
+          <!-- Categories will be dynamically inserted here -->
+        </div>
+  
+        <!-- Scroll Indicator -->
+        <div id="scrollIndicator" class="flex justify-center mt-8 space-x-2">
+          <!-- Indicator dots will be added dynamically -->
+        </div>
+      </div>
+    </div>
+  
+  
+    <!-- Feminine Hygiene Carousel -->
+    <section class="myntra-section mb-8">
+      <h2 class="myntra-title text-2xl font-bold text-center text-gray-800 mb-12">Feminine Hygiene</h2>
+      <div class="myntra-carousel">
+        <button class="myntra-arrow myntra-arrow-left" id="fem-prev">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="myntra-track" id="feminine-track"></div>
+        <button class="myntra-arrow myntra-arrow-right" id="fem-next">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+  
     <!-- Medicine Carousel -->
-  <section class="myntra-section mb-8">
-        <h2 class="myntra-title text-2xl font-bold text-center text-gray-800 mb-12">Medicines & Healthcare</h2>
-        <div class="myntra-carousel">
-            <button class="myntra-arrow myntra-arrow-left" id="med-prev">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="myntra-track" id="medicine-track"></div>
-            <button class="myntra-arrow myntra-arrow-right" id="med-next">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+    <section class="myntra-section mb-8">
+      <h2 class="myntra-title text-2xl font-bold text-center text-gray-800 mb-12">Medicines & Healthcare</h2>
+      <div class="myntra-carousel">
+        <button class="myntra-arrow myntra-arrow-left" id="med-prev">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="myntra-track" id="medicine-track"></div>
+        <button class="myntra-arrow myntra-arrow-right" id="med-next">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </section>
-    
-        <!-- Articles Section -->
-        <section class="text-2xl font-bold text-center text-gray-800 mb-12 container mx-auto py-14" id="articlesSection">
-            <!-- Dynamic articles will be inserted here -->
-        </section>
-
-        <!-- Floating WhatsApp Chat Button - Sticky Bottom Right -->
-<!-- Floating WhatsApp Button - FULLY WORKING -->
-<!-- <div class="fixed bottom-6 right-6 z-50 group">
-  <a href="https://wa.me/1234567890?text=Hello,%20I%20have%20a%20query" 
-     target="_blank" 
-     rel="noopener noreferrer"
-     class="flex items-center justify-center w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95"> -->
-    
+  
+    <!-- Articles Section -->
+    <section class="text-2xl font-bold text-center text-gray-800 mb-12 container mx-auto py-14" id="articlesSection">
+      <!-- Dynamic articles will be inserted here -->
+    </section>
+  
+    <!-- Floating WhatsApp Chat Button - Sticky Bottom Right -->
+    <!-- Floating WhatsApp Button - FULLY WORKING -->
+    <!-- <div class="fixed bottom-6 right-6 z-50 group">
+    <a href="https://wa.me/1234567890?text=Hello,%20I%20have%20a%20query" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="flex items-center justify-center w-16 h-16 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95"> -->
+  
     <!-- WhatsApp Icon -->
     <!-- <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 5.044h-.004c-1.997-.001-3.952-.785-5.377-2.212l-.386-.406 3.783-.985.405.384c1.244 1.181 2.898 1.83 4.658 1.83.345 0 .69-.021 1.03-.062l.428.111-3.783.985-.386-.406c-.297-.312-.474-.667-.578-1.03z"/>
-    </svg>
-  </a> -->
-
-  <!-- Tooltip (Desktop only) -->
-  <!-- <span class="absolute right-20 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 whitespace-nowrap hidden md:block">
-    Chat on WhatsApp
-    <span class="absolute top-1/2 -right-2 -translate-y-1/2 w-0 h-0 border-l-8 border-l-gray-800 border-y-8 border-y-transparent"></span>
-  </span> -->
-
-  <!-- Pulse Animation -->
-  <!-- <span class="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
-</div> -->
-
-
-        
-        <!-- Footer Section -->
-        <!-- Placeholder for Footer -->
-  <div id="footer-placeholder"></div>
-    </div>
-<!-- Success Modal -->
-<div id="successModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 5.044h-.004c-1.997-.001-3.952-.785-5.377-2.212l-.386-.406 3.783-.985.405.384c1.244 1.181 2.898 1.83 4.658 1.83.345 0 .69-.021 1.03-.062l.428.111-3.783.985-.386-.406c-.297-.312-.474-.667-.578-1.03z"/>
+      </svg>
+    </a> -->
+  
+    <!-- Tooltip (Desktop only) -->
+    <!-- <span class="absolute right-20 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 whitespace-nowrap hidden md:block">
+      Chat on WhatsApp
+      <span class="absolute top-1/2 -right-2 -translate-y-1/2 w-0 h-0 border-l-8 border-l-gray-800 border-y-8 border-y-transparent"></span>
+    </span> -->
+  
+    <!-- Pulse Animation -->
+    <!-- <span class="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
+  </div> -->
+  
+  
+  
+    <!-- Footer Section -->
+    <!-- Placeholder for Footer -->
+    <div id="footer-placeholder"></div>
+  </div>
+  
+  
+  <!-- Success Modal -->
+  <div id="successModal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center p-4">
     <div class="fixed inset-0 bg-black bg-opacity-70"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="successModalContent">
-        <div class="text-center">
-            <!-- Animated Green Tick -->
-            <div class="w-24 h-24 mx-auto mb-6">
-                <svg class="checkmark animate-draw-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="3"/>
-                    <path class="checkmark__check" fill="none" stroke="#4CAF50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                </svg>
-            </div>
-            
-            <!-- Success Message -->
-            <h3 class="text-2xl font-bold text-gray-800 mb-3">Success!</h3>
-            <p class="text-gray-600 mb-6">Your prescription has been uploaded successfully. We will review it and contact you shortly.</p>
-            
-            <!-- Close Button -->
-            <button id="successCloseBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105">
-                OK, Got It
-            </button>
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-95 opacity-0"
+      id="successModalContent">
+      <div class="text-center">
+        <!-- Animated Green Tick -->
+        <div class="w-24 h-24 mx-auto mb-6">
+          <svg class="checkmark animate-draw-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="3" />
+            <path class="checkmark__check" fill="none" stroke="#4CAF50" stroke-width="4" stroke-linecap="round"
+              stroke-linejoin="round" stroke-miterlimit="10" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+          </svg>
         </div>
+  
+        <!-- Success Message -->
+        <h3 class="text-2xl font-bold text-gray-800 mb-3">Success!</h3>
+        <p class="text-gray-600 mb-6">Your prescription has been uploaded successfully. We will review it and contact you
+          shortly.</p>
+  
+        <!-- Close Button -->
+        <button id="successCloseBtn"
+          class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105">
+          OK, Got It
+        </button>
+      </div>
     </div>
-</div>
-
-    <script src="./cart-wishlist-system.js"></script>
- <script>
-        // Function to load header and initialize
-        function loadHeader() {
-            fetch('./Header/header.html')
-                .then(response => {
-                    if (!response.ok) throw new Error('Header not found');
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById('header-placeholder').innerHTML = data;
-                    console.log('✓ Header HTML loaded');
-                    
-                    // Load header.js after HTML is inserted
-                    return new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = './Header/header.js';
-                        script.onload = () => {
-                            console.log('✓ Header JS loaded');
-                            resolve();
-                        };
-                        script.onerror = () => reject(new Error('Failed to load header.js'));
-                        document.body.appendChild(script);
-                    });
-                })
-                .catch(error => console.error('✗ Error loading header:', error));
-        }
-
-        // Function to load footer
-        function loadFooter() {
-            fetch('./Footer/footer.html')
-                .then(response => {
-                    if (!response.ok) throw new Error('Footer not found');
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById('footer-placeholder').innerHTML = data;
-                    console.log('✓ Footer loaded');
-                })
-                .catch(error => console.error('✗ Error loading footer:', error));
-        }
-
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                loadHeader();
-                loadFooter();
-            });
-        } else {
-            loadHeader();
-            loadFooter();
-        }
-    </script>
-
-
-<script>
-// FULLY WORKING UPLOAD PRESCRIPTION MODAL - 100% FIXED
-document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.getElementById('uploadModal');
-    const doctorNameInput = document.getElementById('doctorName');
-    const fileInput = document.getElementById('prescriptionFileInput');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const selectedFileName = document.getElementById('selectedFileName');
-    const submitBtn = document.getElementById('submitPrescriptionBtn');
-
-    if (!modal || !doctorNameInput || !fileInput || !submitBtn) {
-        console.warn('Upload modal elements not found');
-        return;
-    }
-
-    // Check if form is valid
-    function checkFormValid() {
-        const hasDoctorName = doctorNameInput.value.trim().length > 0;
-        const hasFile = fileInput.files && fileInput.files.length > 0;
-        submitBtn.disabled = !(hasDoctorName && hasFile);
-    }
-
-    // File selected
-    fileInput.addEventListener('change', function () {
-        if (fileInput.files && fileInput.files[0]) {
-            selectedFileName.textContent = fileInput.files[0].name;
-            fileNameDisplay.classList.remove('hidden');
-        } else {
-            fileNameDisplay.classList.add('hidden');
-        }
-        checkFormValid();
-    });
-
-    // Doctor name input
-    doctorNameInput.addEventListener('input', checkFormValid);
-
-    // Submit prescription
-    submitBtn.addEventListener('click', function () {
-        if (submitBtn.disabled) return;
-
-        const file = fileInput.files[0];
-        const doctorName = doctorNameInput.value.trim();
-
-        // Success message
-        alert(`Prescription Submitted Successfully!\n\nDoctor: ${doctorName}\nFile: ${file.name}\n\nOur pharmacist will review and contact you shortly.`);
-
-        // Reset and close
-        modal.classList.add('hidden');
-        doctorNameInput.value = '';
-        fileInput.value = '';
-        fileNameDisplay.classList.add('hidden');
-        submitBtn.disabled = true;
-    });
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', function (e) {
-        if (e.target === modal) {
-            modal.classList.add('hidden');
-        }
-    });
-
-    console.log('Upload Prescription Modal - Fully Working');
-});
-</script>
-
- 
-    <script src="./cart-wishlist-system.js"></script>
-    <!-- <script src="./cart.js"></script> -->
-    <script src="./home.js"></script>
-
-</body>
-</html>
+  </div>
+  
+  <script src="./cart-wishlist-system.js"></script>
+  
+  
+  
+  <script src="./cart-wishlist-system.js"></script>
+  <!-- <script src="./cart.js"></script> -->
+  <script src="./home.js"></script>
+  
+  </body>
+  
+  </html>
