@@ -2074,6 +2074,7 @@ async function loadGlobalSearchData(forceRefresh = false) {
                 });
             });
         }
+        
 
         console.log(`Loaded ${globalSearchProducts.length} products`);
         // Optional: Debug products with missing images

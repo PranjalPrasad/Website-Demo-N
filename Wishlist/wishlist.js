@@ -6,12 +6,36 @@ const MBP_PRODUCT_API = 'http://localhost:8083/api/mb/products';
 
 // ==================== UTILITY FUNCTIONS ====================
 function getUserId() {
-    const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
-    if (!userId) {
-        console.error('User not logged in');
+    try {
+        // Get the currentUser object from localStorage or sessionStorage
+        const userStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        
+        if (!userStr) {
+            console.error('User not logged in - No user data found');
+            return null;
+        }
+        
+        // Parse the user object
+        const user = JSON.parse(userStr);
+        
+        if (!user || !user.userId) {
+            console.error('User ID not found in user object');
+            return null;
+        }
+        
+        const userId = parseInt(user.userId);
+        
+        if (isNaN(userId)) {
+            console.error('Invalid user ID format:', user.userId);
+            return null;
+        }
+        
+        return userId;
+        
+    } catch (error) {
+        console.error('Error getting user ID:', error);
         return null;
     }
-    return parseInt(userId);
 }
 
 function showToast(message, type = 'success') {

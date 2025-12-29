@@ -165,7 +165,23 @@ async function fetchCartFromBackend() {
         console.log('[DEBUG] fetchCartFromBackend() - Backend response:', backendCart);
         
         // Transform backend data
+
         const transformedCart = backendCart.map(item => {
+            let sellingPrice = 0;
+            let mrpPrice = 0;
+
+            if (Array.isArray(item.price) && item.price.length >= 2) {
+                sellingPrice = Number(item.price[0]);  // discounted price
+                mrpPrice = Number(item.price[1]);      // original MRP
+            } else if (Array.isArray(item.price) && item.price.length === 1) {
+                sellingPrice = Number(item.price[0]);
+                mrpPrice = sellingPrice * 1.2; // fallback
+            } else {
+                // fallback for old format
+                sellingPrice = Number(item.price || 0);
+                mrpPrice = Number(item.mrp || item.originalPrice || sellingPrice * 1.2);
+            }
+
             const cartItem = {
                 id: item.cartItemId || item.id,
                 cartItemId: item.cartItemId,
@@ -174,17 +190,37 @@ async function fetchCartFromBackend() {
                 mbpId: item.type === 'MBP' ? item.itemId : null,
                 type: item.type,
                 title: item.title || item.name || 'Unknown Product',
-                price: item.price || 0,
-                mrp: item.mrp || item.originalPrice || (item.price ? item.price * 1.2 : 0),
+                price: sellingPrice,           // ← now a number
+                mrp: mrpPrice,                 // ← now a number
                 quantity: item.quantity || 1,
                 size: item.selectedSize || '',
                 productType: item.productType || 'MEDICINE',
                 mainImageUrl: item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${BASE_URL}${item.imageUrl}`) : 'https://via.placeholder.com/150'
             };
             
-            console.log('[DEBUG] fetchCartFromBackend() - Transformed item:', cartItem);
             return cartItem;
         });
+
+        // const transformedCart = backendCart.map(item => {
+        //     const cartItem = {
+        //         id: item.cartItemId || item.id,
+        //         cartItemId: item.cartItemId,
+        //         itemId: item.itemId,
+        //         productId: item.type === 'PRODUCT' ? item.itemId : null,
+        //         mbpId: item.type === 'MBP' ? item.itemId : null,
+        //         type: item.type,
+        //         title: item.title || item.name || 'Unknown Product',
+        //         price: item.price || 0,
+        //         mrp: item.mrp || item.originalPrice || (item.price ? item.price * 1.2 : 0),
+        //         quantity: item.quantity || 1,
+        //         size: item.selectedSize || '',
+        //         productType: item.productType || 'MEDICINE',
+        //         mainImageUrl: item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${BASE_URL}${item.imageUrl}`) : 'https://via.placeholder.com/150'
+        //     };
+            
+        //     console.log('[DEBUG] fetchCartFromBackend() - Transformed item:', cartItem);
+        //     return cartItem;
+        // });
 
         console.log('[DEBUG] fetchCartFromBackend() - Transformed cart:', transformedCart);
         return transformedCart;

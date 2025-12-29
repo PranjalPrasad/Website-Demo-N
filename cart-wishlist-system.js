@@ -2,7 +2,7 @@
 // Put this file at: js/cart-wishlist-system.js
 // Include it in EVERY page (including index, mother.html, baby.html, etc.)
 
-const MAX_QTY = 20;
+const MAX_QTY = 0;
 
 // ================ CART FUNCTIONS ================
 function getCart() {
