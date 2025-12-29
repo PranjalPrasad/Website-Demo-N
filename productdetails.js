@@ -352,9 +352,10 @@ function setupPincodeChecker() {
     const successDiv = document.getElementById('deliverySuccess');
     const errorDiv = document.getElementById('deliveryError');
     const locationText = document.getElementById('deliveryLocation');
-    const chargeText = document.getElementById('deliveryChargeText');
     const deliveryTime = document.getElementById('deliveryTime');
     const deliveryOffer = document.getElementById('deliveryOffer');
+
+    // Remove references to chargeText if it exists in HTML (no longer used)
 
     // Load saved pincode
     const savedPincode = localStorage.getItem('lastValidPincode');
@@ -386,52 +387,61 @@ function setupPincodeChecker() {
         if (e.key === 'Enter') checkPincode();
     });
 
+    // List of allowed villages/areas (all get FREE delivery)
+    const allowedLocations = new Set([
+        'alagudewadi', 'chaudharwadi', 'dhuldev', 'farandwadi', 'ghadge mala',
+        'jadhavwadi', 'sastewadi', 'sonwadi bk', 'thakurki', 'tathavada', 'vidani',
+        'bhadali bk', 'bhadali kh', 'bhilkatti', 'fadatarwadi', 'kambleshwar',
+        'kashiwadi', 'khunte', 'kurvali kh', 'mirgaon', 'nimbhore', 'nirugudi',
+        'saskal', 'shindewadi', 'somanthali', 'songaon', 'sonwadi kh', 'tavadi',
+        'vadjal', 'vinchurni', 'wathar (nimbalkar)',
+        'bagewadi', 'barad', 'bodkewadi', 'dalvadi', 'dhaval', 'dhavalewadi',
+        'dhumalwadi', 'dombalwadi', 'dudhebavi', 'ghadgewadi', 'girvi', 'gunware',
+        'hingangaon', 'jinti', 'kalaj', 'kharadewadi', 'malvadi', 'mathachiwadi',
+        'mirdhe', 'mulikwadi', 'naik bombawadi', 'nandal', 'nimbalak', 'pimpalwadi',
+        'pimparad', 'rajale', 'sangavi', 'sarade', 'sathe', 'sherechiwadi',
+        'shereshindewadi', 'survadi', 'tadavale', 'takalwade', 'taradgaon',
+        'tirakwadi', 'upalave', 'vadale', 'vadgaon', 'vajegaon', 'vitthalwadi',
+        'wakhari'
+    ].map(loc => loc.toLowerCase().trim()));
+
     async function checkPincodeRealTime(pincode) {
         resultDiv.classList.remove('hidden');
         try {
             const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
             const data = await response.json();
-            if (!data || data[0]?.Status !== "Success" || !data[0].PostOffice) {
-                showDeliveryError("Invalid or undeliverable pincode");
+
+            if (!data || data[0]?.Status !== "Success" || !data[0].PostOffice || data[0].PostOffice.length === 0) {
+                showDeliveryError("Invalid pincode");
                 return;
             }
 
+            // Take the first post office (primary one)
             const postOffice = data[0].PostOffice[0];
-            const district = postOffice.District.toLowerCase();
-            if (!district.includes('pune')) {
-                showDeliveryError("Currently delivering only in Pune area");
+            const villageName = postOffice.Name.toLowerCase().trim();
+
+            // Check if the village/post office name matches your allowed list
+            if (!allowedLocations.has(villageName)) {
+                showDeliveryError("Delivery not available for this area");
                 return;
             }
 
-            const coords = getCoordinatesFromPincode(pincode);
-            if (!coords) {
-                showDeliveryError("Delivery not available for this pincode");
-                return;
-            }
-
-            const distance = calculateDistance(18.5922, 73.7676, coords.lat, coords.lng); // Shop location
-            let charge = '';
-            let time = '';
-
-            if (distance <= 3) charge = 'Free Delivery';
-            else if (distance <= 5) charge = 'Delivery Charge: ₹99';
-            else if (distance <= 7) charge = 'Delivery Charge: ₹199';
-            else {
-                showDeliveryError("Outside our 7km delivery radius");
-                return;
-            }
-
-            // Success
+            // Success - Free Delivery for all allowed areas
             successDiv.classList.remove('hidden');
             errorDiv.classList.add('hidden');
-            locationText.textContent = `${postOffice.Name}, ${postOffice.District}`;
-            chargeText.textContent = charge;
-            deliveryTime.textContent = `Delivery by ${time}`;
-            deliveryOffer.textContent = charge.includes('Free') ? '*No minimum order required' : '*Offer applicable on order above ₹1000';
 
+            locationText.textContent = `${postOffice.Name}, Phaltan, Satara`;
+
+            // Optional texts (customize as needed)
+            if (deliveryTime) deliveryTime.textContent = 'Delivery within 2-5 days';
+            if (deliveryOffer) deliveryOffer.textContent = 'Free Delivery • No minimum order required';
+
+            // Save valid pincode
             localStorage.setItem('lastValidPincode', pincode);
-            localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Pune`);
-            showToast(`Delivery available! ${charge}`, 'success');
+            localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Phaltan`);
+
+            showToast('Delivery available! Free Delivery', 'success');
+
         } catch (err) {
             console.error("Pincode check failed:", err);
             showDeliveryError("Network error. Please try again.");
@@ -443,38 +453,12 @@ function setupPincodeChecker() {
         errorDiv.classList.remove('hidden');
         errorDiv.querySelector('p:last-child').textContent = message;
         localStorage.removeItem('lastValidPincode');
+        localStorage.removeItem('lastDeliveryArea');
     }
 
-    function getCoordinatesFromPincode(pincode) {
-        const map = {
-            '411045': { lat: 18.5922, lng: 73.7676 },
-            '411021': { lat: 18.5533, lng: 73.7954 },
-            '411033': { lat: 18.5581, lng: 73.8059 },
-            '411057': { lat: 18.5777, lng: 73.8206 },
-            '411027': { lat: 18.5642, lng: 73.7769 },
-            '411008': { lat: 18.5308, lng: 73.8475 },
-            '411004': { lat: 18.5018, lng: 73.8526 },
-            '411001': { lat: 18.5204, lng: 73.8567 },
-            '411005': { lat: 18.5300, lng: 73.8500 },
-            '411007': { lat: 18.5400, lng: 73.8800 },
-            '411016': { lat: 18.5000, lng: 73.8200 },
-            '411014': { lat: 18.5500, lng: 73.9200 },
-            '411028': { lat: 18.5700, lng: 73.8500 }
-        };
-        return map[pincode] || null;
-    }
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return Math.round(R * c * 10) / 10;
-    }
+    // Removed: getCoordinatesFromPincode(), calculateDistance()
 }
+
 
 // ------------------- Rendering Functions -------------------
 async function renderThumbnails(mainPath, subPaths = []) {
