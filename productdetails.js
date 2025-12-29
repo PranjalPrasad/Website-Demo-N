@@ -355,8 +355,6 @@ function setupPincodeChecker() {
     const deliveryTime = document.getElementById('deliveryTime');
     const deliveryOffer = document.getElementById('deliveryOffer');
 
-    // Remove references to chargeText if it exists in HTML (no longer used)
-
     // Load saved pincode
     const savedPincode = localStorage.getItem('lastValidPincode');
     if (savedPincode) {
@@ -387,23 +385,83 @@ function setupPincodeChecker() {
         if (e.key === 'Enter') checkPincode();
     });
 
-    // List of allowed villages/areas (all get FREE delivery)
-    const allowedLocations = new Set([
-        'alagudewadi', 'chaudharwadi', 'dhuldev', 'farandwadi', 'ghadge mala',
-        'jadhavwadi', 'sastewadi', 'sonwadi bk', 'thakurki', 'tathavada', 'vidani',
-        'bhadali bk', 'bhadali kh', 'bhilkatti', 'fadatarwadi', 'kambleshwar',
-        'kashiwadi', 'khunte', 'kurvali kh', 'mirgaon', 'nimbhore', 'nirugudi',
-        'saskal', 'shindewadi', 'somanthali', 'songaon', 'sonwadi kh', 'tavadi',
-        'vadjal', 'vinchurni', 'wathar (nimbalkar)',
-        'bagewadi', 'barad', 'bodkewadi', 'dalvadi', 'dhaval', 'dhavalewadi',
-        'dhumalwadi', 'dombalwadi', 'dudhebavi', 'ghadgewadi', 'girvi', 'gunware',
-        'hingangaon', 'jinti', 'kalaj', 'kharadewadi', 'malvadi', 'mathachiwadi',
-        'mirdhe', 'mulikwadi', 'naik bombawadi', 'nandal', 'nimbalak', 'pimpalwadi',
-        'pimparad', 'rajale', 'sangavi', 'sarade', 'sathe', 'sherechiwadi',
-        'shereshindewadi', 'survadi', 'tadavale', 'takalwade', 'taradgaon',
-        'tirakwadi', 'upalave', 'vadale', 'vadgaon', 'vajegaon', 'vitthalwadi',
-        'wakhari'
-    ].map(loc => loc.toLowerCase().trim()));
+    // Comprehensive mapping: village name (lowercase) → allowed pincodes
+    const allowedLocations = {
+        'alagudewadi': ['415523'],
+        'bagewadi': ['415523'],
+        'barad': ['415523'],
+        'bhadali bk': ['415523'],
+        'bhadali kh': ['415523'],
+        'bhilkatti': ['415537'],
+        'bodkewadi': ['415523'],
+        'chaudharwadi': ['415523'],
+        'dalvadi': ['415523'],
+        'dhaval': ['415523'],
+        'dhavalewadi': ['415523', '415528'],
+        'dhuldev': ['415523'], // Primary; 415509 is in different taluka (Man)
+        'dhumalwadi': ['415523'],
+        'dombalwadi': ['415523'],
+        'dudhebavi': ['415523'],
+        'fadatarwadi': ['415523'],
+        'farandwadi': ['415523'],
+        'ghadge mala': ['415523'],
+        'ghadgewadi': ['415537'],
+        'girvi': ['415523'],
+        'gunware': ['415523'],
+        'hingangaon': ['415523'],
+        'jadhavwadi': ['415523'], // Primary Phaltan one; exclude 415311 (Sangli district)
+        'jinti': ['415523'],
+        'kalaj': ['415523'],
+        'kambleshwar': ['415523'],
+        'kashiwadi': ['415528'],
+        'khunte': ['415523'],
+        'kurvali kh': ['415523'],
+        'malvadi': ['415523'],
+        'mathachiwadi': ['415523'],
+        'mirgaon': ['415523'],
+        'mirdhe': ['415523'],
+        'mulikwadi': ['415537'],
+        'naik bombawadi': ['415523'],
+        'nandal': ['415523'],
+        'nimbhore': ['415523'],
+        'nimbalak': ['415523'],
+        'nirugudi': ['415523'],
+        'pimpalwadi': ['415522'],
+        'pimparad': ['415523'],
+        'rajale': ['415523'],
+        'sangavi': ['415523'],
+        'sarade': ['415523'],
+        'saskal': ['415523'],
+        'sastewadi': ['415523'],
+        'sathe': ['415523'],
+        'sherechiwadi': ['415523'],
+        'shereshindewadi': ['415523'],
+        'shindewadi': ['415523'],
+        'somanthali': ['415523'],
+        'songaon': ['415523'],
+        'sonwadi bk': ['415523'],
+        'sonwadi kh': ['415523'],
+        'survadi': ['415528'],
+        'tadavale': ['415523'],
+        'takalwade': ['415523'],
+        'taradgaon': ['415528'],
+        'tathavada': ['415523'],
+        'tavadi': ['415523'],
+        'thakurki': ['415523'],
+        'tirakwadi': ['415523'],
+        'upalave': ['415523'],
+        'vadale': ['415523'],
+        'vadgaon': ['415523'],
+        'vadjal': ['415523'],
+        'vajegaon': ['415523'],
+        'vidani': ['415523'],
+        'vinchurni': ['415523'],
+        'vitthalwadi': ['415528'],
+        'wakhari': ['415523'],
+        'wathar (nimbalkar)': ['415523']
+    };
+
+    const sataraMainPincode = '415001';
 
     async function checkPincodeRealTime(pincode) {
         resultDiv.classList.remove('hidden');
@@ -416,29 +474,36 @@ function setupPincodeChecker() {
                 return;
             }
 
-            // Take the first post office (primary one)
             const postOffice = data[0].PostOffice[0];
             const villageName = postOffice.Name.toLowerCase().trim();
 
-            // Check if the village/post office name matches your allowed list
-            if (!allowedLocations.has(villageName)) {
+            // Check if village matches and pincode is allowed for it
+            const allowedPincodes = allowedLocations[villageName];
+            if (!allowedPincodes || !allowedPincodes.includes(pincode)) {
                 showDeliveryError("Delivery not available for this area");
                 return;
             }
 
-            // Success - Free Delivery for all allowed areas
+            // Success
             successDiv.classList.remove('hidden');
             errorDiv.classList.add('hidden');
 
             locationText.textContent = `${postOffice.Name}, Phaltan, Satara`;
 
-            // Optional texts (customize as needed)
-            if (deliveryTime) deliveryTime.textContent = 'Delivery within 2-5 days';
-            if (deliveryOffer) deliveryOffer.textContent = 'Free Delivery • No minimum order required';
+            // Delivery time: 1 day for Satara city main, else 3-4 days
+            const isSataraMain = pincode === sataraMainPincode;
+            if (deliveryTime) {
+                deliveryTime.textContent = isSataraMain 
+                    ? 'Delivery within 1 day' 
+                    : 'Delivery within 3-4 days';
+            }
 
-            // Save valid pincode
+            if (deliveryOffer) {
+                deliveryOffer.textContent = 'Free Delivery • No minimum order required';
+            }
+
             localStorage.setItem('lastValidPincode', pincode);
-            localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Phaltan`);
+            localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Phaltan, Satara`);
 
             showToast('Delivery available! Free Delivery', 'success');
 
@@ -455,11 +520,7 @@ function setupPincodeChecker() {
         localStorage.removeItem('lastValidPincode');
         localStorage.removeItem('lastDeliveryArea');
     }
-
-    // Removed: getCoordinatesFromPincode(), calculateDistance()
 }
-
-
 // ------------------- Rendering Functions -------------------
 async function renderThumbnails(mainPath, subPaths = []) {
     const container = document.getElementById('thumbnail-container');

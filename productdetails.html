@@ -291,50 +291,57 @@
 
                            <!-- Pincode Checker & Delivery Info -->
                             <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Check Delivery</label>
-                                <div class="flex gap-2  w-[250px]">
-                                    <input type="text" id="pincodeInput" placeholder="Enter pincode" maxlength="6"
-                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-pharmeasy-blue">
-                                    <button id="checkPincodeBtn" class="px-6 bg-pharmeasy-blue hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center gap-2">
-                                        <i class="fas fa-search-location"></i> Check
-                                    </button>
-                                </div>
+    <label class="block text-sm font-medium text-gray-700 mb-2">Check Delivery</label>
+    <div class="flex gap-2 w-[250px]">
+        <input type="text" id="pincodeInput" placeholder="Enter pincode" maxlength="6"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-pharmeasy-blue">
+        <button id="checkPincodeBtn"
+            class="px-6 bg-pharmeasy-blue hover:bg-blue-700 text-white font-medium rounded-lg transition flex items-center gap-2">
+            <i class="fas fa-search-location"></i> Check
+        </button>
+    </div>
 
-                                <!-- Delivery Result -->
-                                <div id="deliveryResult" class="mt-4 hidden">
-                                    <!-- Success State -->
-                                    <div id="deliverySuccess" class="hidden p-4 bg-green-50 border border-green-200 rounded-lg">
-                                        <div class="flex items-start">
-                                            <i class="fas fa-check-circle text-green-600 text-xl mr-3 mt-1"></i>
-                                            <div class="flex-1">
-                                                <p class="font-medium text-green-800">Delivery Available!</p>
-                                                <p id="deliveryLocation" class="text-sm text-gray-700 mt-1">Location</p>
-                                                <p id="deliveryChargeText" class="text-sm font-medium text-green-700 mt-1">Free Delivery</p>
-                                            </div>
-                                        </div>
-                                    </div>
+    <!-- Delivery Result -->
+    <div id="deliveryResult" class="mt-4 hidden">
+        <!-- Success State -->
+        <div id="deliverySuccess" class="hidden p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-600 text-xl mr-3 mt-1"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-green-800">Delivery Available!</p>
+                    <p id="deliveryLocation" class="text-sm text-gray-700 mt-1">Location</p>
+                    <p class="text-sm font-medium text-green-700 mt-2">Free Delivery</p>
+                    <p id="deliveryTime" class="text-sm font-semibold text-green-800 mt-2">
+                        Delivery within 3-4 days
+                    </p>
+                </div>
+            </div>
+        </div>
 
-                                    <!-- Error State -->
-                                    <div id="deliveryError" class="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                        <div class="flex items-start">
-                                            <i class="fas fa-times-circle text-red-600 text-xl mr-3 mt-1"></i>
-                                            <div class="flex-1">
-                                                <p class="font-medium text-red-800">Delivery Not Available</p>
-                                                <p class="text-sm text-gray-700">Sorry, we don't deliver to this pincode yet.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Error State -->
+        <div id="deliveryError" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-start">
+                <i class="fas fa-times-circle text-red-600 text-xl mr-3 mt-1"></i>
+                <div class="flex-1">
+                    <p class="font-medium text-red-800">Delivery Not Available</p>
+                    <p class="text-sm text-gray-700 mt-1">
+                        Sorry, we currently deliver only to select areas around Phaltan, Satara.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                            <!-- Dynamic Delivery Info (Default until pincode checked) -->
-                            <div class="border border-pink-300 rounded-lg p-4 mt-2 mb-2">
-                                <p class="text-green-600 font-bold text-md" id="deliveryTime">
-                                    Check pincode to see delivery details
-                                </p>
-                                <p class="text-xs text-gray-600 mt-2" id="deliveryOffer">*Enter pincode above for accurate delivery info</p>
-                            </div>
-
+    <!-- Default Info (shown until pincode is checked) -->
+    <div class="border border-pink-300 rounded-lg p-4 mt-4">
+        <p class="text-gray-700 text-sm font-medium" id="deliveryTimeDefault">
+            Check pincode to see delivery details
+        </p>
+        <p class="text-xs text-gray-600 mt-2" id="deliveryOffer">
+            *Free Delivery • No minimum order required (in selected areas)
+        </p>
+    </div>
+</div>
                             <!-- Quantity Selector -->
                             <div class="mb-6">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Quantity:</label>
