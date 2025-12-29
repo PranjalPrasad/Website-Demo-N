@@ -1234,7 +1234,7 @@
 
 
 
-    async fetchCartFromBackend() {
+async fetchCartFromBackend() {
   if (!this.userId) return;
   try {
     console.log(`[CheckoutApp] Fetching cart from backend for userId: ${this.userId}`);
@@ -2498,6 +2498,8 @@
  
       console.log('[CheckoutApp] Event listeners setup completed');
     }
+
+
     async placeOrder() {
       console.log('[CheckoutApp] Place order button clicked');
  
@@ -2567,6 +2569,8 @@
         }
       }
     }
+
+
     showUpiQrModal() {
       console.log('[CheckoutApp] Showing UPI QR modal');
       // Validate total amount
@@ -2662,125 +2666,145 @@
         confirmBtn.disabled = false;
       }
     }
-            async createOrderInBackend(paymentMethod, transactionId = '') {
-      try {
-        if (this.selectedIdx === -1 || this.addresses.length === 0) {
-          alert('No delivery address selected!');
-          return false;
-        }
-        const selectedAddress = this.addresses[this.selectedIdx];
-        console.log('[CheckoutApp] Starting order creation...');
-        console.log('Cart items:', this.cart);
-        console.log('Selected address:', selectedAddress);
+    
 
-        // Recalculate totals accurately
-        let subtotal = 0;
-        this.cart.forEach(item => {
-          const qty = item.quantity || 1;
-          const price = parseFloat(item.price) || 0;
-          subtotal += price * qty;
-        });
-        const shippingCharges = subtotal >= 799 ? 0 : 49;
-        const totalAmount = subtotal + shippingCharges;
-
-        // Build full address string
-        const shippingAddressString = `${selectedAddress.flat || ''}${selectedAddress.flat && selectedAddress.area ? ', ' : ''}${selectedAddress.area || ''}, ${selectedAddress.city || ''}, ${selectedAddress.state || ''} - ${selectedAddress.pincode || ''}`.replace(/^,\s*|\s*,$/g, '').trim();
-
-        const items = this.cart.map(item => ({
-          type: item.type || 'PRODUCT',
-          itemId: item.itemId || item.id,
-          quantity: item.quantity || 1,
-          price: parseFloat(item.price) || 0,
-          selectedSize: item.selectedSize || item.size || '',
-          productType: item.productType || '',
-          productName: item.name || item.title || 'Product'
-        }));
-
-        const orderRequest = {
-          userId: this.userId,
-          items: items,
-          shippingAddress: shippingAddressString,
-
-          customerName: selectedAddress.fullName || 'Customer',
-          customerPhone: selectedAddress.mobile || '',
-          customerEmail: null,
-
-          shippingCustomerName: selectedAddress.fullName || 'Customer',
-          shippingPhone: selectedAddress.mobile || '',
-          shippingEmail: null,
-
-          houseNo: selectedAddress.flat || '',
-          streetArea: selectedAddress.area || '',
-          landmark: null,
-          addressType: "HOME",
-
-          shippingCity: selectedAddress.city || '',
-          shippingState: selectedAddress.state || '',
-          shippingPincode: selectedAddress.pincode || '',
-          flatNo: selectedAddress.flat || '',
-
-          paymentMethod: paymentMethod === 'qr' ? 'UPI' : 'COD',
-          paymentStatus: paymentMethod === 'cod' ? 'PENDING' : 'PAID',
-
-          // CRITICAL FIX: Send as plain number (not wrapped in Number/parseFloat) for Double mapping
-          subtotal: subtotal,
-          shippingCharges: shippingCharges,
-          totalAmount: totalAmount,
-          finalAmount: totalAmount,
-
-          discountAmount: 0,
-          discountPercent: null,
-          couponAppliedCode: null,
-
-          status: 'PENDING',
-          upiTransactionId: transactionId || ''
-        };
-
-        console.log('[CheckoutApp] FINAL order request body:', JSON.stringify(orderRequest, null, 2));
-
-        const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ORDER.CREATE}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(orderRequest)
-        });
-
-        const responseText = await response.text();
-        console.log('[CheckoutApp] Raw backend response:', responseText);
-
-        if (!response.ok) {
-          let errorMsg = `Order creation failed: ${response.status}`;
-          try {
-            const errorJson = JSON.parse(responseText);
-            errorMsg += ` - ${errorJson.message || JSON.stringify(errorJson)}`;
-          } catch (e) {
-            errorMsg += ` - ${responseText}`;
-          }
-          console.error('[CheckoutApp] Backend error:', errorMsg);
-          alert('Order failed: ' + (errorMsg.split('-')[1]?.trim() || 'Please try again'));
-          throw new Error(errorMsg);
-        }
-
-        const result = JSON.parse(responseText);
-        console.log('[CheckoutApp] Order created successfully:', result);
-
-        if (result.success && result.data && result.data.orderId) {
-          this.currentOrderId = result.data.orderId;
-        }
-
-        if (this.userId) await this.clearBackendCart();
-        localStorage.removeItem(STORAGE.CART);
-        this.cart = [];
-        this.saveCart();
-
-        return true;
-      } catch (error) {
-        console.error('[CheckoutApp] Exception in createOrderInBackend:', error);
-        alert('Network or server error. Please try again.');
-        return false;
-      }
+    
+    async createOrderInBackend(paymentMethod, transactionId = '') {
+  try {
+    if (this.selectedIdx === -1 || this.addresses.length === 0) {
+      alert('No delivery address selected!');
+      return false;
     }
+
+    const selectedAddress = this.addresses[this.selectedIdx];
+    console.log('[CheckoutApp] Starting order creation...');
+    console.log('Cart items:', this.cart);
+    console.log('Selected address:', selectedAddress);
+
+    // Recalculate subtotal accurately
+    let subtotal = 0;
+    this.cart.forEach(item => {
+      const qty = item.quantity || 1;
+      const price = Number(item.price || 0);
+      subtotal += price * qty;
+    });
+
+    const shippingCharges = subtotal >= 799 ? 0 : 49;
+    const totalAmount = subtotal + shippingCharges;
+
+    // Build full shipping address string
+    const shippingAddressString = [
+      selectedAddress.flat || '',
+      selectedAddress.area || '',
+      selectedAddress.city || '',
+      selectedAddress.state || '',
+      selectedAddress.pincode || ''
+    ].filter(Boolean).join(', ').replace(/,\s*$/, '');
+
+    // === CRITICAL: Map cart items to backend-expected orderItems format ===
+    const orderItems = this.cart.map(item => ({
+      productId: item.itemId || item.id || 0,              // backend expects productId
+      quantity: item.quantity || 1,
+      itemPrice: Number(item.price || 0),                  // single price per unit
+      subtotal: Number((Number(item.price || 0) * (item.quantity || 1)).toFixed(2)),
+      itemName: item.name || item.title || 'Unknown Product'
+    }));
+
+    const orderRequest = {
+      userId: this.userId,
+
+      // Shipping Details
+      shippingAddress: shippingAddressString,
+      shippingAddress2: selectedAddress.flat || '',
+      shippingCity: selectedAddress.city || '',
+      shippingState: selectedAddress.state || '',
+      shippingPincode: selectedAddress.pincode || '',
+      shippingCountry: "India",
+      shippingFirstName: (selectedAddress.fullName || 'Customer').split(' ')[0],
+      shippingLastName: (selectedAddress.fullName || 'Customer').split(' ').slice(1).join(' ') || 'Customer',
+      shippingEmail: null,
+      shippingPhone: selectedAddress.mobile || '',
+
+      // Billing = Shipping (common for COD/UPI)
+      billingCustomerName: selectedAddress.fullName || 'Customer',
+      billingLastName: 'Customer',
+      billingAddress: shippingAddressString,
+      billingAddress2: selectedAddress.flat || '',
+      billingCity: selectedAddress.city || '',
+      billingState: selectedAddress.state || '',
+      billingPincode: selectedAddress.pincode || '',
+      billingCountry: "India",
+      billingEmail: null,
+      billingPhone: selectedAddress.mobile || '',
+      shippingIsBilling: true,
+
+      // Customer Info
+      customerFirstName: (selectedAddress.fullName || 'Customer').split(' ')[0],
+      customerLastName: (selectedAddress.fullName || 'Customer').split(' ').slice(1).join(' ') || 'Customer',
+      customerPhone: selectedAddress.mobile || '',
+      customerEmail: null,
+
+      // Payment
+      paymentMethod: paymentMethod === 'qr' ? 'UPI' : 'COD',
+
+      // Amounts
+      totalAmount: Number(totalAmount.toFixed(2)),
+
+      // Status
+      orderStatus: "PLACED",
+      paymentStatus: paymentMethod === 'COD' ? 'PLACED' : 'PREPAID',
+
+      // === MOST IMPORTANT: Correct key name ===
+      orderItems: orderItems   // ← WAS "items" before → now "orderItems"!
+    };
+
+    console.log('[CheckoutApp] FINAL order request body:', JSON.stringify(orderRequest, null, 2));
+
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ORDER.CREATE}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderRequest)
+    });
+
+    const responseText = await response.text();
+    console.log('[CheckoutApp] Raw backend response:', responseText);
+
+    if (!response.ok) {
+      let errorMsg = `Order creation failed: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorMsg += ` - ${errorJson.message || JSON.stringify(errorJson)}`;
+      } catch (e) {
+        errorMsg += ` - ${responseText}`;
+      }
+      console.error('[CheckoutApp] Backend error:', errorMsg);
+      alert('Order failed: ' + (errorMsg.split('-')[1]?.trim() || 'Please try again'));
+      throw new Error(errorMsg);
+    }
+
+    const result = JSON.parse(responseText);
+    console.log('[CheckoutApp] Order created successfully:', result);
+
+    if (result.success && result.data && result.data.orderId) {
+      this.currentOrderId = result.data.orderId;
+    }
+
+    // Clear cart after success
+    if (this.userId) await this.clearBackendCart();
+    localStorage.removeItem(STORAGE.CART);
+    this.cart = [];
+    this.saveCart();
+
+    return true;
+
+  } catch (error) {
+    console.error('[CheckoutApp] Exception in createOrderInBackend:', error);
+    alert('Network or server error. Please try again.');
+    return false;
+  }
+}
 
 
     

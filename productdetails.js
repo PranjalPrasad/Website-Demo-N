@@ -7,8 +7,28 @@ const FALLBACK_IMAGE = './Images/product_details_fallback_img.jpg';
 
 // Global variables
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+
+function getCurrentUserId() {
+  try {
+    const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+    if (!userData) return null;
+
+    const user = JSON.parse(userData);
+    const id = user.userId || user.id || user.userID;
+
+    return id ? Number(id) : null;
+  } catch (error) {
+    console.error('Error reading currentUser:', error);
+    return null;
+  }
+  
+}
+console.log("getCurrentUserId function returns :", getCurrentUserId());
+
+
 let currentProduct = null;
-let currentUserId = 1;
+let currentUserId = getCurrentUserId();
 let selectedVariantIndex = 0;
 
 // ------------------- Utility Functions -------------------
@@ -85,14 +105,37 @@ function updateLocalCart(product, qty = 1) {
 
 // ------------------- Backend Cart & Wishlist -------------------
 async function getValidUserId() {
-    const testIds = [1, 100, 1000, 1001, 10000];
-    for (const testId of testIds) {
-        try {
-            const response = await fetch(`${CART_API_BASE}/get-cart-items?userId=${testId}`);
-            if (response.ok) return testId;
-        } catch (e) {}
+  try {
+    // First check sessionStorage (most common for login sessions)
+    let userData = sessionStorage.getItem('currentUser');
+    
+    // If not found, fall back to localStorage
+    if (!userData) {
+      userData = localStorage.getItem('currentUser');
     }
-    return 1;
+
+    if (!userData) {
+      console.log('[getValidUserId] No user data found in sessionStorage or localStorage (key: currentUser)');
+      return null;
+    }
+
+    const user = JSON.parse(userData);
+
+    // Extract userId safely
+    const userId = user.userId || user.id || user.userID;
+
+    if (!userId || isNaN(userId)) {
+      console.log('[getValidUserId] Invalid or missing userId in stored user data:', user);
+      return null;
+    }
+
+    console.log(`[getValidUserId] Valid user found: ${userId} (${user.firstName || 'User'})`);
+    return Number(userId); // → returns 14
+
+  } catch (error) {
+    console.error('[getValidUserId] Failed to parse user data:', error);
+    return null;
+  }
 }
 
 async function addToCartBackend(product, qty = 1) {
