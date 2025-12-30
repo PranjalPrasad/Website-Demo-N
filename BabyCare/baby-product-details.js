@@ -1,109 +1,456 @@
-// baby-product-details.js - COMPLETE UPDATED VERSION WITH BACKEND CART & WISHLIST
-let selectedSize = "S";
-let quantity = 1;
-let basePrice = 0;
-let product = null;
-let currentUserId = 1;
+// ==================== baby-product-details.js ====================
 
 const API_BASE_URL = 'http://localhost:8083/api/mb/products';
-const CART_API_BASE = "http://localhost:8083/api/cart";
-const WISHLIST_API_BASE = "http://localhost:8083/api/wishlist";
-const IMAGE_BASE = "http://localhost:8083";
+const API_BASE_IMG_URL = 'http://localhost:8083';
+const CART_API_BASE = 'http://localhost:8083/api/cart';
+const WISHLIST_API_BASE = 'http://localhost:8083/api/wishlist';
+const FALLBACK_IMAGE = 'https://via.placeholder.com/500x500/cccccc/ffffff?text=No+Image';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const productId = urlParams.get('id');
+// Global variables
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let currentUserId = null;
+let product = null;
+let quantity = 1;
+let selectedSize = "";
+let basePrice = 0;
 
-  currentUserId = await getValidUserId();
+function getCurrentUserId() {
+  try {
+    const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+    if (!userData) return null;
 
-  // Check if we have productId in URL
-  if (productId) {
-    await loadProductById(productId);
-  } else {
-    // Fallback to sessionStorage
-    const stored = sessionStorage.getItem('currentProduct');
-    if (stored) {
-      try {
-        product = JSON.parse(stored);
-        populateProductDetails();
-      } catch (e) {
-        console.error('Error parsing stored product:', e);
-        alert("Product data corrupted. Redirecting to products page.");
-        window.location.href = 'baby.html';
-        return;
-      }
-    } else {
-      alert("Product not found!");
-      window.location.href = 'baby.html';
-      return;
-    }
+    const user = JSON.parse(userData);
+    const id = user.userId || user.id || user.userID || user.id;
+
+    return id ? Number(id) : null;
+  } catch (error) {
+    console.error('Error reading currentUser:', error);
+    return null;
   }
-
-  // Initialize tab functionality
-  initializeSpecsTabs();
-
-  // Load wishlist state from backend
-  const isWishlisted = await isInWishlistBackend(product.id);
-  const wishlistBtn = document.getElementById('addToWishlist');
-  if (wishlistBtn) {
-    const icon = wishlistBtn.querySelector('i');
-    if (icon) {
-      icon.className = isWishlisted ? "fas fa-heart mr-2" : "far fa-heart mr-2";
-      wishlistBtn.innerHTML = isWishlisted 
-        ? '<i class="fas fa-heart mr-2"></i>Added to Wishlist' 
-        : '<i class="far fa-heart mr-2"></i>Add to Wishlist';
-      if (isWishlisted) wishlistBtn.classList.add('active');
-    }
-    // Sync localStorage
-    if (isWishlisted) updateLocalWishlistSync(product, true);
-  }
-
-  // Attach event listeners
-  document.getElementById('addToCart')?.addEventListener('click', addToCart);
-  document.getElementById('addToWishlist')?.addEventListener('click', toggleWishlist);
-
-  updateCartCount();
-  updateWishlistCount();
-});
+}
 
 async function getValidUserId() {
-  console.log("Getting valid user ID...");
   try {
-    const endpoints = [
-      'http://localhost:8083/api/users',
-      'http://localhost:8083/api/users/all',
-      'http://localhost:8083/api/users/list'
-    ];
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint);
-        if (response.ok) {
-          const users = await response.json();
-          if (users && users.length > 0) {
-            return users[0].id || users[0].userId || 1;
-          }
-        }
-      } catch (e) { console.log(`Endpoint ${endpoint} not available`); }
+    let userData = sessionStorage.getItem('currentUser');
+    if (!userData) {
+      userData = localStorage.getItem('currentUser');
     }
-  } catch (error) { console.log("Could not fetch users:", error); }
 
-  const testIds = [1, 100, 1000, 1001, 10000];
-  for (const testId of testIds) {
-    try {
-      const response = await fetch(`${CART_API_BASE}/get-cart-items?userId=${testId}`);
-      if (response.ok || response.status === 200) {
-        console.log(`User ID ${testId} is valid`);
-        return testId;
-      }
-    } catch (e) { }
+    if (!userData) {
+      console.log('[getValidUserId] No user data found');
+      return null;
+    }
+
+    const user = JSON.parse(userData);
+    const userId = user.userId || user.id || user.userID;
+
+    if (!userId || isNaN(userId)) {
+      console.log('[getValidUserId] Invalid userId:', user);
+      return null;
+    }
+
+    console.log(`[getValidUserId] Valid user: ${userId}`);
+    return Number(userId);
+
+  } catch (error) {
+    console.error('[getValidUserId] Parse error:', error);
+    return null;
   }
-  console.warn("Using default user ID 1");
-  return 1;
 }
+
+// ------------------- Utility Functions -------------------
+function showToast(message, type = "success") {
+  document.querySelectorAll('.custom-toast').forEach(t => t.remove());
+  const toast = document.createElement('div');
+  toast.className = `custom-toast fixed bottom-24 left-1/2 transform -translate-x-1/2 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function updateCartCount() {
+  const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  document.querySelectorAll('#desktop-cart-count, #mobile-cart-count, #cart-count, #cartItemsCount, .cart-count').forEach(el => {
+    if (el) {
+      el.textContent = total;
+      el.style.display = total > 0 ? 'inline-flex' : 'none';
+    }
+  });
+}
+
+function updateWishlistCount() {
+  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  document.querySelectorAll('#wishlistCount, .wishlist-count').forEach(el => {
+    if (el) {
+      el.textContent = wishlist.length;
+      el.classList.toggle("hidden", wishlist.length === 0);
+    }
+  });
+}
+
+function updateLocalCart(qty = 1) {
+ // Get price based on selected size index
+const selectedEl = document.querySelector('.size-option.selected');
+const index = selectedEl ? parseInt(selectedEl.getAttribute('data-index')) : 0;
+const currentPrice = product.prices[index] || product.price;
+
+  const cartItem = {
+    id: product.id,
+    name: product.title,
+    price: currentPrice,
+    image: product.mainImageUrl,
+    quantity: qty,
+    size: selectedSize || "",
+    type: "MBP",
+    mbpId: product.id,
+    productType: "BABY"
+  };
+
+  const existing = cart.find(item => item.id === cartItem.id && item.size === cartItem.size);
+  if (existing) {
+    existing.quantity += qty;
+  } else {
+    cart.push(cartItem);
+  }
+
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+}
+
+// ------------------- Backend Cart & Wishlist -------------------
+async function addToCartBackend(qty = 1) {
+  if (!currentUserId) return false;
+
+ // Get price based on selected size index
+const selectedEl = document.querySelector('.size-option.selected');
+const index = selectedEl ? parseInt(selectedEl.getAttribute('data-index')) : 0;
+const currentPrice = product.prices[index] || product.price;
+
+  try {
+    const payload = {
+      userId: currentUserId,
+      type: "MBP",
+      mbpId: product.id,
+      quantity: qty,
+      selectedSize: selectedSize || "",
+      productType: "BABY"
+    };
+
+    let response = await fetch(`${CART_API_BASE}/add-cart-items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      if (err.includes("User not found")) {
+        currentUserId = await getValidUserId();
+        if (!currentUserId) return false;
+        payload.userId = currentUserId;
+        response = await fetch(`${CART_API_BASE}/add-cart-items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        return response.ok;
+      }
+      throw new Error(err);
+    }
+    return true;
+  } catch (err) {
+    console.error("Backend cart error:", err);
+    return false;
+  }
+}
+
+async function addToWishlistBackend() {
+  if (!currentUserId) return false;
+  try {
+    const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUserId, productId: product.id, productType: "BABY" })
+    });
+    return response.ok;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
+async function removeFromWishlistBackend() {
+  if (!currentUserId) return false;
+  try {
+    const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: currentUserId, productId: product.id })
+    });
+    return response.ok;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+}
+
+async function isInWishlistBackend() {
+  if (!currentUserId) return false;
+  try {
+    const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${currentUserId}`);
+    if (!response.ok) return false;
+    const items = await response.json();
+    return items.some(item => item.productId == product.id);
+  } catch (err) {
+    return false;
+  }
+}
+
+function updateLocalWishlistSync(isAdded) {
+  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  if (isAdded) {
+    if (!wishlist.some(p => p.id === product.id)) {
+      wishlist.push({
+        id: product.id,
+        name: product.title,
+        price: product.price || 0,
+        originalPrice: product.originalPrice || null,
+        image: product.mainImageUrl
+      });
+    }
+  } else {
+    wishlist = wishlist.filter(p => p.id !== product.id);
+  }
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  updateWishlistCount();
+}
+
+// ------------------- Add to Cart & Wishlist Handlers -------------------
+async function addToCart() {
+  if (!product.inStock) {
+    showToast("This product is out of stock!", "error");
+    return;
+  }
+
+  const selectedEl = document.querySelector('.size-option.selected');
+  if (product.productSizes && product.productSizes.length > 0 && !selectedEl) {
+    showToast("Please select a size first!", "error");
+    return;
+  }
+
+  selectedSize = selectedEl ? selectedEl.getAttribute('data-size') : "";
+
+  const success = await addToCartBackend(quantity);
+
+  if (success) {
+    showToast(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart!`);
+  } else {
+    showToast(`Added locally (login to sync)`, "success");
+  }
+
+  updateLocalCart(quantity);
+
+  const btn = document.getElementById("addToCart");
+  btn.textContent = "Go to Bag";
+  btn.onclick = () => window.location.href = "../cart.html";
+}
+
+async function toggleWishlist() {
+  if (!product) return;
+
+  const btn = document.getElementById('addToWishlist');
+  const icon = btn.querySelector('i');
+  const isAdded = icon.classList.contains('fas');
+
+  const success = isAdded ? await removeFromWishlistBackend() : await addToWishlistBackend();
+
+  if (success || !currentUserId) {
+    icon.className = isAdded ? "far fa-heart mr-2" : "fas fa-heart mr-2";
+    btn.innerHTML = isAdded
+      ? '<i class="far fa-heart mr-2"></i>Add to Wishlist'
+      : '<i class="fas fa-heart mr-2"></i>Added to Wishlist';
+    btn.classList.toggle('active', !isAdded);
+    showToast(isAdded ? "Removed from Wishlist" : "Added to Wishlist");
+    updateLocalWishlistSync(!isAdded);
+  } else {
+    showToast("Failed to update wishlist", "error");
+  }
+}
+
+// ------------------- Pincode Delivery Checker -------------------
+function setupPincodeChecker() {
+  const pincodeInput = document.getElementById('pincodeInput');
+  const checkBtn = document.getElementById('checkPincodeBtn');
+  if (!pincodeInput || !checkBtn) return;
+
+  const resultDiv = document.getElementById('deliveryResult');
+  const successDiv = document.getElementById('deliverySuccess');
+  const errorDiv = document.getElementById('deliveryError');
+  const locationText = document.getElementById('deliveryLocation');
+  const deliveryTime = document.getElementById('deliveryTime');
+
+  const savedPincode = localStorage.getItem('lastValidPincode');
+  if (savedPincode) {
+    pincodeInput.value = savedPincode;
+    checkPincodeRealTime(savedPincode);
+  }
+
+  pincodeInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+  });
+
+  const checkPincode = async () => {
+    const pincode = pincodeInput.value.trim();
+    if (pincode.length !== 6) {
+      showToast('Enter a valid 6-digit pincode', 'error');
+      return;
+    }
+    checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    checkBtn.disabled = true;
+    await checkPincodeRealTime(pincode);
+    checkBtn.innerHTML = '<i class="fas fa-search-location"></i> Check';
+    checkBtn.disabled = false;
+  };
+
+  checkBtn.addEventListener('click', checkPincode);
+  pincodeInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkPincode();
+  });
+
+  const allowedLocations = {
+    'alagudewadi': ['415523'],
+    'bagewadi': ['415523'],
+    'barad': ['415523'],
+    'bhadali bk': ['415523'],
+    'bhadali kh': ['415523'],
+    'bhilkatti': ['415537'],
+    'bodkewadi': ['415523'],
+    'chaudharwadi': ['415523'],
+    'dalvadi': ['415523'],
+    'dhaval': ['415523'],
+    'dhavalewadi': ['415523', '415528'],
+    'dhuldev': ['415523'],
+    'dhumalwadi': ['415523'],
+    'dombalwadi': ['415523'],
+    'dudhebavi': ['415523'],
+    'fadatarwadi': ['415523'],
+    'farandwadi': ['415523'],
+    'ghadge mala': ['415523'],
+    'ghadgewadi': ['415537'],
+    'girvi': ['415523'],
+    'gunware': ['415523'],
+    'hingangaon': ['415523'],
+    'jadhavwadi': ['415523'],
+    'jinti': ['415523'],
+    'kalaj': ['415523'],
+    'kambleshwar': ['415523'],
+    'kashiwadi': ['415528'],
+    'khunte': ['415523'],
+    'kurvali kh': ['415523'],
+    'malvadi': ['415523'],
+    'mathachiwadi': ['415523'],
+    'mirgaon': ['415523'],
+    'mirdhe': ['415523'],
+    'mulikwadi': ['415537'],
+    'naik bombawadi': ['415523'],
+    'nandal': ['415523'],
+    'nimbhore': ['415523'],
+    'nimbalak': ['415523'],
+    'nirugudi': ['415523'],
+    'pimpalwadi': ['415522'],
+    'pimparad': ['415523'],
+    'rajale': ['415523'],
+    'sangavi': ['415523'],
+    'sarade': ['415523'],
+    'saskal': ['415523'],
+    'sastewadi': ['415523'],
+    'sathe': ['415523'],
+    'sherechiwadi': ['415523'],
+    'shereshindewadi': ['415523'],
+    'shindewadi': ['415523'],
+    'somanthali': ['415523'],
+    'songaon': ['415523'],
+    'sonwadi bk': ['415523'],
+    'sonwadi kh': ['415523'],
+    'survadi': ['415528'],
+    'tadavale': ['415523'],
+    'takalwade': ['415523'],
+    'taradgaon': ['415528'],
+    'tathavada': ['415523'],
+    'tavadi': ['415523'],
+    'thakurki': ['415523'],
+    'tirakwadi': ['415523'],
+    'upalave': ['415523'],
+    'vadale': ['415523'],
+    'vadgaon': ['415523'],
+    'vadjal': ['415523'],
+    'vajegaon': ['415523'],
+    'vidani': ['415523'],
+    'vinchurni': ['415523'],
+    'vitthalwadi': ['415528'],
+    'wakhari': ['415523'],
+    'wathar (nimbalkar)': ['415523']
+  };
+
+  const sataraMainPincode = '415001';
+
+  async function checkPincodeRealTime(pincode) {
+    resultDiv.classList.remove('hidden');
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await response.json();
+
+      if (!data || data[0]?.Status !== "Success" || !data[0].PostOffice || data[0].PostOffice.length === 0) {
+        showDeliveryError("Invalid pincode");
+        return;
+      }
+
+      const postOffice = data[0].PostOffice[0];
+      const villageName = postOffice.Name.toLowerCase().trim();
+
+      const allowedPincodes = allowedLocations[villageName];
+      if (!allowedPincodes || !allowedPincodes.includes(pincode)) {
+        showDeliveryError("Sorry, we currently deliver only to select areas around Phaltan, Satara.");
+        return;
+      }
+
+      successDiv.classList.remove('hidden');
+      errorDiv.classList.add('hidden');
+
+      locationText.textContent = `${postOffice.Name}, Phaltan, Satara`;
+
+      deliveryTime.textContent = pincode === sataraMainPincode
+        ? 'Delivery within 1 day'
+        : 'Delivery within 3-4 days';
+
+      localStorage.setItem('lastValidPincode', pincode);
+      localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Phaltan, Satara`);
+
+      showToast('Delivery available! Free Delivery', 'success');
+
+    } catch (err) {
+      console.error("Pincode check failed:", err);
+      showDeliveryError("Network error. Please try again.");
+    }
+  }
+
+  function showDeliveryError(message) {
+    successDiv.classList.add('hidden');
+    errorDiv.classList.remove('hidden');
+    errorDiv.querySelector('p.text-sm.text-gray-700').textContent = message;
+    localStorage.removeItem('lastValidPincode');
+    localStorage.removeItem('lastDeliveryArea');
+  }
+}
+
+// ------------------- Original Functions (Unchanged) -------------------
 
 async function loadProductById(id) {
   try {
-    // Show loading state
     document.getElementById('productTitle').textContent = 'Loading...';
     document.getElementById('productPrice').textContent = '₹0.00';
 
@@ -117,25 +464,35 @@ async function loadProductById(id) {
 
     const apiProduct = await response.json();
 
-    // Transform API response
-    product = {
-      id: apiProduct.id,
-      title: apiProduct.title || 'No Title',
-      price: getDisplayPrice(apiProduct.price),
-      originalPrice: getDisplayPrice(apiProduct.originalPrice) || getDisplayPrice(apiProduct.price) * 1.3,
-      discount: calculateDiscount(apiProduct.price, apiProduct.originalPrice) || apiProduct.discount || 0,
-      brand: apiProduct.brand || 'Unknown Brand',
-      category: apiProduct.category || '',
-      subCategory: apiProduct.subCategory || '',
-      mainImageUrl: apiProduct.mainImageUrl ? `http://localhost:8083${apiProduct.mainImageUrl}` : 'https://via.placeholder.com/500x500/cccccc/ffffff?text=No+Image',
-      subImageUrls: (apiProduct.subImageUrls || []).map(url => `http://localhost:8083${url}`),
-      description: Array.isArray(apiProduct.description) ? apiProduct.description : (apiProduct.description ? [apiProduct.description] : []),
-      inStock: apiProduct.inStock !== undefined ? apiProduct.inStock : true,
-      rating: apiProduct.rating || 4.0,
-      sizes: Array.isArray(apiProduct.sizes) ? apiProduct.sizes : (apiProduct.sizes ? [apiProduct.sizes] : []),
-      features: Array.isArray(apiProduct.features) ? apiProduct.features : (apiProduct.features ? [apiProduct.features] : []),
-      specifications: apiProduct.specifications || {}
-    };
+   product = {
+  id: apiProduct.id,
+  title: apiProduct.title || 'Title',
+  // Keep base price as first variant for display fallback
+  price: getDisplayPrice(apiProduct.price),
+  originalPrice: getDisplayPrice(apiProduct.originalPrice) || getDisplayPrice(apiProduct.price) * 1.3,
+  discount: calculateDiscount(apiProduct.price, apiProduct.originalPrice) || apiProduct.discount || 0,
+  brand: apiProduct.brand || 'NA',
+  category: apiProduct.category || '',
+  subCategory: apiProduct.subCategory || '',
+  mainImageUrl: apiProduct.mainImageUrl ? `http://localhost:8083${apiProduct.mainImageUrl}` : 'https://via.placeholder.com/500x500/cccccc/ffffff?text=No+Image',
+  subImageUrls: (apiProduct.subImageUrls || []).map(url => `http://localhost:8083${url}`),
+  description: Array.isArray(apiProduct.description) ? apiProduct.description : (apiProduct.description ? [apiProduct.description] : []),
+  inStock: apiProduct.inStock !== undefined ? apiProduct.inStock : true,
+  rating: apiProduct.rating || 4.0,
+
+  // === DYNAMIC SIZES & PRICES ===
+  sizes: Array.isArray(apiProduct.productSizes) 
+    ? apiProduct.productSizes 
+    : (apiProduct.productSizes ? [apiProduct.productSizes] : []),
+
+  prices: Array.isArray(apiProduct.price) ? apiProduct.price : [apiProduct.price || 0],
+  originalPrices: Array.isArray(apiProduct.originalPrice) 
+    ? apiProduct.originalPrice 
+    : (apiProduct.originalPrice ? [apiProduct.originalPrice] : []),
+
+  features: Array.isArray(apiProduct.features) ? apiProduct.features : (apiProduct.features ? [apiProduct.features] : []),
+  specifications: apiProduct.specifications || {}
+};
 
     populateProductDetails();
 
@@ -154,13 +511,11 @@ async function loadProductById(id) {
   }
 }
 
-// Helper function to safely get price for display
 function getDisplayPrice(priceArray) {
   if (!priceArray || priceArray.length === 0) return 0;
   return Array.isArray(priceArray) ? priceArray[0] : priceArray;
 }
 
-// Helper to calculate discount
 function calculateDiscount(priceArray, originalPriceArray) {
   if (!priceArray || !originalPriceArray) return 0;
 
@@ -175,22 +530,18 @@ function calculateDiscount(priceArray, originalPriceArray) {
 
 function populateProductDetails() {
   quantity = 1;
-  selectedSize = "S";
+  selectedSize = "";
   basePrice = product.price;
 
-  // Fill product info
-  document.getElementById('productTitle').textContent = product.title || 'Unknown Product';
+  document.getElementById('productTitle').textContent = product.title || 'Product Title';
   document.getElementById('productPrice').textContent = `₹${basePrice.toLocaleString('en-IN')}`;
-  document.getElementById('productBrand').textContent = product.brand || 'Unknown';
+  document.getElementById('productBrand').textContent = product.brand || 'NA';
   document.getElementById('productCategory').textContent = (product.category || '').toUpperCase();
 
-  // Set breadcrumb
   document.getElementById('breadcrumbCategory').textContent = product.category || 'Product Details';
 
-  // Load product rating
   loadProductRating();
 
-  // Stock status
   const stockStatus = document.getElementById('stockStatus');
   if (product.inStock) {
     stockStatus.className = 'text-sm font-semibold in-stock';
@@ -201,7 +552,6 @@ function populateProductDetails() {
     document.getElementById('addToCart').classList.add('opacity-50', 'cursor-not-allowed');
   }
 
-  // Discount
   if (product.discount > 0) {
     const original = product.originalPrice || Math.round(product.price / (1 - product.discount / 100));
     document.getElementById('originalPrice').textContent = `₹${original.toLocaleString('en-IN')}`;
@@ -210,7 +560,6 @@ function populateProductDetails() {
     document.getElementById('originalPrice').classList.remove('hidden');
   }
 
-  // Main image
   const mainImage = document.getElementById('mainImage');
   mainImage.innerHTML = `
     <img id="mainProductImage" src="${product.mainImageUrl}" alt="${product.title}"
@@ -218,37 +567,66 @@ function populateProductDetails() {
          onerror="this.src='https://via.placeholder.com/500x500/cccccc/ffffff?text=No+Image'">
   `;
 
-  // Load thumbnails
   loadThumbnails(product);
 
-  // Size selection
-  const sizeOptions = document.querySelector('.flex.flex-wrap.gap-3');
-  if (product.sizes && product.sizes.length > 0) {
-    sizeOptions.innerHTML = product.sizes.map((size, index) => `
-      <div class="size-option ${index === 0 ? 'selected' : ''}"
-           data-size="${size}"
-           data-price-multiplier="${1 + (index * 0.2)}">
-        ${size}
-      </div>
-    `).join('');
-  }
+    // === DYNAMIC SIZE RENDERING - FULLY REPLACED HARDCODED LOGIC ===
+ // === DYNAMIC SIZE SELECTION WITH REAL PRICES ===
+const sizeSection = document.getElementById('sizeSelectionSection');
+const sizeContainer = document.getElementById('sizeOptionsContainer');
 
+if (!sizeContainer) {
+  console.warn("Size container not found");
+} else if (product.sizes && product.sizes.length > 0) {
+  // Show size section
+  sizeSection.style.display = 'block';
+
+  sizeContainer.innerHTML = product.sizes.map((size, index) => `
+    <div class="size-option ${index === 0 ? 'selected' : ''}" data-index="${index}" data-size="${size}">
+      ${size}
+    </div>
+  `).join('');
+
+  // Click handler: update price based on selected variant
   document.querySelectorAll('.size-option').forEach(el => {
     el.onclick = () => {
       document.querySelectorAll('.size-option').forEach(x => x.classList.remove('selected'));
       el.classList.add('selected');
+
+      const index = parseInt(el.getAttribute('data-index'));
       selectedSize = el.getAttribute('data-size');
-      const multiplier = parseFloat(el.getAttribute('data-price-multiplier'));
-      const newPrice = Math.round(basePrice * multiplier);
+
+      // Update displayed price
+      const newPrice = product.prices[index] || product.price;
+      const newOriginalPrice = product.originalPrices[index] || product.originalPrice;
+
       document.getElementById('productPrice').textContent = `₹${newPrice.toLocaleString('en-IN')}`;
-      if (product.discount > 0) {
-        const original = product.originalPrice || Math.round(newPrice / (1 - product.discount / 100));
-        document.getElementById('originalPrice').textContent = `₹${original.toLocaleString('en-IN')}`;
+
+      if (newOriginalPrice > newPrice) {
+        document.getElementById('originalPrice').textContent = `₹${newOriginalPrice.toLocaleString('en-IN')}`;
+        document.getElementById('originalPrice').classList.remove('hidden');
+
+        const variantDiscount = Math.round(((newOriginalPrice - newPrice) / newOriginalPrice) * 100);
+        document.getElementById('discountBadge').textContent = `${variantDiscount}% OFF`;
+        document.getElementById('discountBadge').classList.remove('hidden');
+      } else {
+        document.getElementById('originalPrice').classList.add('hidden');
+        document.getElementById('discountBadge').classList.add('hidden');
       }
     };
   });
 
-  // Quantity
+  // Set initial selection (first size)
+  selectedSize = product.sizes[0];
+  // Trigger price update for first size
+  document.querySelector('.size-option')?.click();
+
+} else {
+  // No sizes available → hide section
+  sizeSection.style.display = 'none';
+  selectedSize = "";
+}
+  // === END DYNAMIC SIZE RENDERING ===
+
   document.getElementById('decreaseQty').onclick = () => {
     if (quantity > 1) {
       quantity--;
@@ -260,189 +638,12 @@ function populateProductDetails() {
     document.getElementById('quantity').textContent = quantity;
   };
 
-  // Load Product Details Tab content
   loadProductDetailsTab();
-
-  // Load Specifications Tab content
   loadSpecificationsTab();
-
-  // Load related products
   loadRelatedProducts();
 
   updateCartCount();
 }
-
-// ====================== BACKEND CART & WISHLIST (MATCHING REF CODE) ======================
-
-async function addToCart() {
-  const selectedEl = document.querySelector('.size-option.selected');
-  if (!selectedEl) {
-    showToast("Please select a size first!");
-    return;
-  }
-  if (!product.inStock) {
-    showToast("This product is out of stock!");
-    return;
-  }
-
-  selectedSize = selectedEl.getAttribute('data-size');
-  const multiplier = parseFloat(selectedEl.getAttribute('data-price-multiplier'));
-  const currentPrice = Math.round(basePrice * multiplier);
-
-  try {
-    const cartData = {
-      userId: currentUserId,
-      type: "MBP",
-      mbpId: product.id,
-      quantity: quantity,
-      selectedSize: selectedSize,
-      productType: "MOTHER"
-    };
-
-    let response = await fetch(`${CART_API_BASE}/add-cart-items`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cartData)
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      if (text.includes("User not found")) {
-        currentUserId = await getValidUserId();
-        cartData.userId = currentUserId;
-        response = await fetch(`${CART_API_BASE}/add-cart-items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cartData)
-        });
-        if (!response.ok) throw new Error("Retry failed");
-      } else throw new Error("Add to cart failed");
-    }
-
-    updateLocalCart(quantity);
-    showToast(`Added ${quantity} × Size ${selectedSize} to cart`);
-    const btn = document.getElementById("addToCart");
-    btn.textContent = "Go to Bag";
-    btn.onclick = () => window.location.href = "../cart.html";
-  } catch (error) {
-    console.error(error);
-    updateLocalCart(quantity);
-    showToast(`Added to cart (offline)`);
-  }
-}
-
-function updateLocalCart(qty) {
-  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const selectedEl = document.querySelector('.size-option.selected');
-  const multiplier = selectedEl ? parseFloat(selectedEl.getAttribute('data-price-multiplier')) : 1;
-  const currentPrice = Math.round(basePrice * multiplier);
-
-  const cartItem = {
-    id: product.id,
-    name: product.title,
-    size: selectedSize,
-    price: currentPrice,
-    image: product.mainImageUrl,
-    quantity: qty,
-    type: "MBP",
-    mbpId: product.id,
-    productType: "MOTHER"
-  };
-
-  const existing = cart.find(item => item.id === cartItem.id && item.size === cartItem.size);
-  if (existing) existing.quantity += qty;
-  else cart.push(cartItem);
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCount();
-}
-
-async function addToWishlistBackend(product) {
-  try {
-    const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: currentUserId,
-        productId: product.id,
-        productType: "MOTHER"
-      })
-    });
-    return response.ok;
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
-}
-
-async function removeFromWishlistBackend(product) {
-  try {
-    const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: currentUserId,
-        productId: product.id
-      })
-    });
-    return response.ok;
-  } catch (err) {
-    console.error(err);
-    return false;
-  }
-}
-
-async function isInWishlistBackend(productId) {
-  try {
-    const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${currentUserId}`);
-    if (!response.ok) return false;
-    const items = await response.json();
-    return items.some(item => item.productId == productId && item.productType === "MOTHER");
-  } catch (err) {
-    return false;
-  }
-}
-
-function updateLocalWishlistSync(product, isAdded) {
-  let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-  if (isAdded) {
-    if (!wishlist.some(p => p.id === product.id)) {
-      wishlist.push({
-        id: product.id,
-        name: product.title,
-        price: product.price || 0,
-        originalPrice: product.originalPrice || null,
-        image: product.mainImageUrl
-      });
-    }
-  } else {
-    wishlist = wishlist.filter(p => p.id !== product.id);
-  }
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  updateWishlistCount();
-}
-
-async function toggleWishlist() {
-  if (!product) return;
-
-  const btn = document.getElementById('addToWishlist');
-  const icon = btn.querySelector('i');
-  const isFilled = icon.classList.contains("fas");
-
-  const success = isFilled ? await removeFromWishlistBackend(product) : await addToWishlistBackend(product);
-
-  if (success) {
-    icon.className = isFilled ? "far fa-heart mr-2" : "fas fa-heart mr-2";
-    btn.innerHTML = isFilled 
-      ? '<i class="far fa-heart mr-2"></i>Add to Wishlist' 
-      : '<i class="fas fa-heart mr-2"></i>Added to Wishlist';
-    btn.classList.toggle('active', !isFilled);
-    showToast(isFilled ? "Removed from Wishlist" : "Added to Wishlist");
-    updateLocalWishlistSync(product, !isFilled);
-  }
-}
-
-// ====================== ORIGINAL FUNCTIONS (UNCHANGED) ======================
 
 function loadProductRating() {
   const ratingContainer = document.querySelector('.star-rating');
@@ -859,42 +1060,6 @@ function openRelatedProduct(id) {
   window.location.href = `baby-product-details.html?id=${id}`;
 }
 
-// UPDATE CART COUNT
-function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  const total = cart.reduce((sum, i) => sum + (i.quantity || 1), 0);
-  document.querySelectorAll('#desktop-cart-count, #mobile-cart-count, #cart-count, #cartItemsCount, .cart-count').forEach(el => {
-    if (el) {
-      el.textContent = total;
-      el.style.display = total > 0 ? 'inline-flex' : 'none';
-    }
-  });
-}
-
-function updateWishlistCount() {
-  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-  document.querySelectorAll('#wishlistCount, .wishlist-count').forEach(el => {
-    if (el) {
-      el.textContent = wishlist.length;
-      el.classList.toggle("hidden", wishlist.length === 0);
-    }
-  });
-}
-
-// Toast notification function
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.className = 'custom-toast fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-// Restore scroll position if coming from related product click
 window.addEventListener('load', () => {
   const scrollPosition = sessionStorage.getItem('scrollPosition');
   if (scrollPosition) {
@@ -903,21 +1068,69 @@ window.addEventListener('load', () => {
   }
 });
 
-// Add toast styles if not present
-if (!document.querySelector('#toast-styles')) {
-  const style = document.createElement('style');
-  style.id = 'toast-styles';
-  style.textContent = `
-    @keyframes slideInUp {
-      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+// ------------------- DOM Loaded -------------------
+document.addEventListener('DOMContentLoaded', async () => {
+  currentUserId = await getValidUserId();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+
+  if (productId) {
+    await loadProductById(productId);
+  } else {
+    const stored = sessionStorage.getItem('currentProduct');
+    if (stored) {
+      try {
+        product = JSON.parse(stored);
+        populateProductDetails();
+      } catch (e) {
+        alert("Product data corrupted. Redirecting to products page.");
+        window.location.href = 'baby.html';
+      }
+    } else {
+      alert("Product not found!");
+      window.location.href = 'baby.html';
     }
-    @keyframes slideOutDown {
-      from { transform: translateX(-50%) translateY(0); opacity: 1; }
-      to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  }
+
+  initializeSpecsTabs();
+  setupPincodeChecker();
+
+  if (product) {
+    const isWishlisted = await isInWishlistBackend();
+    const wishlistBtn = document.getElementById('addToWishlist');
+    if (wishlistBtn) {
+      const icon = wishlistBtn.querySelector('i');
+      icon.className = isWishlisted ? "fas fa-heart mr-2" : "far fa-heart mr-2";
+      wishlistBtn.innerHTML = isWishlisted
+        ? '<i class="fas fa-heart mr-2"></i>Added to Wishlist'
+        : '<i class="far fa-heart mr-2"></i>Add to Wishlist';
+      if (isWishlisted) wishlistBtn.classList.add('active');
+      updateLocalWishlistSync(isWishlisted);
     }
-    .custom-toast { animation: slideInUp 0.3s ease-out; }
-    .custom-toast.hiding { animation: slideOutDown 0.3s ease-in; }
-  `;
-  document.head.appendChild(style);
-}
+  }
+
+  document.getElementById('addToCart')?.addEventListener('click', addToCart);
+  document.getElementById('addToWishlist')?.addEventListener('click', toggleWishlist);
+
+  updateCartCount();
+  updateWishlistCount();
+
+  if (!document.querySelector('#toast-styles')) {
+    const style = document.createElement('style');
+    style.id = 'toast-styles';
+    style.textContent = `
+      @keyframes slideInUp {
+        from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+      }
+      @keyframes slideOutDown {
+        from { transform: translateX(-50%) translateY(0); opacity: 1; }
+        to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      }
+      .custom-toast { animation: slideInUp 0.3s ease-out; }
+      .custom-toast.hiding { animation: slideOutDown 0.3s ease-in; }
+    `;
+    document.head.appendChild(style);
+  }
+});

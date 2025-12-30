@@ -1,574 +1,673 @@
-// =============== HEALTH MONITORING DEVICES PRODUCTS ===============
-const fakeProducts = [
-  { id: 1, name: "Digital BP Monitor", brand: "Omron", price: 2200, originalPrice: 3000, discount: 27, category: "bp-monitor", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Fully automatic digital blood pressure monitor with intelligent inflation", quantity: 15, rating: 4.6 },
-  { id: 2, name: "Glucometer with Strips", brand: "Accu-Chek", price: 1500, originalPrice: 2200, discount: 32, category: "glucometer", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&h=400&fit=crop", prescription: false, description: "Blood glucose monitor with 50 test strips and lancets", quantity: 25, rating: 4.5 },
-  { id: 3, name: "Infrared Thermometer", brand: "Dr. Morepen", price: 950, originalPrice: 1400, discount: 32, category: "thermometer", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=400&fit=crop", prescription: false, description: "Contactless infrared forehead thermometer with instant reading", quantity: 0, rating: 4.7 },
-  { id: 4, name: "Finger Tip Pulse Oximeter", brand: "Rossmax", price: 1200, originalPrice: 1800, discount: 33, category: "oximeter", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Portable pulse oximeter for measuring oxygen saturation and pulse rate", quantity: 18, rating: 4.4 },
-  { id: 5, name: "Wrist BP Monitor", brand: "Omron", price: 2800, originalPrice: 3800, discount: 26, category: "bp-monitor", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Compact wrist type blood pressure monitor with irregular heartbeat detector", quantity: 12, rating: 4.3 },
-  { id: 6, name: "Digital Thermometer", brand: "BPL", price: 350, originalPrice: 550, discount: 36, category: "thermometer", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=400&fit=crop", prescription: false, description: "Fast reading digital oral/underarm thermometer with fever alarm", quantity: 0, rating: 4.2 },
-  { id: 7, name: "Blood Glucose Test Strips", brand: "Accu-Chek", price: 850, originalPrice: 1200, discount: 29, category: "glucometer", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&h=400&fit=crop", prescription: false, description: "Pack of 50 test strips for accurate blood glucose monitoring", quantity: 30, rating: 4.6 },
-  { id: 8, name: "Professional Pulse Oximeter", brand: "Dr. Morepen", price: 1800, originalPrice: 2500, discount: 28, category: "oximeter", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Professional grade pulse oximeter with OLED display and pleth graph", quantity: 8, rating: 4.8 },
-  { id: 9, name: "Upper Arm BP Monitor", brand: "Rossmax", price: 2600, originalPrice: 3500, discount: 26, category: "bp-monitor", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Upper arm blood pressure monitor with large display and memory function", quantity: 10, rating: 4.5 },
-  { id: 10, name: "Ear Thermometer", brand: "Omron", price: 2200, originalPrice: 3200, discount: 31, category: "thermometer", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=400&fit=crop", prescription: false, description: "Infrared ear thermometer with 20 memory recall and fever indicator", quantity: 6, rating: 4.7 },
-  { id: 11, name: "Glucometer Device", brand: "Dr. Morepen", price: 650, originalPrice: 950, discount: 32, category: "glucometer", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&h=400&fit=crop", prescription: false, description: "Compact glucometer device with 10 second reading time", quantity: 0, rating: 4.3 },
-  { id: 12, name: "Pediatric Pulse Oximeter", brand: "BPL", price: 1400, originalPrice: 2000, discount: 30, category: "oximeter", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Child-friendly pulse oximeter with soft silicone finger clip", quantity: 15, rating: 4.4 },
-  { id: 13, name: "BP Monitor with Bluetooth", brand: "Omron", price: 4200, originalPrice: 5800, discount: 28, category: "bp-monitor", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Smart blood pressure monitor with Bluetooth connectivity and app sync", quantity: 7, rating: 4.8 },
-  { id: 14, name: "Basal Thermometer", brand: "Rossmax", price: 450, originalPrice: 700, discount: 36, category: "thermometer", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=400&fit=crop", prescription: false, description: "High precision basal thermometer for fertility tracking", quantity: 20, rating: 4.2 },
-  { id: 15, name: "Glucometer Combo Pack", brand: "Accu-Chek", price: 2800, originalPrice: 4000, discount: 30, category: "glucometer", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&h=400&fit=crop", prescription: false, description: "Complete kit with glucometer, 100 strips, lancets and control solution", quantity: 5, rating: 4.7 },
-  { id: 16, name: "Hospital Grade Oximeter", brand: "Dr. Morepen", price: 3200, originalPrice: 4500, discount: 29, category: "oximeter", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Medical grade pulse oximeter with adjustable brightness and alarm", quantity: 12, rating: 4.9 },
-  { id: 17, name: "Portable BP Monitor", brand: "BPL", price: 1900, originalPrice: 2800, discount: 32, category: "bp-monitor", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Compact portable blood pressure monitor for travel", quantity: 25, rating: 4.3 },
-  { id: 18, name: "Smart Thermometer", brand: "Omron", price: 2800, originalPrice: 4000, discount: 30, category: "thermometer", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&h=400&fit=crop", prescription: false, description: "Bluetooth enabled smart thermometer with mobile app connectivity", quantity: 9, rating: 4.6 },
-  { id: 19, name: "Blood Glucose Lancets", brand: "Accu-Chek", price: 280, originalPrice: 450, discount: 38, category: "glucometer", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&h=400&fit=crop", prescription: false, description: "Box of 200 lancets for pain-free blood sampling", quantity: 40, rating: 4.4 },
-  { id: 20, name: "Pocket Pulse Oximeter", brand: "Rossmax", price: 850, originalPrice: 1300, discount: 35, category: "oximeter", image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop", prescription: false, description: "Ultra compact pocket-sized pulse oximeter with carrying case", quantity: 0, rating: 4.5 }
-];
-
-let products = [...fakeProducts];
-let filteredProducts = [...fakeProducts];
-let productGrid, sortSelect, showMoreBtn;
-
-let currentFilters = {
-  category: 'all',
-  brand: 'all',
-  discount: 'all',
-  minPrice: 0,
-  maxPrice: 10000
+// monitor.js - Complete Health Monitoring Devices with PROPER Backend Connectivity + Backend Wishlist Sync
+// =============== BACKEND CONFIGURATION ===============
+const MONITOR_API_CONFIG = {
+    BASE_URL: 'http://localhost:8083/api/products', // ← Correct port from your working Mobility page
+    BASE_URL_IMG: 'http://localhost:8083'
 };
 
+function getCurrentUserId() {
+    try {
+        const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+        if (!userData) return null;
+        const user = JSON.parse(userData);
+        const id = user.userId || user.id || user.userID;
+        return id ? Number(id) : null;
+    } catch (error) {
+        console.error('Error reading currentUser:', error);
+        return null;
+    }
+}
+
+console.log("====getCurrentUserId function returns :", getCurrentUserId());
+
+const WISHLIST_API_BASE = "http://localhost:8083/api/wishlist";
+const CURRENT_USER_ID = getCurrentUserId(); // Update if you fetch user dynamically
+let wishlist = [];
+
+// =============== WISHLIST BACKEND SYNC ===============
+async function addToWishlistBackend(productId) {
+    try {
+        const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: CURRENT_USER_ID,
+                productId: productId,
+                productType: "MEDICINE" // Adjust if your backend expects different type for monitoring devices
+            })
+        });
+        if (response.ok) {
+            console.log("✅ Backend: Added to wishlist");
+            return true;
+        }
+    } catch (err) {
+        console.error("❌ Error adding to wishlist backend:", err);
+    }
+    return false;
+}
+
+async function removeFromWishlistBackend(productId) {
+    try {
+        const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: CURRENT_USER_ID,
+                productId: productId,
+                productType: "MEDICINE" // Adjust if needed
+            })
+        });
+        if (response.ok) {
+            console.log("✅ Backend: Removed from wishlist");
+            return true;
+        }
+    } catch (err) {
+        console.error("❌ Error removing from wishlist backend:", err);
+    }
+    return false;
+}
+
+async function loadWishlistFromBackend() {
+    if (!CURRENT_USER_ID) {
+        console.log("No user logged in, skipping wishlist load");
+        return;
+    }
+    try {
+        const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${CURRENT_USER_ID}`);
+        if (response.ok) {
+            const backendItems = await response.json();
+            console.log("✅ Loaded wishlist from backend:", backendItems.length, "items");
+            wishlist = backendItems.map(item => ({
+                productId: item.productId || item.id
+            }));
+            updateHeaderWishlistCount();
+            renderInitialProducts(); // Refresh heart icons
+        }
+    } catch (err) {
+        console.error("❌ Failed to load wishlist from backend:", err);
+    }
+}
+
+function updateHeaderWishlistCount() {
+    const el = document.getElementById('wishlistCount');
+    if (el) {
+        el.textContent = wishlist.length;
+        el.classList.toggle('hidden', wishlist.length === 0);
+    }
+}
+
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full z-50 shadow-lg";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+// =============== UTILITY FUNCTIONS ===============
+async function fetchMonitoringProducts() {
+    try {
+        // Using the same reliable endpoint as Mobility Aids
+        const url = `${MONITOR_API_CONFIG.BASE_URL}/get-by-category/${encodeURIComponent('Monitoring Devices')}`;
+        console.log('Fetching monitoring products from:', url);
+       
+        const response = await fetch(url);
+       
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+       
+        const products = await response.json();
+        console.log('Received monitoring products:', products.length);
+        return products;
+       
+    } catch (error) {
+        console.error('Error fetching monitoring products:', error);
+        return [];
+    }
+}
+
+async function fetchProductDetails(productId) {
+    try {
+        const response = await fetch(`${MONITOR_API_CONFIG.BASE_URL}/${productId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching product details:', error);
+        return null;
+    }
+}
+
+// =============== HEALTH MONITORING DEVICES PRODUCTS ===============
+let products = [];
+let productGrid, sortSelect, showMoreBtn;
+let currentFilters = {
+    category: 'all',
+    brand: 'all',
+    discount: 'all',
+    minPrice: 0,
+    maxPrice: 10000
+};
 let visibleProductsCount = 8;
 let allFilteredProducts = [];
 
 // ======================================================
-document.addEventListener('DOMContentLoaded', () => {
-  productGrid = document.getElementById('productGrid');
-  sortSelect = document.getElementById('sortSelect');
-  showMoreBtn = document.getElementById('showMoreBtn');
+document.addEventListener('DOMContentLoaded', async () => {
+    productGrid = document.getElementById('productGrid');
+    sortSelect = document.getElementById('sortSelect');
+    showMoreBtn = document.getElementById('showMoreBtn');
+    // Show loading state
+    if (productGrid) {
+        productGrid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 text-xl">Loading products...</div>';
+    }
+    // Fetch products from backend
+    products = await fetchMonitoringProducts();
+   
+    // Initialize with all products
+    allFilteredProducts = [...products];
+    applySorting();
+    renderInitialProducts();
+    updateResultsCount();
+   
+    initSlider();
+    initSorting();
+    initMobileSheets();
+    initFilters();
+    initShowMore();
+    sessionStorage.setItem('currentPageProducts', JSON.stringify(products));
 
-  // Initialize with all products
-  allFilteredProducts = [...products];
-  applySorting();
-  renderInitialProducts();
-  updateResultsCount();
-  
-  initSlider();
-  initSorting();
-  initMobileSheets();
-  initFilters();
-  initShowMore();
+    // Load wishlist from backend first
+    await loadWishlistFromBackend();
 
-  sessionStorage.setItem('currentPageProducts', JSON.stringify(fakeProducts));
-
-  // ONE single delegated listener for the whole grid – solves the duplicate-heart bug
-  productGrid.addEventListener('click', (e) => {
-    const btn = e.target.closest('.wishlist-btn');
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const productId = Number(btn.dataset.id);
-    toggleWishlist(productId, btn);
-  });
+    // ONE single delegated listener for the whole grid
+    productGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('.wishlist-btn');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const productId = Number(btn.dataset.id);
+        toggleWishlist(productId, btn);
+    });
 });
 
 // =============== CARD CREATION ===============
 function createCard(p) {
-  const div = document.createElement('div');
-  
-  // Check if product is out of stock
-  const isOutOfStock = p.quantity <= 0;
-  const stockStatus = isOutOfStock ? 'Out of Stock' : 'In Stock';
-  const stockClass = isOutOfStock ? 'out-of-stock' : 'in-stock';
-  const cardClass = isOutOfStock ? 'out-of-stock-card' : '';
-  
-  // Calculate accurate discount if not provided
-  let discount = p.discount;
-  if (!discount && p.originalPrice && p.price) {
-    discount = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-  }
-  
-  // Calculate price if only originalPrice and discount are provided
-  let displayPrice = p.price;
-  let displayOriginalPrice = p.originalPrice;
-  let displayDiscount = discount;
-  
-  if (!p.price && p.originalPrice && discount) {
-    displayPrice = Math.round(p.originalPrice * (1 - discount/100));
-    displayOriginalPrice = p.originalPrice;
-    displayDiscount = discount;
-  } else if (!p.originalPrice && p.price && discount) {
-    displayPrice = p.price;
-    displayOriginalPrice = Math.round(p.price / (1 - discount/100));
-    displayDiscount = discount;
-  }
-  
-  const priceLine = displayOriginalPrice
-    ? `₹${displayPrice} <s class="text-gray-400 text-sm">₹${displayOriginalPrice}</s> <span class="text-green-600 text-sm font-bold">${displayDiscount}% off</span>`
-    : `₹${displayPrice}`;
-
-  // check current wishlist state
-  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-  const isWishlisted = wishlist.some(item => item.id === p.id);
-
-  div.className = `bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative ${cardClass}`;
-  
-  div.innerHTML = `
-    <div class="relative">
-      <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover">
-      
-      <!-- Stock Status Badge -->
-      <div class="stock-badge ${stockClass}">${stockStatus}</div>
-      
-      <!-- Wishlist button – data-id is the only thing we need -->
-      <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${p.id}">
-        <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i>
-      </button>
-    </div>
-    <div class="p-2">
-      <h3 class="font-semibold text-sm">${p.name}</h3>
-      <p class="text-xs text-gray-500 mt-1">${p.brand}</p>
-      <div class="mt-2 font-bold text-lg text-green-600">${priceLine}</div>
-      <button onclick="${isOutOfStock ? 'void(0)' : `navigateToProductDetails(${p.id})`}" 
-              class="mt-4 w-full ${isOutOfStock ? 'out-of-stock-btn bg-gray-400' : 'bg-[#10b981] hover:bg-[#0da271]'} text-white py-2 rounded-lg font-bold transition"
-              ${isOutOfStock ? 'disabled' : ''}>
-        ${isOutOfStock ? 'Out of Stock' : 'View Details'}
-      </button>
-    </div>
-  `;
-  return div;
+    const div = document.createElement('div');
+   
+    const isOutOfStock = p.productQuantity <= 0 || p.productStock === "Out of Stock" || p.productStock === "Out-of-Stock";
+    const stockStatus = isOutOfStock ? 'Out of Stock' : 'In Stock';
+    const stockClass = isOutOfStock ? 'out-of-stock' : 'in-stock';
+    const cardClass = isOutOfStock ? 'out-of-stock-card' : '';
+   
+    let discount = 0;
+    let priceLine = '';
+   
+    if (p.productOldPrice && p.productOldPrice.length > 0 && p.productPrice && p.productPrice.length > 0) {
+        const currentPrice = p.productPrice[0];
+        const oldPrice = p.productOldPrice[0];
+        discount = Math.round(((oldPrice - currentPrice) / oldPrice) * 100);
+        priceLine = `₹${currentPrice} <s class="text-gray-400 text-sm">₹${oldPrice}</s> <span class="text-green-600 text-sm font-bold">${discount}% off</span>`;
+    } else if (p.productPrice && p.productPrice.length > 0) {
+        priceLine = `₹${p.productPrice[0]}`;
+    } else {
+        priceLine = 'Price not available';
+    }
+   
+    const isWishlisted = wishlist.some(item => item.productId === p.productId);
+   
+    // CORRECT image URL
+    const fullImageUrl = p.productMainImage
+        ? `${MONITOR_API_CONFIG.BASE_URL_IMG}${p.productMainImage}`
+        : 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop'; // fallback health image
+    div.className = `bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer relative ${cardClass}`;
+   
+    div.innerHTML = `
+        <div class="relative">
+            <img src="${fullImageUrl}" alt="${p.productName}" class="w-full h-48 object-cover"
+                 onerror="this.src='https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop'">
+           
+            <div class="stock-badge ${stockClass}">${stockStatus}</div>
+           
+            ${discount > 0 ? `<div class="absolute top-8 right-12 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">${discount}% OFF</div>` : ''}
+           
+            ${p.prescriptionRequired ? `<div class="absolute top-24 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">Rx Required</div>` : ''}
+           
+            <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${p.productId}">
+                <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <h3 class="font-semibold text-lg">${p.productName}</h3>
+            <p class="text-sm text-gray-500 mt-1">${p.brandName || 'Unknown Brand'}</p>
+           
+            ${p.productDynamicFields?.strength ? `<p class="text-xs text-gray-600 mt-1">Strength: ${p.productDynamicFields.strength}</p>` : ''}
+            ${p.productDynamicFields?.form ? `<p class="text-xs text-gray-600">Form: ${p.productDynamicFields.form}</p>` : ''}
+            ${p.rating ? `<div class="flex items-center mt-1">
+                <span class="text-yellow-400 text-sm">★</span>
+                <span class="text-sm text-gray-600 ml-1">${p.rating}</span>
+            </div>` : ''}
+           
+            <div class="mt-3 font-bold text-xl text-green-600">${priceLine}</div>
+           
+            ${p.productSizes && p.productSizes.length > 0 ? `
+                <div class="mt-2">
+                    <select class="w-full border rounded-lg p-1 text-sm">
+                        ${p.productSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                    </select>
+                </div>
+            ` : ''}
+           
+            <button onclick="${isOutOfStock ? 'void(0)' : `navigateToProductDetails(${p.productId})`}"
+                    class="mt-4 w-full ${isOutOfStock ? 'out-of-stock-btn bg-gray-400' : 'bg-[#10b981] hover:bg-[#0da271]'} text-white py-2 rounded-lg font-bold transition"
+                    ${isOutOfStock ? 'disabled' : ''}>
+                ${isOutOfStock ? 'Out of Stock' : 'View Details'}
+            </button>
+        </div>
+    `;
+    return div;
 }
 
-// =============== RENDER INITIAL PRODUCTS (8 products) ===============
+// =============== RENDER INITIAL PRODUCTS ===============
 function renderInitialProducts() {
-  if (!productGrid) return;
-  
-  productGrid.innerHTML = ''; // clear
-  
-  if (allFilteredProducts.length === 0) {
-    productGrid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 text-xl">No products found</div>';
-    if (showMoreBtn) showMoreBtn.classList.add('hidden');
-    return;
-  }
-  
-  // Show only first 8 products
-  const productsToShow = allFilteredProducts.slice(0, visibleProductsCount);
-  
-  productsToShow.forEach(p => productGrid.appendChild(createCard(p)));
-  
-  // Show or hide "Show More" button
-  if (showMoreBtn) {
-    if (allFilteredProducts.length > visibleProductsCount) {
-      showMoreBtn.classList.remove('hidden');
-    } else {
-      showMoreBtn.classList.add('hidden');
+    if (!productGrid) return;
+   
+    productGrid.innerHTML = '';
+   
+    if (allFilteredProducts.length === 0) {
+        productGrid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 text-xl">No products found</div>';
+        if (showMoreBtn) showMoreBtn.classList.add('hidden');
+        return;
     }
-  }
+   
+    const productsToShow = allFilteredProducts.slice(0, visibleProductsCount);
+   
+    productsToShow.forEach(p => productGrid.appendChild(createCard(p)));
+   
+    if (showMoreBtn) {
+        if (allFilteredProducts.length > visibleProductsCount) {
+            showMoreBtn.classList.remove('hidden');
+        } else {
+            showMoreBtn.classList.add('hidden');
+        }
+    }
 }
 
 // =============== SHOW MORE FUNCTIONALITY ===============
 function initShowMore() {
-  if (!showMoreBtn) return;
-  
-  showMoreBtn.addEventListener('click', () => {
-    // Increase visible products count by 8
-    visibleProductsCount += 8;
-    
-    // Clear and re-render with new count
-    renderInitialProducts();
-    
-    // Hide button if all products are shown
-    if (visibleProductsCount >= allFilteredProducts.length && showMoreBtn) {
-      showMoreBtn.classList.add('hidden');
-    }
-    
-    // Update results count
-    updateResultsCount();
-  });
+    if (!showMoreBtn) return;
+   
+    showMoreBtn.addEventListener('click', () => {
+        visibleProductsCount += 8;
+        renderInitialProducts();
+       
+        if (visibleProductsCount >= allFilteredProducts.length && showMoreBtn) {
+            showMoreBtn.classList.add('hidden');
+        }
+       
+        updateResultsCount();
+    });
 }
 
-// =============== WISHLIST TOGGLE ===============
-function toggleWishlist(productId, buttonElement) {
-  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-  const product = products.find(p => p.id === productId);
-
-  const index = wishlist.findIndex(item => item.id === productId);
-
-  if (index === -1) {
-    // add
-    wishlist.push(product);
-    buttonElement.classList.add('active');
-    buttonElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
-  } else {
-    // remove
-    wishlist.splice(index, 1);
-    buttonElement.classList.remove('active');
-    buttonElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
-  }
-
-  localStorage.setItem('wishlist', JSON.stringify(wishlist));
-
-  // let header badge know that wishlist changed
-  window.dispatchEvent(new CustomEvent('wishlistUpdated'));
+// =============== WISHLIST TOGGLE (NOW SAME AS REF CODE) ===============
+async function toggleWishlist(productId, buttonElement) {
+    const index = wishlist.findIndex(item => item.productId === productId);
+    if (index === -1) {
+        // Add
+        const success = await addToWishlistBackend(productId);
+        if (success) {
+            wishlist.push({ productId });
+            buttonElement.classList.add('active');
+            buttonElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
+            showToast("Added to wishlist");
+        }
+    } else {
+        // Remove
+        const success = await removeFromWishlistBackend(productId);
+        if (success) {
+            wishlist.splice(index, 1);
+            buttonElement.classList.remove('active');
+            buttonElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
+            showToast("Removed from wishlist");
+        }
+    }
+    updateHeaderWishlistCount();
+    renderInitialProducts(); // Re-render to update all heart icons instantly
 }
 
 function updateResultsCount() {
-  const countEl = document.getElementById('resultsCount');
-  if (countEl) {
-    const showingCount = Math.min(visibleProductsCount, allFilteredProducts.length);
-    countEl.textContent = `Showing ${showingCount} of ${allFilteredProducts.length} products`;
-  }
-  updateTitle();
+    const countEl = document.getElementById('resultsCount');
+    if (countEl) {
+        const showingCount = Math.min(visibleProductsCount, allFilteredProducts.length);
+        countEl.textContent = `Showing ${showingCount} of ${allFilteredProducts.length} products`;
+    }
+    updateTitle();
 }
 
 function updateTitle() {
-  const titleEl = document.querySelector('h2.text-2xl');
-  if (!titleEl) return;
-
-  const categoryNames = {
-    'all': 'Health Monitoring Devices',
-    'bp-monitor': 'Blood Pressure Monitors',
-    'glucometer': 'Glucometers & Test Strips',
-    'thermometer': 'Thermometers',
-    'oximeter': 'Pulse Oximeters'
-  };
-
-  let title = categoryNames[currentFilters.category] || 'Health Monitoring Devices';
-
-  // Add brand to title if selected
-  if (currentFilters.brand !== 'all') {
-    title += ` - ${currentFilters.brand}`;
-  }
-
-  titleEl.textContent = title;
+    const titleEl = document.querySelector('h2.text-2xl');
+    if (!titleEl) return;
+    const categoryNames = {
+        'all': 'Health Monitoring Devices',
+        'bp-monitor': 'Blood Pressure Monitors',
+        'glucometer': 'Glucometers & Test Strips',
+        'thermometer': 'Thermometers',
+        'oximeter': 'Pulse Oximeters'
+    };
+    let title = categoryNames[currentFilters.category] || 'Health Monitoring Devices';
+    if (currentFilters.brand !== 'all') {
+        title += ` - ${currentFilters.brand}`;
+    }
+    titleEl.textContent = title;
 }
 
 // Apply Filters Function
 function applyFilters() {
-  allFilteredProducts = products.filter(product => {
-    // Category filter
-    if (currentFilters.category !== 'all' && product.category !== currentFilters.category) {
-      return false;
-    }
-
-    // Brand filter
-    if (currentFilters.brand !== 'all' && product.brand !== currentFilters.brand) {
-      return false;
-    }
-
-    // Price filter
-    if (product.price < currentFilters.minPrice || product.price > currentFilters.maxPrice) {
-      return false;
-    }
-
-    // Discount filter
-    if (currentFilters.discount !== 'all') {
-      const requiredDiscount = parseInt(currentFilters.discount);
-      // Calculate discount if not available
-      let productDiscount = product.discount;
-      if (!productDiscount && product.originalPrice && product.price) {
-        productDiscount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-      }
-      if (productDiscount < requiredDiscount) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  // Reset visible products count when filters change
-  visibleProductsCount = 8;
-  
-  // Apply sorting if any
-  applySorting();
-  
-  renderInitialProducts();
-  updateResultsCount();
+    allFilteredProducts = products.filter(product => {
+        // Category filter – matches your radio values
+        if (currentFilters.category !== 'all') {
+            const subCat = product.productSubCategory?.toLowerCase() || '';
+            const cat = product.productCategory?.toLowerCase() || '';
+            const matches = {
+                'bp-monitor': subCat.includes('bp') || subCat.includes('blood pressure'),
+                'glucometer': subCat.includes('gluco') || subCat.includes('sugar'),
+                'thermometer': subCat.includes('thermo') || subCat.includes('temperature'),
+                'oximeter': subCat.includes('oxi') || subCat.includes('oxygen') || subCat.includes('spo2')
+            };
+            if (!matches[currentFilters.category]) {
+                return false;
+            }
+        }
+        // Brand filter
+        if (currentFilters.brand !== 'all' && product.brandName !== currentFilters.brand) {
+            return false;
+        }
+        // Price filter
+        const productPrice = product.productPrice?.[0] || 0;
+        if (productPrice < currentFilters.minPrice || productPrice > currentFilters.maxPrice) {
+            return false;
+        }
+        // Discount filter
+        if (currentFilters.discount !== 'all') {
+            const requiredDiscount = parseInt(currentFilters.discount);
+            let productDiscount = 0;
+            if (product.productOldPrice?.[0] && product.productPrice?.[0]) {
+                productDiscount = Math.round(((product.productOldPrice[0] - product.productPrice[0]) / product.productOldPrice[0]) * 100);
+            }
+            if (productDiscount < requiredDiscount) {
+                return false;
+            }
+        }
+        return true;
+    });
+    visibleProductsCount = 8;
+    applySorting();
+    renderInitialProducts();
+    updateResultsCount();
 }
 
 // Apply Sorting Function
 function applySorting() {
-  if (!sortSelect) return;
-  
-  const val = sortSelect.value;
-  if (val === 'price-low') {
-    allFilteredProducts.sort((a,b) => a.price - b.price);
-  } else if (val === 'price-high') {
-    allFilteredProducts.sort((a,b) => b.price - a.price);
-  } else if (val === 'rating') {
-    allFilteredProducts.sort((a,b) => (b.rating || 0) - (a.rating || 0));
-  } else if (val === 'newest') {
-    allFilteredProducts.sort((a,b) => b.id - a.id);
-  }
+    if (!sortSelect) return;
+   
+    const val = sortSelect.value;
+    if (val === 'price-low') {
+        allFilteredProducts.sort((a,b) => (a.productPrice?.[0] || 0) - (b.productPrice?.[0] || 0));
+    } else if (val === 'price-high') {
+        allFilteredProducts.sort((a,b) => (b.productPrice?.[0] || 0) - (a.productPrice?.[0] || 0));
+    } else if (val === 'rating') {
+        allFilteredProducts.sort((a,b) => (b.rating || 0) - (a.rating || 0));
+    } else if (val === 'newest') {
+        allFilteredProducts.sort((a,b) => b.productId - a.productId);
+    }
 }
 
 // Initialize Desktop Filters
 function initFilters() {
-  // Desktop form submit
-  const desktopForm = document.getElementById('filterForm');
-  if (desktopForm) {
-    desktopForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      currentFilters.category = document.querySelector('input[name="category"]:checked')?.value || 'all';
-      currentFilters.brand = document.querySelector('input[name="brand"]:checked')?.value || 'all';
-      currentFilters.discount = document.querySelector('input[name="discount"]:checked')?.value || 'all';
-      
-      applyFilters();
-    });
-
-    // Live filter on radio change
-    desktopForm.querySelectorAll('input[type="radio"]').forEach(radio => {
-      radio.addEventListener('change', () => {
-        currentFilters.category = document.querySelector('input[name="category"]:checked')?.value || 'all';
-        currentFilters.brand = document.querySelector('input[name="brand"]:checked')?.value || 'all';
-        currentFilters.discount = document.querySelector('input[name="discount"]:checked')?.value || 'all';
-        applyFilters();
-      });
-    });
-  }
-
-  // Mobile filters apply button
-  const applyMobileBtn = document.getElementById('applyMobileFilters');
-  if (applyMobileBtn) {
-    applyMobileBtn.addEventListener('click', () => {
-      currentFilters.category = document.querySelector('input[name="mobileCategory"]:checked')?.value || 'all';
-      currentFilters.brand = document.querySelector('input[name="mobileBrand"]:checked')?.value || 'all';
-      currentFilters.discount = document.querySelector('input[name="mobileDiscount"]:checked')?.value || 'all';
-      
-      applyFilters();
-      closeFilterSheet();
-    });
-  }
-
-  // Mobile clear filters
-  const clearMobileBtn = document.getElementById('clearMobileFilters');
-  if (clearMobileBtn) {
-    clearMobileBtn.addEventListener('click', () => {
-      document.querySelectorAll('input[name="mobileCategory"], input[name="mobileBrand"], input[name="mobileDiscount"]').forEach(radio => {
-        if (radio.value === 'all') radio.checked = true;
-      });
-      
-      // Reset desktop filters too
-      document.querySelectorAll('input[name="category"], input[name="brand"], input[name="discount"]').forEach(radio => {
-        if (radio.value === 'all') radio.checked = true;
-      });
-
-      currentFilters = {
-        category: 'all',
-        brand: 'all',
-        discount: 'all',
-        minPrice: 0,
-        maxPrice: 10000
-      };
-
-      // Reset price sliders
-      if (document.getElementById('minThumb')) document.getElementById('minThumb').value = 0;
-      if (document.getElementById('maxThumb')) document.getElementById('maxThumb').value = 10000;
-      if (document.getElementById('mobileMinThumb')) document.getElementById('mobileMinThumb').value = 0;
-      if (document.getElementById('mobileMaxThumb')) document.getElementById('mobileMaxThumb').value = 10000;
-      
-      if (typeof updateDesktopSlider === 'function') updateDesktopSlider();
-      if (typeof updateMobileSlider === 'function') updateMobileSlider();
-
-      applyFilters();
-    });
-  }
+    const desktopForm = document.getElementById('filterForm');
+    if (desktopForm) {
+        desktopForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentFilters.category = document.querySelector('input[name="category"]:checked')?.value || 'all';
+            currentFilters.brand = document.querySelector('input[name="brand"]:checked')?.value || 'all';
+            currentFilters.discount = document.querySelector('input[name="discount"]:checked')?.value || 'all';
+            applyFilters();
+        });
+        desktopForm.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                currentFilters.category = document.querySelector('input[name="category"]:checked')?.value || 'all';
+                currentFilters.brand = document.querySelector('input[name="brand"]:checked')?.value || 'all';
+                currentFilters.discount = document.querySelector('input[name="discount"]:checked')?.value || 'all';
+                applyFilters();
+            });
+        });
+    }
+    const applyMobileBtn = document.getElementById('applyMobileFilters');
+    if (applyMobileBtn) {
+        applyMobileBtn.addEventListener('click', () => {
+            currentFilters.category = document.querySelector('input[name="mobileCategory"]:checked')?.value || 'all';
+            currentFilters.brand = document.querySelector('input[name="mobileBrand"]:checked')?.value || 'all';
+            currentFilters.discount = document.querySelector('input[name="mobileDiscount"]:checked')?.value || 'all';
+            applyFilters();
+            closeFilterSheet();
+        });
+    }
+    const clearMobileBtn = document.getElementById('clearMobileFilters');
+    if (clearMobileBtn) {
+        clearMobileBtn.addEventListener('click', () => {
+            document.querySelectorAll('input[name="mobileCategory"], input[name="mobileBrand"], input[name="mobileDiscount"]').forEach(radio => {
+                if (radio.value === 'all') radio.checked = true;
+            });
+           
+            document.querySelectorAll('input[name="category"], input[name="brand"], input[name="discount"]').forEach(radio => {
+                if (radio.value === 'all') radio.checked = true;
+            });
+            currentFilters = {
+                category: 'all',
+                brand: 'all',
+                discount: 'all',
+                minPrice: 0,
+                maxPrice: 10000
+            };
+            if (document.getElementById('minThumb')) document.getElementById('minThumb').value = 0;
+            if (document.getElementById('maxThumb')) document.getElementById('maxThumb').value = 10000;
+            if (document.getElementById('mobileMinThumb')) document.getElementById('mobileMinThumb').value = 0;
+            if (document.getElementById('mobileMaxThumb')) document.getElementById('mobileMaxThumb').value = 10000;
+           
+            if (typeof updateDesktopSlider === 'function') updateDesktopSlider();
+            if (typeof updateMobileSlider === 'function') updateMobileSlider();
+            applyFilters();
+        });
+    }
 }
 
-// Navigate to Product Details Page with URL parameters
-window.navigateToProductDetails = function(id) {
-  const product = products.find(p => p.id === id);
-  if (!product) {
-    console.error('Product not found with id:', id);
-    return;
-  }
-
-  // Store current page name/category for reference
-  const currentPageName = document.title || 'Health Monitoring Devices';
-  
-  sessionStorage.setItem('selectedProduct', JSON.stringify(product));
-  sessionStorage.setItem('currentPageProducts', JSON.stringify(products));
-  sessionStorage.setItem('currentPageName', currentPageName);
-
-  const params = new URLSearchParams({
-    id: product.id,
-    name: product.name,
-    brand: product.brand,
-    price: product.price,
-    originalPrice: product.originalPrice || '',
-    discount: product.discount || '',
-    image: product.image,
-    description: product.description || '',
-    prescription: product.prescription,
-    category: product.category || '',
-    sourcePage: currentPageName,
-    quantity: product.quantity || 0
-  });
-
-  window.location.href = `/productdetails.html?${params.toString()}`;
+// Navigate to Product Details Page
+window.navigateToProductDetails = async function(productId) {
+    try {
+        let product = await fetchProductDetails(productId);
+       
+        if (!product) {
+            product = products.find(p => p.productId === productId);
+            if (!product) {
+                console.error('Product not found with id:', productId);
+                return;
+            }
+        }
+        const currentPageName = document.title || 'Health Monitoring Devices';
+       
+        sessionStorage.setItem('selectedProduct', JSON.stringify(product));
+        sessionStorage.setItem('currentPageProducts', JSON.stringify(products));
+        sessionStorage.setItem('currentPageName', currentPageName);
+        const params = new URLSearchParams({
+            id: product.productId,
+            name: product.productName,
+            brand: product.brandName,
+            price: product.productPrice?.[0] || '',
+            originalPrice: product.productOldPrice?.[0] || '',
+            discount: product.discount || '',
+            image: product.productMainImage || '',
+            description: product.productDescription || '',
+            prescription: product.prescriptionRequired || false,
+            category: product.productCategory || '',
+            subCategory: product.productSubCategory || '',
+            sourcePage: currentPageName,
+            quantity: product.productQuantity || 0,
+            mfgDate: product.mfgDate || '',
+            expDate: product.expDate || '',
+            batchNo: product.batchNo || '',
+            sku: product.sku || ''
+        });
+        window.location.href = `/productdetails.html?${params.toString()}`;
+       
+    } catch (error) {
+        console.error('Error navigating to product details:', error);
+    }
 }
 
 function initSorting() {
-  if (!sortSelect) return;
-  
-  sortSelect.addEventListener('change', () => {
-    applySorting();
-    visibleProductsCount = 8; // Reset to initial view
-    renderInitialProducts();
-    updateResultsCount();
-  });
-
-  // Mobile sort apply
-  const applySortBtn = document.getElementById('applySortBtn');
-  if (applySortBtn) {
-    applySortBtn.addEventListener('click', () => {
-      const selectedSort = document.querySelector('input[name="mobileSort"]:checked')?.value || 'default';
-      if (sortSelect) {
-        sortSelect.value = selectedSort;
-        sortSelect.dispatchEvent(new Event('change'));
-      }
-      closeSortSheet();
+    if (!sortSelect) return;
+   
+    sortSelect.addEventListener('change', () => {
+        applySorting();
+        visibleProductsCount = 8;
+        renderInitialProducts();
+        updateResultsCount();
     });
-  }
+    const applySortBtn = document.getElementById('applySortBtn');
+    if (applySortBtn) {
+        applySortBtn.addEventListener('click', () => {
+            const selectedSort = document.querySelector('input[name="mobileSort"]:checked')?.value || 'default';
+            if (sortSelect) {
+                sortSelect.value = selectedSort;
+                sortSelect.dispatchEvent(new Event('change'));
+            }
+            closeSortSheet();
+        });
+    }
 }
 
 // Desktop Price Slider
 function initSlider() {
-  const minThumb = document.getElementById('minThumb');
-  const maxThumb = document.getElementById('maxThumb');
-  const mobileMinThumb = document.getElementById('mobileMinThumb');
-  const mobileMaxThumb = document.getElementById('mobileMaxThumb');
-
-  const updateDesktopSlider = () => {
-    const minVal = parseInt(minThumb.value);
-    const maxVal = parseInt(maxThumb.value);
-    
-    if (minVal > maxVal - 500) {
-      minThumb.value = maxVal - 500;
-    }
-    
-    const fill = document.getElementById('desktopFill');
-    if (fill) {
-      fill.style.left = (minVal / 10000) * 100 + '%';
-      fill.style.width = ((maxVal - minVal) / 10000) * 100 + '%';
-    }
-    
-    const minValue = document.getElementById('minValue');
-    const maxValue = document.getElementById('maxValue');
-    if (minValue) minValue.textContent = '₹' + minVal;
-    if (maxValue) maxValue.textContent = '₹' + maxVal;
-    
-    currentFilters.minPrice = minVal;
-    currentFilters.maxPrice = maxVal;
-  };
-
-  const updateMobileSlider = () => {
-    const minVal = parseInt(mobileMinThumb.value);
-    const maxVal = parseInt(mobileMaxThumb.value);
-    
-    if (minVal > maxVal - 500) {
-      mobileMinThumb.value = maxVal - 500;
-    }
-    
-    const fill = document.getElementById('mobileFill');
-    if (fill) {
-      fill.style.left = (minVal / 10000) * 100 + '%';
-      fill.style.width = ((maxVal - minVal) / 10000) * 100 + '%';
-    }
-    
-    const minValue = document.getElementById('mobileMinValue');
-    const maxValue = document.getElementById('mobileMaxValue');
-    if (minValue) minValue.textContent = '₹' + minVal;
-    if (maxValue) maxValue.textContent = '₹' + maxVal;
-    
-    currentFilters.minPrice = minVal;
-    currentFilters.maxPrice = maxVal;
-  };
-
-  if (minThumb && maxThumb) {
-    minThumb.oninput = () => {
-      updateDesktopSlider();
-      applyFilters();
+    const minThumb = document.getElementById('minThumb');
+    const maxThumb = document.getElementById('maxThumb');
+    const mobileMinThumb = document.getElementById('mobileMinThumb');
+    const mobileMaxThumb = document.getElementById('mobileMaxThumb');
+    const updateDesktopSlider = () => {
+        const minVal = parseInt(minThumb.value);
+        const maxVal = parseInt(maxThumb.value);
+       
+        if (minVal > maxVal - 500) {
+            minThumb.value = maxVal - 500;
+        }
+       
+        const fill = document.getElementById('desktopFill');
+        if (fill) {
+            fill.style.left = (minVal / 10000) * 100 + '%';
+            fill.style.width = ((maxVal - minVal) / 10000) * 100 + '%';
+        }
+       
+        const minValue = document.getElementById('minValue');
+        const maxValue = document.getElementById('maxValue');
+        if (minValue) minValue.textContent = '₹' + minVal;
+        if (maxValue) maxValue.textContent = '₹' + maxVal;
+       
+        currentFilters.minPrice = minVal;
+        currentFilters.maxPrice = maxVal;
     };
-    maxThumb.oninput = () => {
-      updateDesktopSlider();
-      applyFilters();
+    const updateMobileSlider = () => {
+        const minVal = parseInt(mobileMinThumb.value);
+        const maxVal = parseInt(mobileMaxThumb.value);
+       
+        if (minVal > maxVal - 500) {
+            mobileMinThumb.value = maxVal - 500;
+        }
+       
+        const fill = document.getElementById('mobileFill');
+        if (fill) {
+            fill.style.left = (minVal / 10000) * 100 + '%';
+            fill.style.width = ((maxVal - minVal) / 10000) * 100 + '%';
+        }
+       
+        const minValue = document.getElementById('mobileMinValue');
+        const maxValue = document.getElementById('mobileMaxValue');
+        if (minValue) minValue.textContent = '₹' + minVal;
+        if (maxValue) maxValue.textContent = '₹' + maxVal;
+       
+        currentFilters.minPrice = minVal;
+        currentFilters.maxPrice = maxVal;
     };
-    updateDesktopSlider();
-  }
-
-  if (mobileMinThumb && mobileMaxThumb) {
-    mobileMinThumb.oninput = updateMobileSlider;
-    mobileMaxThumb.oninput = updateMobileSlider;
-    updateMobileSlider();
-  }
-
-  window.updateDesktopSlider = updateDesktopSlider;
-  window.updateMobileSlider = updateMobileSlider;
+    if (minThumb && maxThumb) {
+        minThumb.oninput = () => {
+            updateDesktopSlider();
+            applyFilters();
+        };
+        maxThumb.oninput = () => {
+            updateDesktopSlider();
+            applyFilters();
+        };
+        updateDesktopSlider();
+    }
+    if (mobileMinThumb && mobileMaxThumb) {
+        mobileMinThumb.oninput = updateMobileSlider;
+        mobileMaxThumb.oninput = updateMobileSlider;
+        updateMobileSlider();
+    }
+    window.updateDesktopSlider = updateDesktopSlider;
+    window.updateMobileSlider = updateMobileSlider;
 }
 
 // Mobile Sheets
 function initMobileSheets() {
-  const backdrop = document.getElementById('mobileSheetBackdrop');
-  const filterSheet = document.getElementById('filterSheet');
-  const sortSheet = document.getElementById('sortSheet');
-  
-  // Open Filter Sheet
-  const openFilterSheetBtn = document.getElementById('openFilterSheet');
-  if (openFilterSheetBtn) {
-    openFilterSheetBtn.addEventListener('click', () => {
-      if (backdrop) backdrop.classList.remove('hidden');
-      if (filterSheet) filterSheet.classList.remove('translate-y-full');
-    });
-  }
-
-  // Close Filter Sheet
-  const closeFilterSheet = () => {
-    if (backdrop) backdrop.classList.add('hidden');
-    if (filterSheet) filterSheet.classList.add('translate-y-full');
-  };
-
-  const closeFilterSheetBtn = document.getElementById('closeFilterSheet');
-  if (closeFilterSheetBtn) {
-    closeFilterSheetBtn.addEventListener('click', closeFilterSheet);
-  }
-  window.closeFilterSheet = closeFilterSheet;
-
-  // Open Sort Sheet
-  const openSortSheetBtn = document.getElementById('openSortSheet');
-  if (openSortSheetBtn) {
-    openSortSheetBtn.addEventListener('click', () => {
-      if (backdrop) backdrop.classList.remove('hidden');
-      if (sortSheet) sortSheet.classList.remove('translate-y-full');
-    });
-  }
-
-  // Close Sort Sheet
-  const closeSortSheet = () => {
-    if (backdrop) backdrop.classList.add('hidden');
-    if (sortSheet) sortSheet.classList.add('translate-y-full');
-  };
-
-  const closeSortSheetBtn = document.getElementById('closeSortSheet');
-  if (closeSortSheetBtn) {
-    closeSortSheetBtn.addEventListener('click', closeSortSheet);
-  }
-  window.closeSortSheet = closeSortSheet;
-
-  // Click backdrop to close
-  if (backdrop) {
-    backdrop.addEventListener('click', () => {
-      closeFilterSheet();
-      closeSortSheet();
-    });
-  }
+    const backdrop = document.getElementById('mobileSheetBackdrop');
+    const filterSheet = document.getElementById('filterSheet');
+    const sortSheet = document.getElementById('sortSheet');
+   
+    const openFilterSheetBtn = document.getElementById('openFilterSheet');
+    if (openFilterSheetBtn) {
+        openFilterSheetBtn.addEventListener('click', () => {
+            if (backdrop) backdrop.classList.remove('hidden');
+            if (filterSheet) filterSheet.classList.remove('translate-y-full');
+        });
+    }
+    const closeFilterSheet = () => {
+        if (backdrop) backdrop.classList.add('hidden');
+        if (filterSheet) filterSheet.classList.add('translate-y-full');
+    };
+    const closeFilterSheetBtn = document.getElementById('closeFilterSheet');
+    if (closeFilterSheetBtn) {
+        closeFilterSheetBtn.addEventListener('click', closeFilterSheet);
+    }
+    window.closeFilterSheet = closeFilterSheet;
+    const openSortSheetBtn = document.getElementById('openSortSheet');
+    if (openSortSheetBtn) {
+        openSortSheetBtn.addEventListener('click', () => {
+            if (backdrop) backdrop.classList.remove('hidden');
+            if (sortSheet) sortSheet.classList.remove('translate-y-full');
+        });
+    }
+    const closeSortSheet = () => {
+        if (backdrop) backdrop.classList.add('hidden');
+        if (sortSheet) sortSheet.classList.add('translate-y-full');
+    };
+    const closeSortSheetBtn = document.getElementById('closeSortSheet');
+    if (closeSortSheetBtn) {
+        closeSortSheetBtn.addEventListener('click', closeSortSheet);
+    }
+    window.closeSortSheet = closeSortSheet;
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            closeFilterSheet();
+            closeSortSheet();
+        });
+    }
 }
 
 window.sortProducts = function(type) {
-  if (!sortSelect) return;
-  
-  sortSelect.value = type;
-  sortSelect.dispatchEvent(new Event('change'));
-  const backdrop = document.getElementById('mobileSheetBackdrop');
-  if (backdrop) backdrop.click();
+    if (!sortSelect) return;
+   
+    sortSelect.value = type;
+    sortSelect.dispatchEvent(new Event('change'));
+    const backdrop = document.getElementById('mobileSheetBackdrop');
+    if (backdrop) backdrop.click();
 };

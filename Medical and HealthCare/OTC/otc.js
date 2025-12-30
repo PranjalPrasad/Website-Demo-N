@@ -2,15 +2,18 @@
 // Base API URL - Update this to your backend URL
 const API_BASE_URL = 'http://localhost:8083/api/products';
 const WISHLIST_API_BASE = "http://localhost:8083/api/wishlist";
+
 // Global State
 let allProducts = [];
 let filteredProducts = [];
-let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+let wishlist = []; // Now only stores { id: productId } – synced with backend
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 let currentPage = 1;
 const pageSize = 12;
+
 // Enable debug mode
 const DEBUG_MODE = true;
+
 // Persistent Filter State
 let filterState = {
   category: 'all',
@@ -20,6 +23,7 @@ let filterState = {
   maxPrice: 2000,
   sort: 'default'
 };
+
 // =============== OTC CATEGORIES ===============
 const OTC_CATEGORIES = [
   {
@@ -58,11 +62,13 @@ const OTC_CATEGORIES = [
     backendSubcategories: ['Health Supplements', 'Supplements']
   }
 ];
+
 // Helper: Safe text update
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
+
 // Update page title based on category
 function updatePageTitle() {
   const titleEl = document.getElementById('pageTitle');
@@ -75,72 +81,52 @@ function updatePageTitle() {
     }
   }
 }
+
 // Debug logging function
 function debugLog(...args) {
   if (DEBUG_MODE) {
     console.log('[DEBUG]', ...args);
   }
 }
-async function getValidUserId() {
-    console.log("Getting valid user ID...");
-    try {
-        const endpoints = [
-            'http://localhost:8083/api/users',
-            'http://localhost:8083/api/users/all',
-            'http://localhost:8083/api/users/list'
-        ];
- 
-        for (const endpoint of endpoints) {
-            try {
-                const response = await fetch(endpoint);
-                if (response.ok) {
-                    const users = await response.json();
-                    if (users && users.length > 0) {
-                        console.log("Found users:", users);
-                        return users[0].id || users[0].userId || 1;
-                    }
-                }
-            } catch (e) {
-                console.log(`Endpoint ${endpoint} not available`);
-            }
-        }
-    } catch (error) {
-        console.log("Could not fetch users:", error);
-    }
-    const testIds = [1, 100, 1000, 1001, 10000];
-    for (const testId of testIds) {
-        try {
-            const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${testId}`);
-            if (response.ok || response.status === 200) {
-                console.log(`User ID ${testId} is valid (wishlist endpoint works)`);
-                return testId;
-            }
-        } catch (e) {
-            console.log(`User ID ${testId} test failed:`, e.message);
-        }
-    }
-    console.warn("No valid user ID found. Using default ID 1.");
-    console.warn("PLEASE CREATE A USER IN YOUR DATABASE WITH ID = 1");
-    return 1;
+
+// =============== USER ID (EXACTLY LIKE REF) ===============
+function getCurrentUserId() {
+  try {
+    const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+    if (!userData) return null;
+    const user = JSON.parse(userData);
+    const id = user.userId || user.id || user.userID;
+    return id ? Number(id) : null;
+  } catch (error) {
+    console.error('Error reading currentUser:', error);
+    return null;
+  }
 }
-async function addToWishlistBackend(product) {
+
+const CURRENT_USER_ID = getCurrentUserId();
+console.log("====getCurrentUserId function returns :", CURRENT_USER_ID);
+
+// =============== WISHLIST BACKEND FUNCTIONS (MATCHING REF) ===============
+async function addToWishlistBackend(productId) {
+    if (!CURRENT_USER_ID) {
+        showToast("Please log in to add to wishlist");
+        return false;
+    }
     try {
         const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId: currentUserId,
-                productId: product.id,
+                userId: CURRENT_USER_ID,
+                productId: productId,
                 productType: "MEDICINE"
             })
         });
         if (response.ok) {
-            const result = await response.json();
-            console.log("Added to backend wishlist:", result);
+            console.log("Added to backend wishlist");
             return true;
         } else {
-            const error = await response.json();
-            console.error("Failed to add to backend wishlist:", error);
+            console.error("Failed to add to backend wishlist");
             return false;
         }
     } catch (err) {
@@ -148,14 +134,16 @@ async function addToWishlistBackend(product) {
         return false;
     }
 }
-async function removeFromWishlistBackend(product) {
+
+async function removeFromWishlistBackend(productId) {
+    if (!CURRENT_USER_ID) return false;
     try {
         const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId: currentUserId,
-                productId: product.id
+                userId: CURRENT_USER_ID,
+                productId: productId
             })
         });
         if (response.ok) {
@@ -170,30 +158,33 @@ async function removeFromWishlistBackend(product) {
         return false;
     }
 }
-async function syncWishlist() {
-    try {
-        const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${currentUserId}`);
-        if (!response.ok) return;
-        const items = await response.json();
-        const backendWishlist = items.filter(item => item.productType === "MEDICINE").map(item => {
-            const product = allProducts.find(p => p.id === item.productId);
-            if (!product) return null;
-            return {
-                id: product.id,
-                name: product.title.split(' (')[0].trim(),
-                price: product.price,
-                originalPrice: product.originalPrice || null,
-                image: product.image
-            };
-        }).filter(Boolean);
-        localStorage.setItem("wishlist", JSON.stringify(backendWishlist));
-        wishlist = backendWishlist;
+
+async function loadWishlistFromBackend() {
+    if (!CURRENT_USER_ID) {
+        wishlist = [];
         updateHeaderCounts();
-        renderProducts();
+        return;
+    }
+    try {
+        const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${CURRENT_USER_ID}`);
+        if (!response.ok) {
+            console.error("Failed to fetch wishlist");
+            wishlist = [];
+            return;
+        }
+        const items = await response.json();
+        wishlist = items
+            .filter(item => item.productType === "MEDICINE")
+            .map(item => ({ id: item.productId }));
+        console.log("Loaded wishlist from backend:", wishlist.length, "items");
+        updateHeaderCounts();
+        renderProducts(); // Refresh heart icons
     } catch (err) {
         console.error("Error syncing wishlist:", err);
+        wishlist = [];
     }
 }
+
 // ==================== FETCH PRODUCTS FROM BACKEND ====================
 async function fetchProducts() {
   try {
@@ -240,6 +231,7 @@ async function fetchProducts() {
     }
   }
 }
+
 function processProducts(data) {
   debugLog('API Response data:', data);
   // Handle different response formats
@@ -275,12 +267,12 @@ function processProducts(data) {
     // Check if this product's category matches any OTC category
     const isOTCProduct = OTC_CATEGORIES.some(category => {
       if (category.id === 'all') return false; // Skip "all" category
-  
+ 
       return category.backendSubcategories.some(backendSubcat => {
         // Case-insensitive comparison
         const productCatLower = productCategory.toLowerCase();
         const backendSubLower = backendSubcat.toLowerCase();
-    
+   
         // Check for exact match or partial match
         return productCatLower === backendSubLower ||
                productCatLower.includes(backendSubLower) ||
@@ -298,6 +290,7 @@ function processProducts(data) {
   applyFilters();
   updateUIWithProducts();
 }
+
 // Transform backend product format to frontend format
 function transformBackendProducts(backendProducts) {
   if (!Array.isArray(backendProducts) || backendProducts.length === 0) {
@@ -309,45 +302,61 @@ function transformBackendProducts(backendProducts) {
       // Extract basic fields
       const id = product.productId || product.id || index + 1;
       const title = product.productName || product.name || 'Unnamed Product';
-      const price = Number(product.productPrice || product.price || 100);
-      const originalPrice = Number(product.productOldPrice || product.originalPrice || product.mrp || price * 1.2);
-      const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-  
-      // Get category - this is in productSubCategory field
+
+      // === FIXED: Robust price handling (supports number, array, null, missing) ===
+      let price = 100; // Safe fallback
+      if (product.productPrice != null) {
+        if (Array.isArray(product.productPrice) && product.productPrice.length > 0) {
+          price = Number(product.productPrice[0]) || price;
+        } else {
+          price = Number(product.productPrice) || price;
+        }
+      }
+
+      let originalPrice = price * 1.2; // Default 20% higher MRP
+      if (product.productOldPrice != null) {
+        if (Array.isArray(product.productOldPrice) && product.productOldPrice.length > 0) {
+          originalPrice = Number(product.productOldPrice[0]) || originalPrice;
+        } else {
+          originalPrice = Number(product.productOldPrice) || originalPrice;
+        }
+      } else if (product.mrp != null) {
+        originalPrice = Number(product.mrp) || originalPrice;
+      }
+
+      // Final safety: ensure valid numbers and reasonable values
+      price = (isNaN(price) || price <= 0) ? 100 : Math.round(price);
+      originalPrice = (isNaN(originalPrice) || originalPrice <= price) 
+        ? Math.round(price * 1.2) 
+        : Math.round(originalPrice);
+
+      const discount = originalPrice > price 
+        ? Math.round(((originalPrice - price) / originalPrice) * 100) 
+        : 0;
+
+      // === Rest of your code remains 100% unchanged ===
       const category = product.productSubCategory || 'Unknown';
-  
-      // Get brand - this is in brandName field
       const brand = product.brandName || product.brand || product.manufacturer || 'Generic';
-  
       const description = product.productDescription || product.description || 'No description available';
       const stockQuantity = product.productQuantity || product.stockQuantity || product.quantity || 0;
       const inStock = product.productStock === 'In-Stock' || stockQuantity > 0;
-  
-      // Get image URL
+
       let imageUrl = 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop';
-  
+
       if (product.productMainImage) {
-        // Check if it's a path starting with /api/
         if (product.productMainImage.startsWith('/api/')) {
-          // It's a relative path, make it absolute
           imageUrl = `http://localhost:8083${product.productMainImage}`;
-        }
-        // Check if it's base64
-        else if (product.productMainImage.startsWith('data:image')) {
+        } else if (product.productMainImage.startsWith('data:image')) {
           imageUrl = product.productMainImage;
-        }
-        // Check if it's a URL
-        else if (product.productMainImage.startsWith('http')) {
+        } else if (product.productMainImage.startsWith('http')) {
           imageUrl = product.productMainImage;
-        }
-        // Otherwise assume it's base64
-        else {
+        } else {
           imageUrl = `data:image/jpeg;base64,${product.productMainImage}`;
         }
       } else if (product.productId) {
         imageUrl = `${API_BASE_URL}/${product.productId}/image`;
       }
-  
+
       return {
         id: id,
         title: title,
@@ -369,6 +378,7 @@ function transformBackendProducts(backendProducts) {
     }
   }).filter(product => product !== null);
 }
+
 // Update UI with loaded products
 function updateUIWithProducts() {
   // Update brands dropdown
@@ -378,6 +388,7 @@ function updateUIWithProducts() {
   // Render products
   renderProducts();
 }
+
 // Update brands dropdown
 function updateBrandsDropdown() {
   const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean))];
@@ -417,6 +428,7 @@ function updateBrandsDropdown() {
     mobileBrandsContainer.innerHTML = html;
   }
 }
+
 // Update price range
 function updatePriceRange() {
   if (allProducts.length === 0) return;
@@ -431,6 +443,7 @@ function updatePriceRange() {
   // Update sliders if they exist
   updatePriceSliders(minPrice, filterState.maxPrice);
 }
+
 // ==================== FILTER & SORT ====================
 function applyFilters() {
   debugLog('Applying filters with', allProducts.length, 'products');
@@ -446,19 +459,19 @@ function applyFilters() {
         categoryMatch = true;
       } else {
         const productCategory = p.category?.toLowerCase() || '';
-    
+   
         // Check if product matches any backend subcategory for this OTC category
         categoryMatch = selectedCategory.backendSubcategories.some(backendSubcat => {
           const backendSubLower = backendSubcat.toLowerCase();
-      
+     
           // Check for exact match or partial match
           return productCategory === backendSubLower ||
                  productCategory.includes(backendSubLower) ||
                  backendSubLower.includes(productCategory);
         });
-    
+   
         if (categoryMatch) {
-          debugLog(`✓ Product "${p.title}" matches category "${selectedCategory.name}" via category "${p.category}"`);
+          debugLog(`Product "${p.title}" matches category "${selectedCategory.name}" via category "${p.category}"`);
         }
       }
     }
@@ -473,6 +486,7 @@ function applyFilters() {
   currentPage = 1;
   renderProducts();
 }
+
 // ==================== HEADER COUNTS ====================
 function updateHeaderCounts() {
   const updateBadge = (id, count) => {
@@ -486,36 +500,29 @@ function updateHeaderCounts() {
   updateBadge("cartCount", cartTotal);
   updateBadge("wishlistCount", wishlist.length);
 }
-// ==================== WISHLIST ====================
-async function toggleWishlist(id) {
-  const product = allProducts.find(p => p.id === id);
-  if (!product) return;
-  const index = wishlist.findIndex(item => item.id === id);
-  if (index > -1) {
-    const success = await removeFromWishlistBackend(product);
+
+// ==================== WISHLIST TOGGLE (NOW SAME AS REF) ====================
+async function toggleWishlist(productId) {
+  const index = wishlist.findIndex(item => item.id === productId);
+  if (index === -1) {
+    // Add to wishlist
+    const success = await addToWishlistBackend(productId);
     if (success) {
-      wishlist.splice(index, 1);
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-      showToast("Removed from wishlist ♥");
+      wishlist.push({ id: productId });
+      showToast("Added to wishlist");
     }
   } else {
-    const success = await addToWishlistBackend(product);
+    // Remove from wishlist
+    const success = await removeFromWishlistBackend(productId);
     if (success) {
-      const wishlistItem = {
-        id: product.id,
-        name: product.title.split(' (')[0].trim(),
-        price: product.price,
-        originalPrice: product.originalPrice || null,
-        image: product.image
-      };
-      wishlist.push(wishlistItem);
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-      showToast("Added to wishlist ♥");
+      wishlist.splice(index, 1);
+      showToast("Removed from wishlist");
     }
   }
   updateHeaderCounts();
-  renderProducts();
+  renderProducts(); // Re-render to update heart icons instantly
 }
+
 function showToast(msg) {
   // Remove existing toast
   const existing = document.querySelector('.custom-toast');
@@ -530,6 +537,7 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 300);
   }, 2000);
 }
+
 // ==================== ORDER ON WHATSAPP FUNCTION ====================
 function orderOnWhatsApp(productId) {
   const product = allProducts.find(p => p.id === productId);
@@ -557,6 +565,7 @@ function orderOnWhatsApp(productId) {
   // Optional: Track this action
   console.log(`WhatsApp order initiated for: ${product.title}`);
 }
+
 // ==================== PRODUCT CARD ====================
 function createProductCard(p) {
   const inWishlist = wishlist.some(x => x.id === p.id);
@@ -601,6 +610,7 @@ function createProductCard(p) {
     </div>
   `;
 }
+
 // ==================== RENDERING ====================
 function renderProducts() {
   debugLog('Rendering products, filteredProducts length:', filteredProducts.length);
@@ -629,6 +639,7 @@ function renderProducts() {
   updatePageTitle();
   renderPagination();
 }
+
 function renderPagination() {
   const container = document.getElementById("pagination");
   if (!container) return;
@@ -647,6 +658,7 @@ function renderPagination() {
     container.appendChild(btn);
   }
 }
+
 function sortProducts(type) {
   switch (type) {
     case 'price-low':
@@ -666,6 +678,7 @@ function sortProducts(type) {
       break;
   }
 }
+
 // Clear all filters
 function clearFilters() {
   filterState = {
@@ -705,6 +718,7 @@ function clearFilters() {
   document.getElementById('mobileMaxThumb').value = 2000;
   applyFilters();
 }
+
 // ==================== PRICE SLIDERS ====================
 function initPriceSliders() {
   // Desktop sliders
@@ -714,28 +728,28 @@ function initPriceSliders() {
     desktopMin.addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       const maxValue = parseInt(desktopMax.value);
-  
+ 
       if (value > maxValue) {
         e.target.value = maxValue;
         filterState.minPrice = maxValue;
       } else {
         filterState.minPrice = value;
       }
-  
+ 
       document.getElementById('minValue').textContent = `₹${filterState.minPrice}`;
       applyFilters();
     });
     desktopMax.addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       const minValue = parseInt(desktopMin.value);
-  
+ 
       if (value < minValue) {
         e.target.value = minValue;
         filterState.maxPrice = minValue;
       } else {
         filterState.maxPrice = value;
       }
-  
+ 
       document.getElementById('maxValue').textContent = `₹${filterState.maxPrice}`;
       applyFilters();
     });
@@ -747,33 +761,34 @@ function initPriceSliders() {
     mobileMin.addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       const maxValue = parseInt(mobileMax.value);
-  
+ 
       if (value > maxValue) {
         e.target.value = maxValue;
         filterState.minPrice = maxValue;
       } else {
         filterState.minPrice = value;
       }
-  
+ 
       document.getElementById('mobileMinValue').textContent = `₹${filterState.minPrice}`;
       // Don't apply filters here, wait for Apply button
     });
     mobileMax.addEventListener('input', (e) => {
       const value = parseInt(e.target.value);
       const minValue = parseInt(mobileMin.value);
-  
+ 
       if (value < minValue) {
         e.target.value = minValue;
         filterState.maxPrice = minValue;
       } else {
         filterState.maxPrice = value;
       }
-  
+ 
       document.getElementById('mobileMaxValue').textContent = `₹${filterState.maxPrice}`;
       // Don't apply filters here, wait for Apply button
     });
   }
 }
+
 function updatePriceSliders(minPrice, maxPrice) {
   // Ensure min and max are valid numbers
   minPrice = Math.max(0, Math.floor(minPrice));
@@ -809,6 +824,7 @@ function updatePriceSliders(minPrice, maxPrice) {
     if (mobileMaxVal) mobileMaxVal.textContent = `₹${filterState.maxPrice}`;
   }
 }
+
 // ==================== INITIALIZATION ====================
 async function init() {
   console.log('Initializing OTC page...');
@@ -833,14 +849,14 @@ async function init() {
   // Initialize "Apply Desktop Filters" button
   initDesktopFilterButton();
   // Fetch initial products
-  currentUserId = await getValidUserId();
   await fetchProducts();
-  await syncWishlist();
+  await loadWishlistFromBackend(); // Load wishlist from backend after products
   // Update header counts
   updateHeaderCounts();
   // Initialize banner slider
   initBanner();
 }
+
 // Initialize category filters
 function initCategoryFilters() {
   // Desktop category filters
@@ -858,6 +874,7 @@ function initCategoryFilters() {
     });
   });
 }
+
 // Initialize discount filters
 function initDiscountFilters() {
   // Desktop discount filters
@@ -890,6 +907,7 @@ function initDiscountFilters() {
     });
   });
 }
+
 // Initialize desktop filter button
 function initDesktopFilterButton() {
   const applyDesktopBtn = document.getElementById('applyDesktopFilters');
@@ -899,15 +917,16 @@ function initDesktopFilterButton() {
       const category = document.querySelector('#filterSidebar input[name="category"]:checked')?.value || 'all';
       const brand = document.querySelector('#filterSidebar input[name="brand"]:checked')?.value || 'all';
       const discount = parseInt(document.querySelector('#filterSidebar input[name="discount"]:checked')?.value || '0');
-  
+ 
       filterState.category = category;
       filterState.brand = brand;
       filterState.discount = discount;
-  
+ 
       applyFilters();
     });
   }
 }
+
 // Initialize banner slider
 function initBanner() {
   const slides = document.querySelectorAll('.banner-slide');
@@ -938,6 +957,7 @@ function initBanner() {
     });
   });
 }
+
 // ==================== MOBILE SHEETS ====================
 function initMobileSheets() {
   const backdrop = document.getElementById("mobileSheetBackdrop");
@@ -1003,5 +1023,6 @@ function initMobileSheets() {
     backdrop.classList.add("hidden");
   });
 }
+
 // ==================== ON LOAD ====================
 document.addEventListener("DOMContentLoaded", init);

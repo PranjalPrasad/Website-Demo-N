@@ -13,8 +13,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <link rel="stylesheet" href="../Header/header.css">
-  <link rel="stylesheet" href="../Footer/footer.css">
+    <link rel="stylesheet" href="../../Header/header.css">
+
+  <link rel="stylesheet" href="../../Footer/footer.css">
 
   <script>
     tailwind.config = {
@@ -249,13 +250,13 @@
         <img src="../Images/logo.png" alt="PharmaCare" class="print-logo w-32 mb-4">
         <p>Pune, Maharashtra</p>
         <p><strong>Contact:</strong> +91 9876543210</p>
-        <p><strong>GST:</strong> 27XXXXX1234X1Z5</p>
+        <!-- <p><strong>GST:</strong> 27XXXXX1234X1Z5</p> -->
       </div>
       <div class="text-right">
         <h2 class="text-xl font-bold">TAX INVOICE</h2>
         <p><strong>Order ID:</strong> #<span id="printOrderId"></span></p>
         <p><strong>Date:</strong> <span id="printOrderDate"></span></p>
-        <p><strong>Delivery:</strong> <span id="printDeliveryDate"></span></p>
+        <!-- <p><strong>Delivery:</strong> <span id="printDeliveryDate"></span></p> -->
       </div>
     </div>
     <div class="grid grid-cols-2 gap-6 mb-6">
@@ -287,18 +288,18 @@
           <td colspan="3" class="border p-2 text-right font-bold">Subtotal</td>
           <td class="border p-2 text-right" id="printSubtotal"></td>
         </tr>
-        <tr>
+        <!-- <tr>
           <td colspan="3" class="border p-2 text-right">Tax</td>
           <td class="border p-2 text-right" id="printTax">₹0.00</td>
-        </tr>
-        <tr>
+        </tr> -->
+        <!-- <tr>
           <td colspan="3" class="border p-2 text-right">Discount</td>
           <td class="border p-2 text-right" id="printDiscount">₹0.00</td>
-        </tr>
-        <tr>
+        </tr> -->
+        <!-- <tr>
           <td colspan="3" class="border p-2 text-right">Coupon</td>
           <td class="border p-2 text-right" id="printCoupon">₹0.00</td>
-        </tr>
+        </tr> -->
         <tr class="font-bold text-lg">
           <td colspan="3" class="border p-2 text-right bg-gray-100">Total</td>
           <td class="border p-2 text-right bg-gray-100" id="printTotal"></td>
@@ -422,16 +423,27 @@
         const rawOrders = pageData.content || [];
 
         orders = rawOrders.map(o => {
-          const items = (o.orderItems || []).map(item => ({
-            name: item.itemName || 'Unknown Item',
-            qty: item.quantity || 1,
-            weight: item.selectedSize || item.size || '',
-            price: (item.itemPrice || 0).toFixed(2),
-            image: item.productId
-              ? `http://localhost:8083/api/products/${item.productId}/image`
-              : 'https://via.placeholder.com/120?text=No+Image',
-            productId: item.productId
-          }));
+        const items = (o.orderItems || []).map(item => ({
+    name: item.itemName || 'Unknown Item',
+    qty: item.quantity || 1,
+    weight: item.selectedSize || item.size || '',
+    price: (item.itemPrice || 0).toFixed(2),
+
+    // === FIXED IMAGE LOGIC: Support both productId and mbpId ===
+    image: (() => {
+      if (item.productId) {
+        return `http://localhost:8083/api/products/${item.productId}/image`;
+      }
+      if (item.mbpId) {
+        return `http://localhost:8083/api/mb/products/${item.mbpId}/image`;
+      }
+      return 'https://via.placeholder.com/120?text=No+Image';
+    })(),
+
+    // Optional: keep IDs for future use (debugging, links, etc.)
+    productId: item.productId || null,
+    mbpId: item.mbpId || null
+  }));
 
           const statusKey = (o.orderStatus || 'PLACED').toLowerCase();
           const status = statusMap[statusKey] || { display: statusKey.charAt(0).toUpperCase() + statusKey.slice(1), class: 'bg-gray-100 text-gray-800' };
@@ -456,6 +468,7 @@
             cancellationNote: getCancellationNote(placedOn),
             placedOn,
             paymentMethod: o.paymentMethod || 'COD',
+            convenienceFee : `${o.convenienceFee !== null ? `₹${o.convenienceFee}` : 'Free'}`,
             address: {
               fullName,
               mobile: o.shippingPhone || o.customerPhone || 'Not provided',
@@ -675,6 +688,8 @@
         <div class="mt-4 space-y-2 text-sm pt-3 border-t border-gray-200">
           <div class="flex justify-between font-bold text-base"><span class="text-primary">Total</span><span class="text-primary">₹${order.total}</span></div>
           <div class="flex justify-between"><span class="text-dark">Payment Method</span><span class="font-medium text-primary">${order.paymentMethod}</span></div>
+          <div class="flex justify-between"><span class="text-dark">Convenience Fee :</span><span class="font-medium text-primary">${(order.convenienceFee !== null || order.convenienceFee !== undefined ) ? order.convenienceFee : 0}</span></div>
+
         </div>
         <div class="mt-5 pt-4 border-t border-gray-200 space-y-2 text-sm">
           <div class="flex justify-between"><span class="text-dark">Status</span><span class="${order.status.toLowerCase() === 'cancelled' ? 'text-red-600' : 'text-green-600'} font-medium">${order.status}</span></div>
@@ -737,9 +752,9 @@
         '<tr><td colspan="4" class="border p-2 text-center text-gray-500">No items found</td></tr>';
 
       document.getElementById('printSubtotal').textContent = '₹' + subtotal.toFixed(2);
-      document.getElementById('printTax').textContent = '₹0.00';
-      document.getElementById('printDiscount').textContent = '₹0.00';
-      document.getElementById('printCoupon').textContent = '₹0.00';
+      // document.getElementById('printTax').textContent = '₹0.00';
+      // document.getElementById('printDiscount').textContent = '₹0.00';
+      // document.getElementById('printCoupon').textContent = '₹0.00';
       document.getElementById('printTotal').textContent = '₹' + order.total;
 
       // === FINAL ROBUST PRINT FIX ===
@@ -773,6 +788,35 @@
       fetchOrders();
     });
   </script>
+   <script>
+    function loadHeader() {
+        fetch('../Header/header.html')
+            .then(r => { if (!r.ok) throw r; return r.text(); })
+            .then(html => {
+                document.getElementById('header-placeholder').innerHTML = html;
+                const script = document.createElement('script');
+                script.src = '../../Header/header.js';
+                script.onload = () => console.log('Header JS loaded');
+                document.body.appendChild(script);
+            })
+            .catch(err => console.error('Header load failed:', err));
+    }
+
+    function loadFooter() {
+        fetch('../Footer/footer.html')
+            .then(r => { if (!r.ok) throw r; return r.text(); })
+            .then(html => {
+                document.getElementById('footer-placeholder').innerHTML = html;
+            })
+            .catch(err => console.error('Footer load failed:', err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHeader();
+        loadFooter();
+        // ... rest of your code
+    });
+</script>
 </body>
 
 </html>

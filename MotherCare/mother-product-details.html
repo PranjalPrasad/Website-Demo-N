@@ -75,10 +75,14 @@
             <!-- Images -->
             <div class="space-y-4">
                 <div class="relative bg-white shadow-lg rounded-xl overflow-hidden">
-                    <img id="mainImage" src="" alt="" class="main-image">
+                    <img id="mainImage" src="../Images/mb-product-fallback.png" alt="" class="main-image">
                 </div>
                 <div class="thumb-scroll flex space-x-3 pb-2">
                     <div id="thumbnailContainer" class="flex space-x-3"></div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Description :</h3>
+                    <p id="product-description" class="text-gray-700 leading-relaxed"></p>
                 </div>
             </div>
 
@@ -87,13 +91,22 @@
                 <div>
                     <h1 id="product-title" class="text-2xl font-bold text-gray-900">Loading...</h1>
                     <div class="flex items-center mt-3 space-x-4">
+
+                         <!-- Price -->
+                <div class="flex items-baseline space-x-2">
+                    <span id="current-price" class="text-xl font-bold text-green-600">Loading..</span>
+                    <span id="original-price" class="text-md text-gray-500 line-through"></span>
+                    <span id="discount-badge" class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold hidden"></span>
+                </div>   
+
                         <div class="flex items-center">
                             <div id="stars-small" class="flex text-yellow-400 text-sm"></div>
-                            <span id="reviews-count" class="ml-2 text-gray-600 font-small">(0 reviews)</span>
+                            <span id="reviews-count" class="ml-2 text-gray-600 font-small"></span>
                         </div>
-                        <span class="text-green-600 font-medium">Verified Buyers</span>
                     </div>
                 </div>
+
+                 
 
                 <!-- Size Selection -->
                 <div>
@@ -103,17 +116,7 @@
                     </div>
                 </div>
 
-                <!-- Price -->
-                <div class="flex items-baseline space-x-2">
-                    <span id="current-price" class="text-xl font-bold text-green-600">₹0</span>
-                    <span id="original-price" class="text-md text-gray-500 line-through"></span>
-                    <span id="discount-badge" class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold hidden"></span>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-semibold mb-3">Description :</h3>
-                    <p id="product-description" class="text-gray-700 leading-relaxed"></p>
-                </div>
+                           
 
                 <div class="flex items-center mb-4">
                     <span class="mr-4 font-medium">Quantity:</span>
@@ -123,6 +126,8 @@
                         <button id="increaseQty" class="w-10 h-10 rounded-full border border-gray-300 hover:bg-gray-100"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
+
+                
 
                 <div class="mb-4">
                     <span id="stockStatus" class="text-sm font-bold text-green-600">In Stock</span>
@@ -144,7 +149,7 @@
             <div class="border-b border-gray-200">
                 <nav class="flex space-x-8 px-8 overflow-x-auto scrollbar-hide">
                     <button class="tab-button active pb-4 whitespace-nowrap" data-tab="specifications">Specifications</button>
-                    <button class="tab-button pb-4 whitespace-nowrap" data-tab="reviews">Reviews</button>
+                    <!-- <button class="tab-button pb-4 whitespace-nowrap" data-tab="reviews">Reviews</button> -->
                     <button class="tab-button pb-4 whitespace-nowrap" data-tab="shipping">Shipping & Returns</button>
                 </nav>
             </div>
@@ -156,7 +161,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         <div>
                             <div class="flex items-center mb-6">
-                                <span id="overall-rating" class="text-5xl font-bold mr-4">0</span>
+                                <!-- <span id="overall-rating" class="text-5xl font-bold mr-4">0</span> -->
                                 <div>
                                     <div id="stars-large" class="flex text-yellow-400 text-2xl mb-1"></div>
                                     <p id="review-summary" class="text-gray-600"></p>
@@ -174,7 +179,7 @@
                         </div>
                         <div class="accordion-content bg-[#FCF5EE]">
                             <ul class="list-disc pl-6 space-y-3 text-gray-700">
-                                <li><strong>Free Delivery</strong> on orders above ₹4000</li>
+                                <li><strong>Free Delivery</strong> on orders above ₹799</li>
                                 <li>Standard Delivery: <strong>3-5 business days</strong></li>
                                 <li>Cash on Delivery available</li>
                             </ul>
@@ -185,7 +190,7 @@
                         </div>
                         <div class="accordion-content bg-[#FCF5EE]">
                             <ul class="list-disc pl-6 space-y-3 text-gray-700">
-                                <li><strong>30-day easy returns</strong> (except hygiene products)</li>
+                                <li><strong>3-5 day easy returns</strong> (except hygiene products)</li>
                                 <li>Free pickup for defective items</li>
                             </ul>
                             <p id="non-returnable-note" class="text-red-600 font-bold mt-4 hidden">

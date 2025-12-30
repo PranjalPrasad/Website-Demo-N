@@ -84,7 +84,7 @@ async function fetchWishlistFromBackend() {
                 id: item.productId,
                 name: item.title || 'Unknown Product',
                 price: currentPrice,
-                originalPrice: origPrice,
+                // originalPrice: origPrice,
                 image: getProductImageUrl(item.productId, productType),
                 productType: productType,
                 sizes: item.sizes || [],

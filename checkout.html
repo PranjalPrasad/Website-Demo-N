@@ -29,6 +29,11 @@
       scrollbar-color: #F875AA #f8fafc;
     }
     
+    #address-overlay-margin{
+      margin-left: 27%;
+      height: 500px;
+    }
+
     #order-items-container::-webkit-scrollbar {
       width: 6px;
     }
@@ -698,7 +703,7 @@
 
   <!-- Address Modal -->
   <div id="address-modal" class="fixed items-center inset-0 bg-black bg-opacity-60 z-50 p-4">
-    <div class="bg-gray-100 rounded-xl shadow-xl max-w-lg w-full max-h-screen overflow-y-auto">
+    <div id="address-overlay-margin" class="bg-gray-100 rounded-xl shadow-xl max-w-lg w-full max-h-screen overflow-y-auto">
       <div class="p-6 border-b flex justify-between items-center">
         <h2 class="text-xl font-bold" id="modal-title">Add New Address</h2>
         <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-2xl"></i></button>
@@ -2669,7 +2674,7 @@ async fetchCartFromBackend() {
     
 
     
-    async createOrderInBackend(paymentMethod, transactionId = '') {
+async createOrderInBackend(paymentMethod, transactionId = '') {
   try {
     if (this.selectedIdx === -1 || this.addresses.length === 0) {
       alert('No delivery address selected!');
@@ -2702,13 +2707,21 @@ async fetchCartFromBackend() {
     ].filter(Boolean).join(', ').replace(/,\s*$/, '');
 
     // === CRITICAL: Map cart items to backend-expected orderItems format ===
-    const orderItems = this.cart.map(item => ({
-      productId: item.itemId || item.id || 0,              // backend expects productId
+    const orderItems = this.cart.map(item => {
+    const isMbp = item.type === 'MBP' || item.mbpId || item.itemId && item.title; // detect MbP
+
+    return {
+      productId: isMbp ? null : (item.itemId || item.id || item.productId),
+      mbpId: isMbp ? (item.itemId || item.id || item.mbpId) : null,
       quantity: item.quantity || 1,
-      itemPrice: Number(item.price || 0),                  // single price per unit
-      subtotal: Number((Number(item.price || 0) * (item.quantity || 1)).toFixed(2)),
+      itemPrice: Array.isArray(item.price) ? item.price[0] : Number(item.price || 0),
+      itemOldPrice: Array.isArray(item.price) && item.price.length > 1 ? item.price[1] : null,
+      subtotal: Number((Number(item.price?.[0] || item.price || 0) * (item.quantity || 1)).toFixed(2)),
       itemName: item.name || item.title || 'Unknown Product'
-    }));
+    };
+  });
+
+
 
     const orderRequest = {
       userId: this.userId,
@@ -2749,10 +2762,10 @@ async fetchCartFromBackend() {
 
       // Amounts
       totalAmount: Number(totalAmount.toFixed(2)),
-
+      convenienceFee: shippingCharges, // ← THIS IS THE KEY CHANGE: Send shipping as convenienceFee
       // Status
       orderStatus: "PLACED",
-      paymentStatus: paymentMethod === 'COD' ? 'PLACED' : 'PREPAID',
+      paymentStatus: paymentMethod === 'COD' ? 'PLACED' : 'COD',
 
       // === MOST IMPORTANT: Correct key name ===
       orderItems: orderItems   // ← WAS "items" before → now "orderItems"!

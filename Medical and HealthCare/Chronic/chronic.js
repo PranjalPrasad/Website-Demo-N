@@ -1,6 +1,4 @@
-// chronic.js
-// Full app script: products, rendering, filters, cart, product details, and Upload Prescription modal integration.
-
+// chronic.js - Full app script with Backend Wishlist Sync (NOW EXACTLY LIKE REF CODE)
 document.addEventListener('DOMContentLoaded', () => {
   // ================
   // Data & Configuration
@@ -8,6 +6,25 @@ document.addEventListener('DOMContentLoaded', () => {
   let cart = JSON.parse(localStorage.getItem('cart')) || [];
   let products = []; // Will be populated from backend
   const API_BASE_URL = 'http://localhost:8083/api/products'; // Update with your backend URL
+  const WISHLIST_API_BASE = "http://localhost:8083/api/wishlist";
+
+  // Dynamic user ID (exactly like ref code)
+  function getCurrentUserId() {
+    try {
+      const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+      if (!userData) return null;
+      const user = JSON.parse(userData);
+      const id = user.userId || user.id || user.userID;
+      return id ? Number(id) : null;
+    } catch (error) {
+      console.error('Error reading currentUser:', error);
+      return null;
+    }
+  }
+
+  console.log("====getCurrentUserId function returns :", getCurrentUserId());
+  const CURRENT_USER_ID = getCurrentUserId();
+  let wishlist = []; // Simple array of { productId } — synced with backend
 
   // ================
   // DOM Elements
@@ -22,11 +39,119 @@ document.addEventListener('DOMContentLoaded', () => {
   const validPrescriptionModal = document.getElementById('validPrescriptionModal');
   const validPrescriptionBtn = document.getElementById('validPrescriptionBtn');
   const cartCountElement = document.getElementById('cart-count');
+  const wishlistCountElement = document.getElementById('wishlistCount'); // Assuming you have this element
 
   // keep track of active filters
   let activeCategory = null; // null = all
   let activeSort = null;
   let allBrands = new Set();
+
+  // ================
+  // WISHLIST BACKEND SYNC (EXACTLY LIKE REF CODE)
+  // ================
+  async function addToWishlistBackend(productId) {
+    try {
+      const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: CURRENT_USER_ID,
+          productId: productId,
+          productType: "MEDICINE" // Adjust if chronic care uses different type
+        })
+      });
+      if (response.ok) {
+        console.log("Backend: Added to wishlist");
+        return true;
+      }
+    } catch (err) {
+      console.error("Error adding to wishlist backend:", err);
+    }
+    return false;
+  }
+
+  async function removeFromWishlistBackend(productId) {
+    try {
+      const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: CURRENT_USER_ID,
+          productId: productId,
+          productType: "MEDICINE"
+        })
+      });
+      if (response.ok) {
+        console.log("Backend: Removed from wishlist");
+        return true;
+      }
+    } catch (err) {
+      console.error("Error removing from wishlist backend:", err);
+    }
+    return false;
+  }
+
+  async function loadWishlistFromBackend() {
+    if (!CURRENT_USER_ID) {
+      console.log("No user logged in, skipping wishlist load");
+      return;
+    }
+    try {
+      const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${CURRENT_USER_ID}`);
+      if (response.ok) {
+        const backendItems = await response.json();
+        console.log("Loaded wishlist from backend:", backendItems.length, "items");
+        wishlist = backendItems.map(item => ({
+          productId: item.productId || item.id
+        }));
+        updateHeaderWishlistCount();
+        displayProducts(products); // Refresh heart icons
+      }
+    } catch (err) {
+      console.error("Failed to load wishlist from backend:", err);
+    }
+  }
+
+  function updateHeaderWishlistCount() {
+    if (wishlistCountElement) {
+      wishlistCountElement.textContent = wishlist.length;
+      wishlistCountElement.classList.toggle('hidden', wishlist.length === 0);
+    }
+  }
+
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full z-50 shadow-lg";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+
+  // Global wishlist toggle (called from heart button)
+  window.toggleWishlist = async function(productId, buttonElement) {
+    const index = wishlist.findIndex(item => item.productId === productId);
+    if (index === -1) {
+      // Add
+      const success = await addToWishlistBackend(productId);
+      if (success) {
+        wishlist.push({ productId });
+        buttonElement.classList.add('active');
+        buttonElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        showToast("Added to wishlist");
+      }
+    } else {
+      // Remove
+      const success = await removeFromWishlistBackend(productId);
+      if (success) {
+        wishlist.splice(index, 1);
+        buttonElement.classList.remove('active');
+        buttonElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
+        showToast("Removed from wishlist");
+      }
+    }
+    updateHeaderWishlistCount();
+    displayProducts(products); // Re-render to update all heart icons
+  };
 
   // ================
   // API Functions
@@ -37,22 +162,25 @@ document.addEventListener('DOMContentLoaded', () => {
       // Fetch products by subcategory "chronic" - using the correct endpoint
       const encodedSubCategory = encodeURIComponent('Chronic Care');
       const response = await fetch(`${API_BASE_URL}/get-by-sub-category/${encodedSubCategory}`);
-      
+     
       if (!response.ok) throw new Error('Failed to fetch products by subcategory');
-      
+     
       const data = await response.json();
       products = Array.isArray(data) ? data : []; // Handle array response
-      
+     
       // Transform backend data to frontend format
       products = products.map(product => transformProductData(product));
-      
+     
       // Extract unique brands for filtering
       allBrands = new Set(products.map(p => p.brand).filter(Boolean));
       updateBrandFilters();
-      
+     
       displayProducts(products);
       updateCategoryList();
-      
+
+      // Load wishlist after products are ready
+      await loadWishlistFromBackend();
+     
     } catch (error) {
       console.error('Error fetching products:', error);
       showErrorState('Failed to load Chronic Care products. Please try again later.');
@@ -60,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
       products = [];
     }
   }
-
   // Transform backend product data to frontend format
   function transformProductData(backendProduct) {
     return {
@@ -86,37 +213,34 @@ document.addEventListener('DOMContentLoaded', () => {
       ...backendProduct
     };
   }
-
   function calculateDiscount(currentPrice, originalPrice) {
     if (!originalPrice || originalPrice <= currentPrice) return '';
     const discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
     return `${discountPercent}% off`;
   }
-
   async function fetchProductsByCategory(category) {
     try {
       showLoadingState();
       const encodedCategory = encodeURIComponent(category);
       const response = await fetch(`${API_BASE_URL}/get-by-category/${encodedCategory}`);
-      
+     
       if (!response.ok) throw new Error('Failed to fetch products by category');
-      
+     
       const categoryProducts = await response.json();
       // Transform the category products as well
       const transformedProducts = categoryProducts.map(product => transformProductData(product));
-      
+     
       // Filter for Chronic products only from this category
-      return transformedProducts.filter(product => 
-        product.subCategory === 'chronic' || 
+      return transformedProducts.filter(product =>
+        product.subCategory === 'chronic' ||
         (product.productSubCategory && product.productSubCategory.toLowerCase().includes('chronic'))
       );
-      
+     
     } catch (error) {
       console.error('Error fetching products by category:', error);
       return [];
     }
   }
-
   async function fetchProductDetails(productId) {
     try {
       const response = await fetch(`${API_BASE_URL}/get-product/${productId}`);
@@ -128,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     }
   }
-
   // ================
   // UI Helpers
   // ================
@@ -141,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
   }
-
   function showErrorState(message) {
     if (!productGrid) return;
     productGrid.innerHTML = `
@@ -153,15 +275,14 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
   }
-
   function updateBrandFilters() {
     if (!brandList) return;
-    
+   
     // Clear existing brand filters (keep the structure)
     const brandFilterContainer = brandList.querySelector('.space-y-2');
     if (brandFilterContainer) {
       brandFilterContainer.innerHTML = '';
-      
+     
       allBrands.forEach(brand => {
         if (brand) { // Only add if brand is not null/undefined
           const label = document.createElement('label');
@@ -173,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
           brandFilterContainer.appendChild(label);
         }
       });
-      
+     
       // Reattach event listeners to new brand filters
       const newBrandFilters = brandFilterContainer.querySelectorAll('.brand-filter');
       newBrandFilters.forEach(filter => {
@@ -183,12 +304,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-
   function updateCategoryList() {
     if (!categoryList) return;
-    
+   
     const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    
+   
     // Update category list with actual categories from backend
     const categoryLinks = categoryList.querySelectorAll('.category-link');
     categoryLinks.forEach(link => {
@@ -200,56 +320,51 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
   function updateCartCount() {
     if (!cartCountElement) return;
     const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     cartCountElement.textContent = totalItems;
     localStorage.setItem('cartCount', totalItems);
   }
-
   // Initialize cart from localStorage
   (function loadCart() {
     const stored = JSON.parse(localStorage.getItem('cart') || 'null');
     if (Array.isArray(stored)) cart = stored;
     updateCartCount();
   })();
-
   // ================
   // Product Rendering
   // ================
   function createProductCard(product) {
     const productDiv = document.createElement('div');
     productDiv.className = 'product-card bg-white p-4 shadow rounded-lg flex flex-col justify-between relative cursor-pointer hover:shadow-lg transition-shadow';
-
     const prescriptionBadge = product.prescriptionRequired
       ? '<div class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">Rx Required</div>'
       : '';
-
     // Generate image URL - using main image from backend
     const imageUrl = product.productMainImage && !product.productMainImage.startsWith('http')
       ? `${API_BASE_URL}/${product.productId}/image`
       : product.image || product.productMainImage || 'https://via.placeholder.com/150?text=No+Image';
-
     const originalPrice = product.originalPrice || product.mrp || product.productOldPrice;
     const currentPrice = product.price || product.productPrice;
     const discount = product.discount || calculateDiscount(currentPrice, originalPrice);
-
     // Safely format prices
     const formattedPrice = currentPrice ? currentPrice.toFixed(2) : '0.00';
     const formattedOriginalPrice = originalPrice ? originalPrice.toFixed(2) : null;
 
+    const isWishlisted = wishlist.some(item => item.productId === product.productId);
+
     const actionButton = product.prescriptionRequired
-      ? `<button 
-            class="mt-3 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition flex items-center justify-center gap-2 upload-pres-btn" 
+      ? `<button
+            class="mt-3 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition flex items-center justify-center gap-2 upload-pres-btn"
             data-product='${escapeHtml(JSON.stringify(product))}'>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             Upload Prescription
           </button>`
-      : `<button 
-            class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition flex items-center justify-center gap-2 add-to-cart-btn" 
+      : `<button
+            class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition flex items-center justify-center gap-2 add-to-cart-btn"
             data-id="${product.id}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -260,15 +375,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     productDiv.innerHTML = `
       ${prescriptionBadge}
-      <img src="${imageUrl}" alt="${escapeHtml(product.name)}" class="product-image w-full h-32 object-cover rounded-lg mb-3" onerror="this.src='https://via.placeholder.com/150?text=Image+Error'">
+      <div class="relative">
+        <img src="${imageUrl}" alt="${escapeHtml(product.name)}" class="product-image w-full h-32 object-cover rounded-lg mb-3" onerror="this.src='https://via.placeholder.com/150?text=Image+Error'">
+        <button class="wishlist-btn absolute top-2 left-2 ${isWishlisted ? 'active' : ''}" data-id="${product.productId}"
+                onclick="event.stopPropagation(); window.toggleWishlist(${product.productId}, this)">
+          <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart text-xl ${isWishlisted ? 'text-red-600' : 'text-gray-600'}"></i>
+        </button>
+      </div>
       <p class="text-sm text-gray-600 font-medium">${escapeHtml(product.name)}</p>
       <p class="text-xs text-gray-500">${escapeHtml(product.brand)}</p>
       ${product.prescriptionRequired ? '<p class="text-red-600 text-xs mt-1 font-semibold">⚠️ Prescription needed</p>' : ''}
-      <p class="text-green-600 font-bold mt-2">₹${formattedPrice} 
+      <p class="text-green-600 font-bold mt-2">₹${formattedPrice}
         ${formattedOriginalPrice ? `<span class="text-gray-500 line-through text-sm">₹${formattedOriginalPrice}</span> <span class="text-green-600 text-sm">${discount}</span>` : ''}</p>
       ${actionButton}
     `;
-
     // click handlers
     productDiv.addEventListener('click', (event) => {
       if (event.target.tagName === 'BUTTON' || event.target.closest('button')) return;
@@ -278,14 +398,12 @@ document.addEventListener('DOMContentLoaded', () => {
         openProductDetails(product);
       }
     });
-
     return productDiv;
   }
-
   function displayProducts(list) {
     if (!productGrid) return;
     productGrid.innerHTML = '';
-    
+   
     if (list.length === 0) {
       productGrid.innerHTML = `
         <div class="col-span-full text-center py-8">
@@ -295,10 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       return;
     }
-    
+   
     list.forEach(product => productGrid.appendChild(createProductCard(product)));
   }
-
   // ================
   // Product interactions
   // ================
@@ -307,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = productDetailsUrl;
   }
   window.openProductDetails = openProductDetails;
-
   function addToCartById(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -318,7 +434,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
   }
   window.addToCart = addToCartById;
-
   // ================
   // Category & Brand Filters
   // ================
@@ -350,12 +465,11 @@ document.addEventListener('DOMContentLoaded', () => {
       e.target.textContent = e.target.textContent === '+' ? '-' : '+';
       return;
     }
-
     // filter by category link or subcategory link
     if (e.target.classList.contains('category-link') || e.target.classList.contains('subcategory-link')) {
       e.preventDefault();
       const text = e.target.textContent.trim();
-      
+     
       if (e.target.classList.contains('subcategory-link')) {
         // Filter by product name locally
         const filtered = products.filter(p => p.name === text);
@@ -370,7 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-
   // brand toggle (expand/collapse)
   if (brandToggle) {
     brandToggle.addEventListener('click', () => {
@@ -378,23 +491,19 @@ document.addEventListener('DOMContentLoaded', () => {
       brandToggle.textContent = brandToggle.textContent === '+' ? '-' : '+';
     });
   }
-
   // sorting
   sortSelect?.addEventListener('change', () => {
     activeSort = sortSelect.value;
     applyFilters(products);
   });
-
   // Apply filters
   function applyFilters(startList) {
     let list = Array.isArray(startList) ? [...startList] : [...products];
-
     // brand filters
     const selectedBrands = Array.from(document.querySelectorAll('.brand-filter:checked')).map(f => f.value);
     if (selectedBrands.length > 0) {
       list = list.filter(p => selectedBrands.includes(p.brand));
     }
-
     // sorting
     if (activeSort === 'Price: Low to High') {
       list.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -409,7 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     displayProducts(list);
   }
-
   // ================
   // Upload Prescription Modal Integration
   // ================
@@ -418,11 +526,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = `/prescribed.html?id=${product.id}`;
       return;
     }
-
     uploadModal.dataset.productId = product.id;
     const modalProductName = uploadModal.querySelector('#modalProductName') || document.getElementById('modalProductName');
     if (modalProductName) modalProductName.textContent = `Upload Prescription for: ${product.name}`;
-
     const modalProductImage = uploadModal.querySelector('.modal-product-image');
     if (modalProductImage) {
       const imageUrl = product.productMainImage && !product.productMainImage.startsWith('http')
@@ -430,7 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
         : product.image || product.productMainImage || 'https://via.placeholder.com/150?text=No+Image';
       modalProductImage.src = imageUrl;
     }
-
     let fileInput = uploadModal.querySelector('#prescriptionFile');
     if (!fileInput) {
       fileInput = uploadModal.querySelector('input[type="file"]');
@@ -443,16 +548,13 @@ document.addEventListener('DOMContentLoaded', () => {
       fileInput.className = 'hidden';
       uploadModal.querySelector('label')?.appendChild(fileInput) || uploadModal.appendChild(fileInput);
     }
-
     const fileNameDisplay = uploadModal.querySelector('#fileNameDisplay') || document.getElementById('fileNameDisplay');
-
     const newFileInput = fileInput.cloneNode();
     newFileInput.id = fileInput.id;
     newFileInput.accept = fileInput.accept;
     newFileInput.className = fileInput.className;
     fileInput.parentNode.replaceChild(newFileInput, fileInput);
     fileInput = newFileInput;
-
     fileInput.addEventListener('change', function () {
       const file = fileInput.files[0];
       if (!file) {
@@ -460,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (fileNameDisplay) fileNameDisplay.textContent = file.name;
-
       if (file.type.startsWith('image/')) {
         const previewImg = uploadModal.querySelector('#prescriptionPreviewImg');
         const reader = new FileReader();
@@ -478,7 +579,6 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadModal.dataset.tempFileName = file.name;
       }
     });
-
     const label = uploadModal.querySelector('label');
     if (label) {
       label.addEventListener('click', (ev) => {
@@ -487,7 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fi) fi.click();
       }, { once: true });
     }
-
     const submitBtn = uploadModal.querySelector('#submitPrescription') || document.getElementById('submitPrescription');
     if (submitBtn) {
       const newBtn = submitBtn.cloneNode(true);
@@ -496,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prodId = uploadModal.dataset.productId;
         const tmpName = uploadModal.dataset.tempFileName;
         const tmpData = uploadModal.dataset.tempDataURL || null;
-        
+       
         const fi = uploadModal.querySelector('#prescriptionFile');
         if (!tmpName && fi && fi.files[0]) {
           const file = fi.files[0];
@@ -509,22 +608,18 @@ document.addEventListener('DOMContentLoaded', () => {
           reader.readAsDataURL(file);
           return;
         }
-
         if (!tmpName) {
           alert('Please choose a prescription file before submitting.');
           return;
         }
-
         savePrescription(prodId, tmpName, tmpData);
         uploadModal.classList.add('hidden');
         clearModalTempState();
         alert('Prescription uploaded successfully.');
       });
     }
-
     uploadModal.classList.remove('hidden');
   }
-
   function savePrescription(productId, fileName, dataURL) {
     if (!productId) return;
     const prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '{}');
@@ -535,7 +630,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     localStorage.setItem('prescriptions', JSON.stringify(prescriptions));
   }
-
   function clearModalTempState() {
     if (!uploadModal) return;
     delete uploadModal.dataset.tempFileName;
@@ -550,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fi = uploadModal.querySelector('#prescriptionFile');
     if (fi) fi.value = '';
   }
-
   // Event delegation for dynamic buttons
   document.body.addEventListener('click', (e) => {
     const up = e.target.closest('.upload-pres-btn');
@@ -567,7 +660,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
-
     const atc = e.target.closest('.add-to-cart-btn');
     if (atc) {
       e.stopPropagation();
@@ -579,7 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   });
-
   // Modal close handlers
   if (uploadModal) {
     uploadModal.addEventListener('click', (e) => {
@@ -588,7 +679,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearModalTempState();
       }
     });
-
     const closeUploadModalBtn = document.getElementById('closeUploadModal');
     if (closeUploadModalBtn) {
       closeUploadModalBtn.addEventListener('click', () => {
@@ -597,14 +687,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-
   if (validPrescriptionBtn && validPrescriptionModal) {
     validPrescriptionBtn.addEventListener('click', () => validPrescriptionModal.classList.remove('hidden'));
     validPrescriptionModal.addEventListener('click', (e) => { if (e.target === validPrescriptionModal) validPrescriptionModal.classList.add('hidden'); });
     const validClose = validPrescriptionModal.querySelector('#closeValidPrescriptionModal') || validPrescriptionModal.querySelector('button');
     if (validClose) validClose.addEventListener('click', () => validPrescriptionModal.classList.add('hidden'));
   }
-
   // ================
   // Utility functions
   // ================
@@ -616,12 +704,10 @@ document.addEventListener('DOMContentLoaded', () => {
               .replace(/"/g, '&quot;')
               .replace(/'/g, '&#039;');
   }
-
   function unescapeHtml(encoded) {
     if (!encoded) return encoded;
     return encoded.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
   }
-
   // ================
   // Initialize App
   // ================
@@ -637,9 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/prescribed.html';
     }
   };
-
   window.addToCart = addToCartById;
-
   // Start the application
   fetchProducts();
 });

@@ -5,7 +5,6 @@ let wishlist = [];
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 let currentPage = 1;
 const pageSize = 12;
-
 let filterState = {
   category: 'all',
   brand: 'all',
@@ -14,19 +13,38 @@ let filterState = {
   maxPrice: 10000,
   sort: 'default'
 };
-
 const API_BASE = "http://localhost:8083/api/mb/products";
 const WISHLIST_API_BASE = "http://localhost:8083/api/wishlist";
 const IMAGE_BASE = "http://localhost:8083";
-const CURRENT_USER_ID = 1;
+
+// Dynamic user ID (exactly like ref code)
+function getCurrentUserId() {
+  try {
+    const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+    if (!userData) return null;
+    const user = JSON.parse(userData);
+    const id = user.userId || user.id || user.userID;
+    return id ? Number(id) : null;
+  } catch (error) {
+    console.error('Error reading currentUser:', error);
+    return null;
+  }
+}
+
+console.log("====getCurrentUserId function returns :", getCurrentUserId());
+const CURRENT_USER_ID = getCurrentUserId(); // Exactly like ref code
 
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
 
-// ==================== WISHLIST BACKEND SYNC ====================
-async function addToWishlistBackend(productId, productType = "MOTHER") {
+// ==================== WISHLIST BACKEND SYNC (NOW EXACTLY LIKE REF) ====================
+async function addToWishlistBackend(productId) {
+  if (!CURRENT_USER_ID) {
+    console.log("No user logged in – cannot add to backend wishlist");
+    return false;
+  }
   try {
     const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
       method: "POST",
@@ -34,24 +52,24 @@ async function addToWishlistBackend(productId, productType = "MOTHER") {
       body: JSON.stringify({
         userId: CURRENT_USER_ID,
         productId: productId,
-        productType: productType
+        productType: "MOTHER"
       })
     });
     if (response.ok) {
-      const data = await response.json();
-      console.log("✅ Backend: Added/Updated in wishlist", data);
-      return data;
-    } else {
-      const err = await response.text();
-      console.warn("⚠️ Backend add wishlist failed:", err);
+      console.log("Backend: Added to wishlist");
+      return true;
     }
   } catch (err) {
-    console.error("❌ Error calling add wishlist backend:", err);
+    console.error("Error adding to wishlist backend:", err);
   }
-  return null;
+  return false;
 }
 
-async function removeFromWishlistBackend(productId, productType = "MOTHER") {
+async function removeFromWishlistBackend(productId) {
+  if (!CURRENT_USER_ID) {
+    console.log("No user logged in – cannot remove from backend wishlist");
+    return false;
+  }
   try {
     const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
       method: "POST",
@@ -59,51 +77,54 @@ async function removeFromWishlistBackend(productId, productType = "MOTHER") {
       body: JSON.stringify({
         userId: CURRENT_USER_ID,
         productId: productId,
-        productType: productType
+        productType: "MOTHER"
       })
     });
     if (response.ok) {
-      console.log("✅ Backend: Removed from wishlist");
+      console.log("Backend: Removed from wishlist");
       return true;
-    } else {
-      console.warn("⚠️ Backend remove failed");
     }
   } catch (err) {
-    console.error("❌ Error calling remove wishlist backend:", err);
+    console.error("Error removing from wishlist backend:", err);
   }
   return false;
 }
 
 async function loadWishlistFromBackend() {
+  if (!CURRENT_USER_ID) {
+    console.log("No user logged in, skipping wishlist load from backend");
+    wishlist = [];
+    updateHeaderCounts();
+    renderProducts();
+    return;
+  }
   try {
     const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${CURRENT_USER_ID}`);
     if (response.ok) {
       const backendItems = await response.json();
-      console.log("✅ Loaded wishlist from backend:", backendItems.length, "items");
-    
+      console.log("Loaded wishlist from backend:", backendItems.length, "items");
+      wishlist = backendItems.map(item => ({
+        id: item.productId || item.id
+      }));
+      updateHeaderCounts();
+      renderProducts(); // Refresh heart icons
+    } else {
+      console.warn("Failed to load wishlist:", response.status);
       wishlist = [];
-      backendItems.forEach(item => {
-        wishlist.push({
-          id: item.productId,
-          name: item.title || "Product",
-          price: item.price?.[0] || 0,
-          originalPrice: item.originalPrice?.[0] || null,
-          image: `${IMAGE_BASE}/api/mb/products/${item.productId}/image`,
-          productType: item.productType || "MOTHER"
-        });
-      });
-    
       updateHeaderCounts();
       renderProducts();
     }
   } catch (err) {
-    console.error("❌ Failed to load wishlist from backend:", err);
+    console.error("Failed to load wishlist from backend:", err);
+    wishlist = [];
+    updateHeaderCounts();
+    renderProducts();
   }
 }
 
 // ==================== LOAD PRODUCTS FROM BACKEND ====================
 async function loadProductsBySubcategories() {
-  console.log("📦 Starting loadProductsBySubcategories...");
+  console.log("Starting loadProductsBySubcategories...");
   const subcategories = [
     "Test Kits",
     "Skin Care",
@@ -123,7 +144,6 @@ async function loadProductsBySubcategories() {
     "PCOS and Preconception",
     "MenoPausal Medicines"
   ];
-
   try {
     const requests = subcategories.map(sub => {
       const url = `${API_BASE}/sub-category/${encodeURIComponent(sub)}`;
@@ -131,10 +151,8 @@ async function loadProductsBySubcategories() {
         .then(res => res.ok ? res.json() : [])
         .catch(() => []);
     });
-
     const results = await Promise.all(requests);
     const productsFromApi = results.flat();
-
     allProducts = productsFromApi.map(p => ({
       id: p.id,
       title: p.title || "Untitled Product",
@@ -152,20 +170,19 @@ async function loadProductsBySubcategories() {
       description: Array.isArray(p.description) ? p.description.join(". ") : (p.description || "No description available"),
       productType: "MOTHER"
     }));
-
     filteredProducts = [...allProducts];
     setText("resultsCount", `Showing ${filteredProducts.length} products`);
     renderProducts();
     await loadWishlistFromBackend();
   } catch (err) {
-    console.error("❌ FATAL ERROR in loadProductsBySubcategories:", err);
+    console.error("FATAL ERROR in loadProductsBySubcategories:", err);
     setText("resultsCount", "Failed to load products");
   }
 }
 
 // ==================== UI & RENDERING ====================
 function updateHeaderCounts() {
-  console.log("🔢 Updating header counts...");
+  console.log("Updating header counts...");
   const updateBadge = (id, count) => {
     const el = document.getElementById(id);
     if (el) {
@@ -179,36 +196,37 @@ function updateHeaderCounts() {
 }
 
 async function toggleWishlist(id) {
-  console.log("❤️ Toggle wishlist for product ID:", id);
-  const product = allProducts.find(p => p.id === id);
-  if (!product) return;
-
+  console.log("Toggle wishlist for product ID:", id);
   const index = wishlist.findIndex(item => item.id === id);
-  const productType = product.productType || "MOTHER";
 
-  if (index > -1) {
-    const success = await removeFromWishlistBackend(id, productType);
+  if (index === -1) {
+    // Trying to add
+    if (!CURRENT_USER_ID) {
+      showToast("Please log in to add to wishlist");
+      return;
+    }
+    const success = await addToWishlistBackend(id);
+    if (success) {
+      wishlist.push({ id });
+      showToast("Added to wishlist");
+    } else {
+      showToast("Failed to add to wishlist");
+      return;
+    }
+  } else {
+    // Trying to remove
+    const success = await removeFromWishlistBackend(id);
     if (success) {
       wishlist.splice(index, 1);
       showToast("Removed from wishlist");
-    }
-  } else {
-    const result = await addToWishlistBackend(id, productType);
-    if (result) {
-      wishlist.push({
-        id: product.id,
-        name: product.title.split(' (')[0].trim(),
-        price: product.price,
-        originalPrice: product.originalPrice || null,
-        image: product.mainImageUrl,
-        productType: productType
-      });
-      showToast("Added to wishlist");
+    } else {
+      showToast("Failed to remove from wishlist");
+      return;
     }
   }
 
   updateHeaderCounts();
-  renderProducts();
+  renderProducts(); // Re-render to update all heart icons instantly
 }
 
 function showToast(msg) {
@@ -222,7 +240,6 @@ function showToast(msg) {
 function createProductCard(p) {
   const inWishlist = wishlist.some(x => x.id === p.id);
   const isOutOfStock = !p.inStock;
-
   return `
     <div class="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100
                 ${isOutOfStock ? 'opacity-60 grayscale cursor-not-allowed' : ''}"
@@ -266,14 +283,11 @@ function createProductCard(p) {
 function renderProducts() {
   const start = (currentPage - 1) * pageSize;
   const paginated = filteredProducts.slice(start, start + pageSize);
-
   const grid = document.getElementById("productsGrid");
   if (!grid) return;
-
   grid.innerHTML = paginated.length
     ? paginated.map(createProductCard).join("")
     : `<p class="col-span-full text-center text-gray-500 py-10">No products found</p>`;
-
   setText("resultsCount", `Showing ${filteredProducts.length} products`);
   renderPagination();
 }
@@ -282,7 +296,6 @@ function renderPagination() {
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const container = document.getElementById("pagination");
   if (!container) return;
-
   container.innerHTML = "";
   for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement("button");
@@ -301,7 +314,6 @@ function applyFilters() {
     const priceMatch = p.price >= filterState.minPrice && p.price <= filterState.maxPrice;
     return catMatch && brandMatch && discMatch && priceMatch;
   });
-
   sortProducts(filterState.sort);
   currentPage = 1;
   renderProducts();
@@ -336,14 +348,12 @@ function saveFiltersToStorage() {
 function initPriceSliders() {
   const maxRange = 10000;
   const sliders = document.querySelectorAll(".price-slider-container");
-
   sliders.forEach(container => {
     const minThumb = container.querySelector('input[type="range"]:first-of-type');
     const maxThumb = container.querySelector('input[type="range"]:last-of-type');
     const fill = container.querySelector(".slider-fill");
     const minVal = container.querySelector("#minValue") || container.querySelector(".price-values span:first-child");
     const maxVal = container.querySelector("#maxValue") || container.querySelector(".price-values span:last-child");
-
     const update = (minP, maxP) => {
       const minPct = (minP / maxRange) * 100;
       const maxPct = (maxP / maxRange) * 100;
@@ -356,28 +366,24 @@ function initPriceSliders() {
       filterState.minPrice = minP;
       filterState.maxPrice = maxP;
     };
-
     minThumb.addEventListener("input", () => {
       let val = parseInt(minThumb.value);
       if (val > parseInt(maxThumb.value)) val = parseInt(maxThumb.value);
       update(val, parseInt(maxThumb.value));
       applyFilters();
     });
-
     maxThumb.addEventListener("input", () => {
       let val = parseInt(maxThumb.value);
       if (val < parseInt(minThumb.value)) val = parseInt(minThumb.value);
       update(parseInt(minThumb.value), val);
       applyFilters();
     });
-
     update(filterState.minPrice, filterState.maxPrice);
   });
 }
 
 function initFiltersAndUI() {
   loadFiltersFromStorage();
-
   document.querySelectorAll('input[name="category"], input[name="brand"], input[name="discount"]').forEach(input => {
     if ((input.name === "category" && input.value === filterState.category) ||
         (input.name === "brand" && input.value === filterState.brand) ||
@@ -391,7 +397,6 @@ function initFiltersAndUI() {
       applyFilters();
     });
   });
-
   const sortSelect = document.getElementById("sortSelect");
   if (sortSelect) {
     sortSelect.value = filterState.sort;
@@ -402,7 +407,6 @@ function initFiltersAndUI() {
       saveFiltersToStorage();
     });
   }
-
   document.getElementById("applyMobileFilters")?.addEventListener("click", () => {
     const cat = document.querySelector('#filterSheet input[name="category"]:checked')?.value || 'all';
     const brd = document.querySelector('#filterSheet input[name="brand"]:checked')?.value || 'all';
@@ -412,7 +416,6 @@ function initFiltersAndUI() {
     document.getElementById("filterSheet").classList.add("translate-y-full");
     document.getElementById("mobileSheetBackdrop").classList.add("hidden");
   });
-
   document.getElementById("clearMobileFilters")?.addEventListener("click", () => {
     filterState = { category: 'all', brand: 'all', discount: 0, minPrice: 0, maxPrice: 10000, sort: 'default' };
     localStorage.removeItem("motherCareFilters");
@@ -421,7 +424,6 @@ function initFiltersAndUI() {
     initPriceSliders();
     applyFilters();
   });
-
   applyFilters();
 }
 
@@ -434,7 +436,6 @@ function initBanner() {
   const slides = document.querySelectorAll('.banner-slide');
   const dots = document.querySelectorAll('.banner-dot');
   let i = 0;
-
   const go = (n) => {
     slides.forEach(s => s.classList.remove('active'));
     dots.forEach(d => d.classList.remove('active'));
@@ -442,24 +443,20 @@ function initBanner() {
     slides[i].classList.add('active');
     dots[i].classList.add('active');
   };
-
   dots.forEach((d, idx) => d.onclick = () => go(idx));
   setInterval(() => go(i + 1), 5000);
 }
 
 function initMobileSheets() {
   const backdrop = document.getElementById("mobileSheetBackdrop");
-
   document.getElementById("openFilterSheet")?.addEventListener("click", () => {
     document.getElementById("filterSheet").classList.remove("translate-y-full");
     backdrop.classList.remove("hidden");
   });
-
   document.getElementById("openSortSheet")?.addEventListener("click", () => {
     document.getElementById("sortSheet").classList.remove("translate-y-full");
     backdrop.classList.remove("hidden");
   });
-
   document.querySelectorAll("#closeFilterSheet, #closeSortSheet, #mobileSheetBackdrop").forEach(el => {
     el?.addEventListener("click", () => {
       document.getElementById("filterSheet").classList.add("translate-y-full");
@@ -471,7 +468,7 @@ function initMobileSheets() {
 
 // ==================== DOM CONTENT LOADED ====================
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 DOM Content Loaded!");
+  console.log("DOM Content Loaded!");
   initBanner();
   initMobileSheets();
   initPriceSliders();
