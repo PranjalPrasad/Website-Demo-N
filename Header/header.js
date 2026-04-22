@@ -355,6 +355,7 @@ function highlightActiveNav() {
 // MAIN INITIALIZATION FUNCTION
 function initializeHeader() {
   loadSavedPincode();
+  setupPincodeInputValidation();
 
   const savedLang = localStorage.getItem('selectedLanguage') || 'english';
   document.getElementById('current-lang').textContent = savedLang.charAt(0).toUpperCase() + savedLang.slice(1);
@@ -380,7 +381,7 @@ function initializeHeader() {
     document.getElementById('mobile-profile-menu').classList.toggle('hidden');
   });
 
-  // Desktop profile dropdown - FIXED VERSION
+  // Desktop profile dropdown
   const profileBtn  = document.getElementById('profile-btn');
   const profileMenu = document.getElementById('profile-menu');
 
@@ -420,10 +421,8 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Initialize cart count
-if (typeof cartManager !== 'undefined') {
-  cartManager.updateCartCount();
-} else {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+function updateHeaderCartCount() {
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   document.querySelectorAll('#desktop-cart-count, #mobile-cart-count, #cart-count, #cartItemsCount, .cart-count').forEach(el => {
     if (el) {
@@ -432,3 +431,29 @@ if (typeof cartManager !== 'undefined') {
     }
   });
 }
+
+// Initialize wishlist count
+function updateHeaderWishlistCount() {
+  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  const count = wishlist.length;
+  document.querySelectorAll('#desktop-wishlist-count, #mobile-wishlist-count, .wishlist-count').forEach(el => {
+    if (el) {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'flex' : 'none';
+    }
+  });
+}
+
+// Run on load
+updateHeaderCartCount();
+updateHeaderWishlistCount();
+
+// Listen for storage changes
+window.addEventListener('storage', function(e) {
+  if (e.key === 'cart') {
+    updateHeaderCartCount();
+  }
+  if (e.key === 'wishlist') {
+    updateHeaderWishlistCount();
+  }
+});

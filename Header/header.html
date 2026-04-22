@@ -98,24 +98,40 @@
     }
     .disclaimer-text:hover { animation-play-state: paused; }
 
+    /* Desktop navigation - all items in one line, no scrollbar */
+    .desktop-nav-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+      width: 100%;
+    }
+    
+    .desktop-nav-list {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      margin: 0;
+      padding: 4px 0;
+      list-style: none;
+    }
+    
     .nav-link {
-  white-space: nowrap !important;
-  min-width: auto !important;
-  width: auto !important;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-}
-
-/* Desktop navigation menu items - fixed width/height */
-.hidden.lg\:flex ul li a {
-  white-space: nowrap !important;
-  overflow: visible !important;
-  display: inline-flex !important;
-  font-size: 0.875rem !important; /* 14px */
-  padding: 0.5rem 1rem !important;
-  margin: 0 0.125rem !important;
-}
-
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      font-size: 0.8rem !important;
+      font-weight: 600 !important;
+      padding: 0.4rem 0.9rem !important;
+      margin: 0 0.1rem !important;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      transform: translateY(-1px);
+    }
 
     .nav-link:hover { color: var(--green-dark); }
 
@@ -158,6 +174,32 @@
     .nav-dropdown {
       border-top: 3px solid var(--green-light);
       border-radius: 0 0 12px 12px;
+      min-width: 200px;
+    }
+    
+    /* Ensure dropdowns appear above other content */
+    .group .nav-dropdown {
+      z-index: 100;
+    }
+    
+    /* Make the nav container responsive - no scrollbar */
+    .nav-container {
+      overflow: visible !important;
+    }
+    
+    /* Adjust container width for larger screens */
+    @media (min-width: 1400px) {
+      .nav-link {
+        font-size: 0.85rem !important;
+        padding: 0.5rem 1.1rem !important;
+      }
+    }
+    
+    @media (min-width: 1600px) {
+      .nav-link {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 1.3rem !important;
+      }
     }
   </style>
 </head>
@@ -264,13 +306,13 @@
     </div>
   </header>
 
+  <!-- Desktop Navigation - All options in one line, no scrollbar -->
   <nav style="background: var(--cream); border-top: 1px solid #c7e8d0;">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="hidden lg:flex justify-center">
-        <ul class="flex space-x-1 text-sm font-bold py-1">
-
+      <div class="desktop-nav-wrapper hidden lg:flex">
+        <ul class="desktop-nav-list">
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link badge-indoor px-4 py-2 rounded-lg flex items-center gap-1 transition">
+            <a href="javascript:void(0)" class="nav-link badge-indoor">
               <span data-i18n="indoorPlants">Indoor Plants</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -282,7 +324,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link badge-outdoor px-4 py-2 rounded-lg flex items-center gap-1 transition">
+            <a href="javascript:void(0)" class="nav-link badge-outdoor">
               <span data-i18n="outdoorPlants">Outdoor Plants</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -294,7 +336,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+            <a href="javascript:void(0)" class="nav-link" style="color: var(--text-dark);">
               <span data-i18n="herbsVeg">Herbs & Veg</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -305,7 +347,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+            <a href="javascript:void(0)" class="nav-link" style="color: var(--text-dark);">
               <span data-i18n="succulents">Succulents</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-44 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -316,7 +358,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+            <a href="javascript:void(0)" class="nav-link" style="color: var(--text-dark);">
               <span data-i18n="seeds">Seeds & Bulbs</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -328,7 +370,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+            <a href="javascript:void(0)" class="nav-link" style="color: var(--text-dark);">
               <span data-i18n="pots">Pots</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -340,7 +382,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+            <a href="javascript:void(0)" class="nav-link" style="color: var(--text-dark);">
               <span data-i18n="tools">Tools</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-44 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -351,7 +393,7 @@
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 transition" style="color: #7a3e10; background: var(--earth-light); border: 2px solid #dfc4a0;">
+            <a href="javascript:void(0)" class="nav-link" style="color: #7a3e10; background: var(--earth-light); border: 2px solid #dfc4a0;">
               <span data-i18n="giftHampers">Gift Hampers</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
             <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
@@ -361,13 +403,11 @@
               <a href="/gifts/low-maintenance.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="lowMaintenance">Low Maintenance</span></a>
             </div>
           </li>
-
         </ul>
       </div>
 
       <div id="mobile-menu" class="lg:hidden hidden shadow-lg" style="background: var(--cream);">
         <div class="py-2">
-
           <div class="mobile-dropdown">
             <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
               <span data-i18n="indoorPlants">Indoor Plants</span> <i class="fas fa-chevron-down text-sm"></i>
@@ -460,7 +500,6 @@
               <a href="/gifts/low-maintenance.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="lowMaintenance">Low Maintenance</span></a>
             </div>
           </div>
-
         </div>
       </div>
     </div>
