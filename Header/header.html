@@ -3,59 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoodNeews - Header</title>
+  <title>GreenNest Nursery - Header</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
+    * { font-family: 'Nunito', sans-serif; }
+
     body { padding-top: 0 !important; }
-    .fixed-header { 
-      position: fixed; top: 0; left: 0; right: 0; 
-      z-index: 50; background: white; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+
+    .fixed-header {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 50; background: #fff;
+      box-shadow: 0 2px 12px rgba(52,103,68,0.10);
     }
 
-    /* ACTIVE STATE STYLES */
+    :root {
+      --green-dark:   #2d6a4f;
+      --green-mid:    #40916c;
+      --green-light:  #74c69d;
+      --green-pale:   #d8f3dc;
+      --green-accent: #52b788;
+      --earth:        #a07850;
+      --earth-light:  #f0e0c8;
+      --cream:        #f9f6f0;
+      --white:        #ffffff;
+      --text-dark:    #1b3a2d;
+      --text-mid:     #3a5a44;
+    }
+
     .nav-link.active, .mobile-nav-link.active {
-      background-color: #ec4899 !important;
+      background-color: var(--green-mid) !important;
       color: white !important;
       font-weight: bold !important;
       border-radius: 0.5rem;
     }
 
-    .nav-link[href*="mother.html"].active,
-    .nav-link[href*="MotherCare"].active {
-      background-color: #fdb8d9 !important;
-      color: #be185d !important;
-      border: 2px solid #f472b6 !important;
-    }
-
-    .nav-link[href*="baby.html"].active,
-    .nav-link[href*="BabyCare"].active {
-      background-color: #bfdbfe !important;
-      color: #1e40af !important;
-      border: 2px solid #93c5fd !important;
-    }
-
-    /* Mobile Menu Improvements */
     #mobile-menu {
       max-height: calc(100vh - 140px);
       overflow-y: auto;
       scrollbar-width: none;
+      background: var(--cream);
     }
     #mobile-menu::-webkit-scrollbar { display: none; }
 
-    .mobile-dropdown {
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
+    .mobile-dropdown { transition: all 0.3s ease; overflow: hidden; }
+    .mobile-dropdown-content { background-color: #eaf5ee; padding-left: 2rem; }
 
-    .mobile-dropdown-content {
-      background-color: #f8fafc;
-      padding-left: 2rem;
-    }
-
-    /* ACCOUNT DROPDOWN - FIXED */
     #profile-menu {
       display: none;
       position: absolute;
@@ -64,383 +59,482 @@
       margin-top: 8px;
       width: 240px;
       background: white;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #c7e8d0;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      box-shadow: 0 10px 30px rgba(45,106,79,0.15);
       z-index: 9999;
     }
-    #profile-menu.show {
-      display: block;
-    }
+    #profile-menu.show { display: block; }
 
-    /* Modal animations */
-    .modal-backdrop {
-      animation: fadeIn 0.3s ease;
-    }
-    .modal-content {
-      animation: slideUp 0.3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    .modal-backdrop { animation: fadeIn 0.3s ease; }
+    .modal-content  { animation: slideUp 0.3s ease; }
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp {
       from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      to   { transform: translateY(0);    opacity: 1; }
     }
 
-    /* MOVING DISCLAIMER - TOP BAR */
     .disclaimer-bar {
-      background: white;
-      color: #687FE5;
+      background: var(--green-dark);
+      color: #d8f3dc;
       font-size: 12px;
       font-weight: 700;
-      padding: 8px 0;
+      padding: 7px 0;
       overflow: hidden;
       white-space: nowrap;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       z-index: 99999;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      letter-spacing: 0.03em;
     }
     .disclaimer-text {
       display: inline-block;
       padding-left: 100%;
-      animation: scroll-left 25s linear infinite;
+      animation: scroll-left 28s linear infinite;
     }
     @keyframes scroll-left {
-      0% { transform: translateX(0); }
+      0%   { transform: translateX(0); }
       100% { transform: translateX(-100%); }
     }
-    .disclaimer-text:hover {
-      animation-play-state: paused;
+    .disclaimer-text:hover { animation-play-state: paused; }
+
+    .nav-link {
+  white-space: nowrap !important;
+  min-width: auto !important;
+  width: auto !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Desktop navigation menu items - fixed width/height */
+.hidden.lg\:flex ul li a {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  display: inline-flex !important;
+  font-size: 0.875rem !important; /* 14px */
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.125rem !important;
+}
+
+
+    .nav-link:hover { color: var(--green-dark); }
+
+    .drop-item:hover {
+      background: var(--green-pale);
+      color: var(--green-dark);
+      padding-left: 1.25rem;
+      transition: all 0.18s;
+    }
+
+    .badge-indoor {
+      border: 2px solid #b7e4c7;
+      color: var(--green-dark);
+      background: #eaf7f0;
+    }
+    .badge-indoor:hover { background: var(--green-pale); }
+
+    .badge-outdoor {
+      border: 2px solid #c9d89e;
+      color: #5a6e24;
+      background: #f3f7e4;
+    }
+    .badge-outdoor:hover { background: #e8f0c8; }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-dark);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .logo-text span { color: var(--green-accent); }
+
+    #pincode-trigger:hover { color: var(--green-dark); }
+
+    .cart-badge { background: var(--earth); }
+
+    .mobile-nav-item:hover { background: var(--green-pale); color: var(--green-dark); }
+
+    .nav-dropdown {
+      border-top: 3px solid var(--green-light);
+      border-radius: 0 0 12px 12px;
     }
   </style>
 </head>
-<body class="pt-16">
+<body class="pt-16" style="background: var(--cream);">
 
-  <!-- MOVING DISCLAIMER BAR -->
 <div class="disclaimer-bar">
   <div class="disclaimer-text">
-    All medicines are sold under doctor's prescription only. Consult your physician before use. 
-    &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;
-    सभी दवाएँ केवल डॉक्टर के प्रिस्क्रिप्शन पर ही बेची जाती हैं। उपयोग से पहले अपने चिकित्सक से परामर्श लें।
+    🌿&nbsp; Free delivery on orders above ₹499 &nbsp;|&nbsp;
+    🪴&nbsp; All plants are nursery-fresh & healthy guaranteed &nbsp;|&nbsp;
+    🌱&nbsp; Expert plant care tips with every order &nbsp;|&nbsp;
+    🎁&nbsp; Gift wrapping available for all hampers &nbsp;|&nbsp;
+    🌸&nbsp; New arrivals: Rare Monstera & Alocasia varieties now in stock!
   </div>
 </div>
 
-<!-- SINGLE FIXED HEADER -->
-<div class="fixed-header mt-8">
-  <header class="border-b bg-white">
+<div class="fixed-header mt-7">
+  <header class="border-b" style="background: var(--white); border-color: #c7e8d0;">
     <div class="max-w-7xl mx-auto px-4 sm:px-4 lg:px-8">
-      <div class="flex justify-between items-center py-1">
+      <div class="flex justify-between items-center py-2">
 
-        <!-- Logo + Pincode with Divider -->
-        <div class="flex items-center space-x-6">
-          <a href="/home.html" class="flex-shrink-0">
-            <img src="/Images/IMG/LOGO-removebg-preview.png" alt="GoodNeews" class="h-10 sm:h-12">
+        <div class="flex items-center space-x-5">
+          <a href="/home.html" class="flex-shrink-0 flex items-center gap-2">
+            <span style="font-size:1.7rem;">🌿</span>
+            <span class="logo-text">Green<span>Nest</span></span>
           </a>
 
-          <!-- Vertical Gray Divider Line -->
-          <div class="h-12 w-px bg-gray-300 hidden md:block"></div>
+          <div class="h-10 w-px hidden md:block" style="background: #c7e8d0;"></div>
 
-          <!-- Desktop Pincode Trigger -->
-          <!-- Desktop Pincode Trigger -->
           <div class="hidden md:flex flex-col">
-            <button id="pincode-trigger" class="flex items-center space-x-2 text-xs font-medium text-gray-700 hover:text-pink-600 transition">
-              <i class="fas fa-map-marker-alt text-pink-600"></i>
-              <span id="display-pincode">Select Pincode</span>
+            <button id="pincode-trigger" class="flex items-center space-x-2 text-xs font-medium text-gray-600 transition">
+              <i class="fas fa-map-marker-alt" style="color: var(--green-mid);"></i>
+              <span id="display-pincode" data-i18n="enterPinCode">Select Pincode</span>
               <i class="fas fa-chevron-down text-xs ml-1"></i>
             </button>
-            <div id="delivery-info" class="flex items-center mt-1 text-xs text-green-600 hidden">
+            <div id="delivery-info" class="flex items-center mt-1 text-xs hidden" style="color: var(--green-mid);">
               <i class="fas fa-truck mr-1"></i>
-              <span>Delivery in 3-5 days</span>
+              <span data-i18n="deliveryDays">Delivery in 3-5 days</span>
             </div>
           </div>
         </div>
 
-        <!-- Desktop Right Icons -->
-        <div class="hidden md:flex items-center space-x-6 text-gray-700">
-          
-          <!-- Language Trigger Button -->
-          <button id="language-trigger" class="flex items-center space-x-2 text-sm font-medium hover:text-pink-600 transition">
-            <i class="fas fa-globe text-xl"></i>
+        <div class="hidden md:flex items-center space-x-5 text-gray-700">
+
+          <button id="language-trigger" class="flex items-center space-x-1 text-sm font-medium transition" style="color: var(--text-mid);">
+            <i class="fas fa-globe text-lg"></i>
             <span id="current-lang">English</span>
             <i class="fas fa-chevron-down text-xs"></i>
           </button>
 
-          <a href="/contact.html" class="hover:text-blue-700 flex items-center gap-2" data-i18n="contact">
-            <i class="fas fa-phone"></i> Contact Us
+          <a href="/contact.html" class="flex items-center gap-1 text-sm font-semibold transition" style="color: var(--text-mid);">
+            <i class="fas fa-phone"></i> <span data-i18n="contact">Contact</span>
           </a>
 
-          <a href="/Wishlist/wishlist.html" class="relative hover:text-red-600">
-            <i class="fas fa-heart text-xl"></i>
-            <span id="desktop-wishlist-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+          <a href="/Wishlist/wishlist.html" class="relative" style="color: var(--text-mid);">
+            <i class="fas fa-heart text-xl" style="color: #e07070;"></i>
+            <span id="desktop-wishlist-count" class="absolute -top-2 -right-2 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden" style="background: #e07070;">0</span>
           </a>
 
-          <a href="/cart.html" class="relative">
-            <i class="fas fa-shopping-cart text-xl"></i>
-            <span id="desktop-cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
+          <a href="/cart.html" class="relative" style="color: var(--text-mid);">
+            <i class="fas fa-shopping-basket text-xl" style="color: var(--earth);"></i>
+            <span id="desktop-cart-count" class="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden" style="background: var(--earth);">0</span>
           </a>
 
-          <!-- Account Dropdown - FIXED VERSION -->
           <div class="relative">
-            <button id="profile-btn" class="flex items-center space-x-2 hover:bg-gray-100 px-4 py-2 rounded-md transition">
-              <i class="fas fa-user-circle text-2xl"></i>
+            <button id="profile-btn" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg font-semibold text-sm transition" style="color: var(--green-dark); background: var(--green-pale);">
+              <i class="fas fa-user-circle text-xl"></i>
               <span data-i18n="profile">Account</span>
               <i class="fas fa-chevron-down text-xs ml-1"></i>
             </button>
 
-            <!-- Dropdown Menu -->
-            <div id="profile-menu" class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-              <a href="/Signup/auth.html" data-i18n="signupLogin" class="flex items-center px-5 py-4 hover:bg-gray-50 text-gray-700 transition">
-                <i class="fas fa-user-plus mr-3 text-gray-500"></i> Sign Up / Login
+            <div id="profile-menu" class="bg-white overflow-hidden">
+              <a href="/Signup/auth.html" class="flex items-center px-5 py-3 hover:bg-green-50 text-gray-700 transition text-sm">
+                <i class="fas fa-user-plus mr-3" style="color: var(--green-mid);"></i> <span data-i18n="signupLogin">Sign Up / Login</span>
               </a>
-              <a href="/Profile/profile.html" class="flex items-center px-5 py-4 hover:bg-gray-50 text-gray-700 transition">
-                <i class="fas fa-user-circle mr-3 text-gray-500"></i> Profile
+              <a href="/Profile/profile.html" class="flex items-center px-5 py-3 hover:bg-green-50 text-gray-700 transition text-sm">
+                <i class="fas fa-user-circle mr-3" style="color: var(--green-mid);"></i> <span data-i18n="profile">Profile</span>
               </a>
-              <a href="/MY ORDERS/myorders.html" data-i18n="orders" class="flex items-center px-5 py-4 hover:bg-gray-50 text-gray-700 transition">
-                <i class="fas fa-box mr-3 text-gray-500"></i> Orders
+              <a href="/MY ORDERS/myorders.html" class="flex items-center px-5 py-3 hover:bg-green-50 text-gray-700 transition text-sm">
+                <i class="fas fa-box mr-3" style="color: var(--green-mid);"></i> <span data-i18n="orders">Orders</span>
               </a>
-              <a href="/home.html" id="logout-btn" data-i18n="logout" class="flex items-center px-5 py-4 hover:bg-gray-50 text-red-600 font-medium transition">
-                <i class="fas fa-sign-out-alt mr-3"></i> Logout
+              <a href="/home.html" id="logout-btn" class="flex items-center px-5 py-3 hover:bg-red-50 text-red-500 font-medium transition text-sm">
+                <i class="fas fa-sign-out-alt mr-3"></i> <span data-i18n="logout">Logout</span>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Mobile Top Bar -->
-        <div class="flex lg:hidden items-center gap-4 text-gray-700">
-          <button id="mobile-language-trigger" class="text-xl">
-            <i class="fas fa-globe"></i>
-          </button>
-          <a href="/contact.html"><i class="fas fa-phone text-xl"></i></a>
+        <div class="flex lg:hidden items-center gap-4" style="color: var(--text-mid);">
+          <button id="mobile-language-trigger" class="text-xl"><i class="fas fa-globe"></i></button>
+          <a href="/contact.html"><i class="fas fa-phone text-lg"></i></a>
           <a href="/Wishlist/wishlist.html" class="relative">
-            <i class="fas fa-heart text-xl"></i>
-            <span id="wishlistCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
+            <i class="fas fa-heart text-xl" style="color: #e07070;"></i>
+            <span id="wishlistCount" class="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden" style="background:#e07070;">0</span>
           </a>
           <a href="/cart.html" class="relative">
-            <i class="fas fa-shopping-cart text-xl"></i>
-            <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
+            <i class="fas fa-shopping-basket text-xl" style="color: var(--earth);"></i>
+            <span id="cartCount" class="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden" style="background: var(--earth);">0</span>
           </a>
-          <button id="mobile-profile-btn"><i class="fas fa-user-circle text-2xl"></i></button>
-          <button id="mobile-menu-btn" class="text-2xl"><i class="fas fa-bars"></i></button>
+          <button id="mobile-profile-btn"><i class="fas fa-user-circle text-2xl" style="color: var(--green-dark);"></i></button>
+          <button id="mobile-menu-btn" class="text-2xl" style="color: var(--green-dark);"><i class="fas fa-bars"></i></button>
         </div>
+
       </div>
     </div>
   </header>
 
-  <!-- DESKTOP NAV -->
-  <nav class="bg-white border-t">
+  <nav style="background: var(--cream); border-top: 1px solid #c7e8d0;">
     <div class="max-w-7xl mx-auto px-4">
       <div class="hidden lg:flex justify-center">
-        <ul class="flex space-x-8 text-lg font-bold">
-          <li><a href="/MotherCare/mother.html" data-i18n="motherCare" class="nav-link px-5 mt-2 py-1 rounded-lg border-2 border-pink-100 text-pink-700 hover:bg-pink-50 transition flex items-center">Mother Care <i class="fas fa-chevron-down text-xs ml-2"></i></a></li>
-          <li><a href="/BabyCare/baby.html" data-i18n="babyCare" class="nav-link px-5 py-1 mt-2 rounded-lg border-2 border-blue-100 text-blue-700 hover:bg-blue-50 transition flex items-center">Baby Care <i class="fas fa-chevron-down text-xs ml-2"></i></a></li>
+        <ul class="flex space-x-1 text-sm font-bold py-1">
 
           <li class="relative group">
-            <a href="javascript:void(0)" data-i18n="medicineHealthcare" class="nav-link px-5 py-1 mt-2 hover:bg-gray-100 rounded flex items-center transition">
-              Medicine & HealthCare <i class="fas fa-chevron-down text-xs ml-2"></i>
+            <a href="javascript:void(0)" class="nav-link badge-indoor px-4 py-2 rounded-lg flex items-center gap-1 transition">
+              <span data-i18n="indoorPlants">Indoor Plants</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
-            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-white shadow-xl rounded-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40">
-              <a href="/Medical and HealthCare/Prescription/prescription.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="prescriptionMedicines">Prescription Medicines</a>
-              <a href="/Medical and HealthCare/OTC/otc.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="otc">OTC</a>
-             
-              <a href="/Medical and HealthCare/LifeStyle/lifestyle.html" class="block px-4 py-2 hover:bg-gray-50">LifeStyle Disorder</a>
-              <a href="/Medical and HealthCare/Fertility/firtility.html" class="block px-4 py-2 hover:bg-gray-50">Fertility Essentials</a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/indoor/low-light.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="lowLight">Low Light</span></a>
+              <a href="/indoor/air-purifying.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="airPurifying">Air Purifying</span></a>
+              <a href="/indoor/desk.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="desk">Desk Plants</span></a>
+              <a href="/indoor/hanging.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="hanging">Hanging Plants</span></a>
             </div>
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link px-5 py-1 mt-2 hover:bg-gray-100 rounded flex items-center transition" data-i18n="wellness">
-              Wellness <i class="fas fa-chevron-down text-xs ml-2"></i>
+            <a href="javascript:void(0)" class="nav-link badge-outdoor px-4 py-2 rounded-lg flex items-center gap-1 transition">
+              <span data-i18n="outdoorPlants">Outdoor Plants</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
-            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white shadow-xl rounded-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <a href="/Wellness/wellness.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="vitamins">Vitamins & Supplements</a>
-              <a href="/Wellness/wellness.html?sub=hair-skin-care" class="block px-4 py-2 hover:bg-gray-50" data-i18n="skin">Skin & Hair Care</a>
-              <a href="/Wellness/wellness.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="oral">Oral Care</a>
-              <a href="/Wellness/wellness.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="menstrual">Menstrual Care</a>
-              <a href="/Wellness/wellness.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="fitness">Fitness & Weight</a>
-              <a href="/Wellness/wellness.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="senior">Senior Care</a>
-              <a href="/Wellness/wellness.html" class="block px-4 py-3 hover:bg-gray-50" data-i18n="immunity">Immunity Booster</a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/outdoor/flowering.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="flowering">Flowering</span></a>
+              <a href="/outdoor/fruit.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="fruit">Fruit Plants</span></a>
+              <a href="/outdoor/trees.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="trees">Trees</span></a>
+              <a href="/outdoor/hedges.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="hedges">Hedges</span></a>
             </div>
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" class="nav-link py-1 mt-2 px-5  hover:bg-gray-100 rounded flex items-center transition" data-i18n="devices">
-              Devices <i class="fas fa-chevron-down text-xs ml-2"></i>
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+              <span data-i18n="herbsVeg">Herbs & Veg</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
-            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white shadow-xl rounded-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <a href="/DEVICES/MONITORING DEVICES/monitor.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="bp">Monitoring Devices</a>
-              <a href="/DEVICES/MOBILITY AIDS/mobility.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="mobility">Mobility Aids</a>
-              <a href="/DEVICES/RESPIRATORY CARE/respiratory.html" class="block px-4 py-2 hover:bg-gray-50" data-i18n="respiratory">Respiratory Care</a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/herbs/culinary.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="culinary">Culinary Herbs</span></a>
+              <a href="/herbs/medicinal.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="medicinal">Medicinal</span></a>
+              <a href="/herbs/saplings.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="saplings">Veg Saplings</span></a>
             </div>
           </li>
 
           <li class="relative group">
-            <a href="javascript:void(0)" data-i18n="surgical" class="nav-link px-5 py-1 mt-2 hover:bg-gray-100 rounded flex items-center transition">
-              Surgical <i class="fas fa-chevron-down text-xs ml-2"></i>
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+              <span data-i18n="succulents">Succulents</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
             </a>
-            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white shadow-xl rounded-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <a href="/Surgical/Surgical.html" data-i18n="dressing" class="block px-4 py-2 hover:bg-gray-50">Dressings & Bandages</a>
-              <a href="/Surgical/Surgical.html" data-i18n="consumable" class="block px-4 py-2 hover:bg-gray-50">Surgical Consumables</a>
-              <a href="/Surgical/Surgical.html" data-i18n="IV" class="block px-4 py-2 hover:bg-gray-50">IV & Infusion Items</a>
-              <a href="/Surgical/Surgical.html" data-i18n="catheters" class="block px-4 py-2 hover:bg-gray-50">Catheters & Tubes</a>
-              <a href="/Surgical/Surgical.html" data-i18n="wound" class="block px-4 py-2 hover:bg-gray-50">Wound Care</a>
-              <a href="/Surgical/Surgical.html" data-i18n="orthopedic" class="block px-4 py-2 hover:bg-gray-50">Orthopedic Support</a>
-              <a href="/Surgical/Surgical.html" data-i18n="injectables" class="block px-4 py-2 hover:bg-gray-50">IV Fluids & Injectables</a>
-              <a href="/Surgical/Surgical.html" data-i18n="kits" class="block px-4 py-2 hover:bg-gray-50">Surgical Kits</a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-44 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/succulents/indoor.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="indoorSucc">Indoor</span></a>
+              <a href="/succulents/outdoor.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="outdoorSucc">Outdoor</span></a>
+              <a href="/succulents/rare.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="rare">Rare</span></a>
             </div>
           </li>
 
-          <li><a href="/about.html" data-i18n="about" class="nav-link px-5 py-1 mt-2 hover:bg-gray-100 rounded transition flex items-center">About Us <i class="fas fa-chevron-down text-xs ml-2"></i></a></li>
+          <li class="relative group">
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+              <span data-i18n="seeds">Seeds & Bulbs</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
+            </a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/seeds/flower.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="flowerSeeds">Flower Seeds</span></a>
+              <a href="/seeds/veg.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="vegSeeds">Veg Seeds</span></a>
+              <a href="/seeds/herb.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="herbSeeds">Herb Seeds</span></a>
+              <a href="/seeds/bulbs.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="bulbs">Bulbs</span></a>
+            </div>
+          </li>
+
+          <li class="relative group">
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+              <span data-i18n="pots">Pots</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
+            </a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/pots/plastic.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="plastic">Plastic</span></a>
+              <a href="/pots/ceramic.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="ceramic">Ceramic</span></a>
+              <a href="/pots/hanging.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="hangingPots">Hanging</span></a>
+              <a href="/pots/self-watering.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="selfWatering">Self-Watering</span></a>
+            </div>
+          </li>
+
+          <li class="relative group">
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 hover:bg-green-50 transition" style="color: var(--text-dark);">
+              <span data-i18n="tools">Tools</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
+            </a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-44 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/tools/gardening.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="toolsItem">Tools</span></a>
+              <a href="/tools/soil.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="soil">Soil & Compost</span></a>
+              <a href="/tools/fertilizers.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="fertilizers">Fertilizers</span></a>
+            </div>
+          </li>
+
+          <li class="relative group">
+            <a href="javascript:void(0)" class="nav-link px-4 py-2 rounded-lg flex items-center gap-1 transition" style="color: #7a3e10; background: var(--earth-light); border: 2px solid #dfc4a0;">
+              <span data-i18n="giftHampers">Gift Hampers</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
+            </a>
+            <div class="nav-dropdown absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-white shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-40" style="border-color: #c7e8d0;">
+              <a href="/gifts/combos.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="combos">Combos</span></a>
+              <a href="/gifts/office.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="office">Office Plants</span></a>
+              <a href="/gifts/terrace.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="terrace">Terrace Garden</span></a>
+              <a href="/gifts/low-maintenance.html" class="drop-item block px-4 py-2 text-sm text-gray-700"><span data-i18n="lowMaintenance">Low Maintenance</span></a>
+            </div>
+          </li>
+
         </ul>
       </div>
 
-      <!-- MOBILE FULL MENU -->
-      <div id="mobile-menu" class="lg:hidden hidden bg-white shadow-lg">
+      <div id="mobile-menu" class="lg:hidden hidden shadow-lg" style="background: var(--cream);">
         <div class="py-2">
-          <a href="/MotherCare/mother.html" class="mobile-nav-link block px-6 py-4 font-semibold text-pink-700 hover:bg-pink-50 flex items-center justify-between">Mother Care <i class="fas fa-chevron-down text-sm"></i></a>
-          <a href="/BabyCare/baby.html" class="mobile-nav-link block px-6 py-4 font-semibold text-blue-700 hover:bg-blue-50 flex items-center justify-between">Baby Care <i class="fas fa-chevron-down text-sm"></i></a>
 
           <div class="mobile-dropdown">
-            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-gray-100">
-              Medicine & HealthCare <i class="fas fa-chevron-down text-sm"></i>
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="indoorPlants">Indoor Plants</span> <i class="fas fa-chevron-down text-sm"></i>
             </button>
             <div class="mobile-dropdown-content hidden">
-              <a href="/Medical and HealthCare/Prescription/prescription.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Prescription Medicines</a>
-              <a href="/Medical and HealthCare/OTC/otc.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">OTC Medicines</a>
-              <a href="/Medical and HealthCare/LifeStyle/lifestyle.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Lifestyle disorder</a>
-              <a href="/Medical and HealthCare/Fertility/firtility.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Fertility Essentials</a>
+              <a href="/indoor/low-light.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="lowLight">Low Light</span></a>
+              <a href="/indoor/air-purifying.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="airPurifying">Air Purifying</span></a>
+              <a href="/indoor/desk.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="desk">Desk Plants</span></a>
+              <a href="/indoor/hanging.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="hanging">Hanging Plants</span></a>
             </div>
           </div>
 
           <div class="mobile-dropdown">
-            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-gray-100">
-              Wellness <i class="fas fa-chevron-down text-sm"></i>
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="outdoorPlants">Outdoor Plants</span> <i class="fas fa-chevron-down text-sm"></i>
             </button>
             <div class="mobile-dropdown-content hidden">
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Vitamins & Supplements</a>
-              <a href="/Wellness/wellness.html?sub=hair-skin-care" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Skin & Hair Care</a>
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Oral Care</a>
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Menstrual Care</a>
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Fitness & Weight</a>
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Senior Care</a>
-              <a href="/Wellness/wellness.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Immunity Booster</a>
+              <a href="/outdoor/flowering.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="flowering">Flowering</span></a>
+              <a href="/outdoor/fruit.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="fruit">Fruit Plants</span></a>
+              <a href="/outdoor/trees.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="trees">Trees</span></a>
+              <a href="/outdoor/hedges.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="hedges">Hedges</span></a>
             </div>
           </div>
 
           <div class="mobile-dropdown">
-            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-gray-100">
-              Devices <i class="fas fa-chevron-down text-sm"></i>
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="herbsVeg">Herbs & Vegetables</span> <i class="fas fa-chevron-down text-sm"></i>
             </button>
             <div class="mobile-dropdown-content hidden">
-              <a href="/DEVICES/MONITORING DEVICES/monitor.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Monitoring Devices</a>
-              <a href="/DEVICES/MOBILITY AIDS/mobility.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Mobility Aids</a>
-              <a href="/DEVICES/RESPIRATORY CARE/respiratory.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Respiratory Care</a>
+              <a href="/herbs/culinary.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="culinary">Culinary Herbs</span></a>
+              <a href="/herbs/medicinal.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="medicinal">Medicinal</span></a>
+              <a href="/herbs/saplings.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="saplings">Veg Saplings</span></a>
             </div>
           </div>
 
           <div class="mobile-dropdown">
-            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-gray-100">
-              Surgical <i class="fas fa-chevron-down text-sm"></i>
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="succulents">Succulents & Cacti</span> <i class="fas fa-chevron-down text-sm"></i>
             </button>
             <div class="mobile-dropdown-content hidden">
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Dressings & Bandages</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Surgical Consumables</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">IV & Infusion Items</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Catheters & Tubes</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Wound Care</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Orthopedic Support</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">IV Fluids & Injectables</a>
-              <a href="/Surgical/Surgical.html" class="block px-10 py-3 text-gray-700 hover:bg-gray-200">Surgical Kits</a>
+              <a href="/succulents/indoor.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="indoorSucc">Indoor</span></a>
+              <a href="/succulents/outdoor.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="outdoorSucc">Outdoor</span></a>
+              <a href="/succulents/rare.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="rare">Rare</span></a>
             </div>
           </div>
 
-          <a href="/about.html" class="block px-6 py-4 font-semibold hover:bg-gray-100 flex items-center justify-between">About Us <i class="fas fa-chevron-down text-sm"></i></a>
+          <div class="mobile-dropdown">
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="seeds">Seeds & Bulbs</span> <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+            <div class="mobile-dropdown-content hidden">
+              <a href="/seeds/flower.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="flowerSeeds">Flower Seeds</span></a>
+              <a href="/seeds/veg.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="vegSeeds">Veg Seeds</span></a>
+              <a href="/seeds/herb.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="herbSeeds">Herb Seeds</span></a>
+              <a href="/seeds/bulbs.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="bulbs">Bulbs</span></a>
+            </div>
+          </div>
+
+          <div class="mobile-dropdown">
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="pots">Planters & Pots</span> <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+            <div class="mobile-dropdown-content hidden">
+              <a href="/pots/plastic.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="plastic">Plastic</span></a>
+              <a href="/pots/ceramic.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="ceramic">Ceramic</span></a>
+              <a href="/pots/hanging.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="hangingPots">Hanging</span></a>
+              <a href="/pots/self-watering.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="selfWatering">Self-Watering</span></a>
+            </div>
+          </div>
+
+          <div class="mobile-dropdown">
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: var(--green-dark);">
+              <span data-i18n="tools">Tools & Fertilizers</span> <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+            <div class="mobile-dropdown-content hidden">
+              <a href="/tools/gardening.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="toolsItem">Tools</span></a>
+              <a href="/tools/soil.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="soil">Soil & Compost</span></a>
+              <a href="/tools/fertilizers.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="fertilizers">Fertilizers</span></a>
+            </div>
+          </div>
+
+          <div class="mobile-dropdown">
+            <button class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center mobile-nav-item" style="color: #7a3e10;">
+              <span data-i18n="giftHampers">Gift Hampers</span> <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+            <div class="mobile-dropdown-content hidden">
+              <a href="/gifts/combos.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="combos">Combos</span></a>
+              <a href="/gifts/office.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="office">Office Plants</span></a>
+              <a href="/gifts/terrace.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="terrace">Terrace Garden</span></a>
+              <a href="/gifts/low-maintenance.html" class="block px-10 py-3 text-gray-700 hover:bg-green-100"><span data-i18n="lowMaintenance">Low Maintenance</span></a>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   </nav>
 </div>
 
-<!-- PINCODE MODAL -->
 <div id="pincode-modal" class="fixed inset-0 z-50 hidden">
   <div class="flex items-center justify-center min-h-screen px-4 modal-backdrop">
-    <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closePincodeModal()"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closePincodeModal()"></div>
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full modal-content relative">
       <button onclick="closePincodeModal()" class="absolute top-4 right-6 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-      
+
       <div class="text-center mb-8">
-        <div class="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-map-marker-alt text-4xl text-pink-600"></i>
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: var(--green-pale);">
+          <i class="fas fa-map-marker-alt text-4xl" style="color: var(--green-mid);"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">Enter Delivery Pincode</h3>
-        <p class="text-gray-600 mt-2">Check availability & delivery time in your area</p>
+        <h3 class="text-2xl font-bold text-gray-800" data-i18n="enterPinCodeModalTitle">Enter Delivery Pincode</h3>
+        <p class="text-gray-500 mt-2" data-i18n="enterPinCodeModalDesc">Check if we deliver fresh plants to your area</p>
       </div>
 
       <div class="relative">
         <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input 
-          type="text" 
-          id="modal-pincode-input" 
-          maxlength="6" 
-          placeholder="Enter 6-digit pincode" 
-          class="w-full pl-12 pr-16 py-4 border-2 border-gray-300 rounded-xl text-lg focus:outline-none focus:ring-4 focus:ring-pink-200 focus:border-pink-500 transition"
-        >
-        <button id="check-pincode-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-2.5 rounded-lg font-medium transition">
-          Check
+        <input type="text" id="modal-pincode-input" maxlength="6" placeholder="Enter 6-digit pincode" class="w-full pl-12 pr-20 py-4 border-2 rounded-xl text-lg focus:outline-none transition" style="border-color: #b7e4c7;">
+        <button id="check-pincode-btn" class="absolute right-2 top-1/2 -translate-y-1/2 text-white px-5 py-2.5 rounded-lg font-medium transition" style="background: var(--green-mid);">
+          <span data-i18n="checkBtn">Check</span>
         </button>
       </div>
 
-      <p id="pincode-error" class="text-red-600 text-sm mt-3 text-center hidden"></p>
-      <p id="pincode-success" class="text-green-600 text-sm mt-3 text-center hidden flex items-center justify-center">
+      <p id="pincode-error" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+      <p id="pincode-success" class="text-sm mt-3 text-center hidden flex items-center justify-center" style="color: var(--green-dark);">
         <i class="fas fa-check-circle mr-2"></i>
-        Delivery available in <strong id="success-pin"></strong> (3–5 days)
+        <span data-i18n="deliveryAvailable">Delivery available in</span> <strong id="success-pin" class="mx-1"></strong> <span data-i18n="deliveryDaysShort">(3–5 days)</span>
       </p>
 
-      <div class="mt-6 text-center text-xs text-gray-500">
-        <p>We deliver across India</p>
+      <div class="mt-5 text-center text-xs text-gray-400">
+        <p data-i18n="deliveryIndia">🌱 We deliver fresh, healthy plants all across India</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- LANGUAGE MODAL -->
 <div id="language-modal" class="fixed inset-0 z-50 hidden modal">
   <div class="flex items-center justify-center min-h-screen px-4 modal-backdrop">
-    <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeLanguageModal()"></div>
+    <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeLanguageModal()"></div>
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full modal-content relative">
       <button onclick="closeLanguageModal()" class="absolute top-4 right-6 text-gray-400 hover:text-gray-800 text-3xl leading-none">×</button>
-      
+
       <div class="text-center mb-8">
-        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-globe text-4xl text-blue-600"></i>
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: #e0f0ff;">
+          <i class="fas fa-globe text-4xl text-blue-500"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">Choose Your Language</h3>
-        <p class="text-gray-600 mt-2">Select preferred language</p>
+        <h3 class="text-2xl font-bold text-gray-800" data-i18n="chooseLanguage">Choose Your Language</h3>
+        <p class="text-gray-500 mt-2" data-i18n="selectLanguage">Select preferred language</p>
       </div>
 
       <div class="space-y-4">
-        <button onclick="changeLanguage('english')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition">
-          <span class="text-3xl">EN</span>
+        <button onclick="changeLanguage('english')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+          <span class="text-2xl font-bold text-gray-600">EN</span>
           <div class="text-left">
             <div class="font-semibold text-gray-800">English</div>
             <div class="text-sm text-gray-500">English</div>
           </div>
           <i class="ml-auto fas fa-check text-green-600 hidden"></i>
         </button>
-        <button onclick="changeLanguage('hindi')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition">
-          <span class="text-3xl">HI</span>
+        <button onclick="changeLanguage('hindi')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+          <span class="text-2xl font-bold text-gray-600">HI</span>
           <div class="text-left">
             <div class="font-semibold text-gray-800">हिन्दी</div>
             <div class="text-sm text-gray-500">Hindi</div>
           </div>
           <i class="ml-auto fas fa-check text-green-600 hidden"></i>
         </button>
-        <button onclick="changeLanguage('marathi')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition">
-          <span class="text-3xl">MR</span>
+        <button onclick="changeLanguage('marathi')" class="lang-btn w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+          <span class="text-2xl font-bold text-gray-600">MR</span>
           <div class="text-left">
             <div class="font-semibold text-gray-800">मराठी</div>
             <div class="text-sm text-gray-500">Marathi</div>
@@ -452,17 +546,14 @@
   </div>
 </div>
 
-<!-- Mobile Profile Menu -->
 <div id="mobile-profile-menu" class="fixed inset-0 bg-black/50 z-50 hidden" onclick="this.classList.add('hidden')">
-  <div class="absolute right-4 top-20 w-56 bg-white shadow-lg rounded-lg border" onclick="event.stopPropagation()">
-    <a href="/Signup/auth.html" data-i18n="signupLogin" class="flex items-center px-4 py-3 hover:bg-gray-50"><i class="fas fa-user-plus mr-3"></i>Sign Up / Login</a>
-    <a href="/Profile/profile.html" class="flex items-center px-4 py-3 hover:bg-gray-50"><i class="fas fa-user-circle mr-3"></i>Profile</a>
-    <a href="/MY ORDERS/myorders.html" data-i18n="orders" class="flex items-center px-4 py-3 hover:bg-gray-50"><i class="fas fa-box mr-3"></i>Orders</a>
-    <a href="/home.html" data-i18n="logout" class="flex items-center px-4 py-3 hover:bg-gray-50 text-red-600"><i class="fas fa-sign-out-alt mr-3"></i>Logout</a>
+  <div class="absolute right-4 top-20 w-56 bg-white shadow-lg rounded-xl border overflow-hidden" style="border-color: #c7e8d0;" onclick="event.stopPropagation()">
+    <a href="/Signup/auth.html" class="flex items-center px-4 py-3 hover:bg-green-50 text-sm"><i class="fas fa-user-plus mr-3" style="color:var(--green-mid);"></i><span data-i18n="signupLogin">Sign Up / Login</span></a>
+    <a href="/Profile/profile.html" class="flex items-center px-4 py-3 hover:bg-green-50 text-sm"><i class="fas fa-user-circle mr-3" style="color:var(--green-mid);"></i><span data-i18n="profile">Profile</span></a>
+    <a href="/MY ORDERS/myorders.html" class="flex items-center px-4 py-3 hover:bg-green-50 text-sm"><i class="fas fa-box mr-3" style="color:var(--green-mid);"></i><span data-i18n="orders">Orders</span></a>
+    <a href="/home.html" class="flex items-center px-4 py-3 hover:bg-red-50 text-red-500 text-sm"><i class="fas fa-sign-out-alt mr-3"></i><span data-i18n="logout">Logout</span></a>
   </div>
 </div>
-
-
 
 <script src="./header.js"></script>
 </body>

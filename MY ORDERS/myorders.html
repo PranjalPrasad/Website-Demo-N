@@ -5,55 +5,49 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/IMG/LOGO_1-removebg-preview.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Orders</title>
+  <title>My Orders - GreenNest Nursery</title>
 
-  <!-- Tailwind + Font Awesome + Toastify + html2pdf -->
+  <!-- Tailwind + Font Awesome + Toastify -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
-
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <link rel="stylesheet" href="../../Header/header.css">
-
-  <link rel="stylesheet" href="../../Footer/footer.css">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#36C2CE',
-            secondary: '#0ea5e9',
-            accent: '#10b981',
-            dark: '#1e293b',
-            neutral: '#F5F5F5'
-          }
-        }
-      }
-    }
-  </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
+
+    * { font-family: 'Nunito', sans-serif; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+    :root {
+      --green-dark: #2d6a4f;
+      --green-mid: #40916c;
+      --green-light: #74c69d;
+      --green-pale: #d8f3dc;
+      --green-accent: #52b788;
+      --earth: #a07850;
+      --cream: #f9f6f0;
+      --white: #ffffff;
+      --text-dark: #1b3a2d;
+    }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background: #ffffff;
-      margin: 0;
-      padding: 0;
+      background: var(--cream);
+      font-family: 'Nunito', sans-serif;
     }
 
     .order-card {
       background: white;
-      border: 1px solid #EDEDED;
-      border-radius: 0.75rem;
+      border: 1px solid #d8f3dc;
+      border-radius: 1rem;
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: box-shadow 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .order-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 25px rgba(45,106,79,0.1);
+      transform: translateY(-2px);
     }
 
     .status-badge {
@@ -66,22 +60,24 @@
 
     .btn {
       font-size: 0.75rem;
-      font-weight: 500;
+      font-weight: 600;
       padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
+      border-radius: 0.5rem;
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
       transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .btn-primary {
-      background: #36C2CE;
+      background: var(--green-mid);
       color: white;
     }
 
     .btn-primary:hover {
-      background: #2AB1BD;
+      background: var(--green-dark);
+      transform: translateY(-1px);
     }
 
     .btn-danger {
@@ -91,6 +87,7 @@
 
     .btn-danger:hover {
       background: #DC2626;
+      transform: translateY(-1px);
     }
 
     .btn-success {
@@ -100,16 +97,17 @@
 
     .btn-success:hover {
       background: #059669;
+      transform: translateY(-1px);
     }
 
     .btn-outline {
       background: transparent;
-      color: #36C2CE;
-      border: 1px solid #36C2CE;
+      color: var(--green-mid);
+      border: 1px solid var(--green-mid);
     }
 
     .btn-outline:hover {
-      background: #36C2CE;
+      background: var(--green-mid);
       color: white;
     }
 
@@ -122,6 +120,15 @@
     .modal-card.show {
       transform: scale(1);
       opacity: 1;
+    }
+
+    .tab-btn {
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--green-mid);
+      border-bottom: 2px solid var(--green-mid);
     }
 
     @media (max-width: 1024px) {
@@ -150,15 +157,9 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 190mm;
-        padding: 0;
+        width: 100%;
+        padding: 20px;
         background: white;
-      }
-
-      .print-logo {
-        width: 90px;
-        height: auto;
-        margin-bottom: 20px;
       }
     }
 
@@ -172,18 +173,19 @@
   </style>
 </head>
 
-<body class="bg-white">
+<body>
   <div id="header-placeholder"></div>
+  
   <div class="max-w-4xl mx-auto px-4 mt-56">
 
     <!-- Header -->
     <div class="order-card mb-6 py-2">
       <div class="flex items-center justify-between">
-        <button onclick="window.history.back()" class="p-2 rounded-lg bg-neutral hover:bg-gray-100">
-          <i class="fas fa-arrow-left text-primary text-lg"></i>
+        <button onclick="window.history.back()" class="p-2 rounded-lg hover:bg-gray-100 transition">
+          <i class="fas fa-arrow-left text-green-mid text-lg"></i>
         </button>
         <div class="text-center flex-1">
-          <h1 class="text-xl font-bold text-primary">My Orders</h1>
+          <h1 class="text-xl font-bold" style="color: var(--green-dark);">🌿 My Orders</h1>
         </div>
         <div class="w-10"></div>
       </div>
@@ -191,10 +193,12 @@
 
     <!-- Tabs -->
     <div class="flex border-b border-gray-200 mb-6">
-      <button id="tab-upcoming" class="tab-btn flex-1 py-3 text-sm font-medium text-primary border-b-2 border-primary"
-        onclick="switchTab('upcoming')">Upcoming Orders (1)</button>
-      <button id="tab-cancelled" class="tab-btn flex-1 py-3 text-sm font-medium text-dark border-b-2 border-transparent"
-        onclick="switchTab('cancelled')">Cancelled Orders (0)</button>
+      <button id="tab-upcoming" class="tab-btn flex-1 py-3 text-sm font-medium active" onclick="switchTab('upcoming')">
+        Upcoming Orders (<span id="upcoming-count">0</span>)
+      </button>
+      <button id="tab-cancelled" class="tab-btn flex-1 py-3 text-sm font-medium text-gray-500" onclick="switchTab('cancelled')">
+        Cancelled Orders (<span id="cancelled-count">0</span>)
+      </button>
     </div>
 
     <!-- Orders List -->
@@ -203,16 +207,16 @@
   </div>
 
   <!-- View Modal -->
-  <div id="viewModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 mt-8 hidden">
+  <div id="viewModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 hidden">
     <div class="bg-white rounded-xl max-w-md w-full max-h-[90vh] flex flex-col order-card modal-card">
-      <div class="flex justify-between items-center p-5 border-b border-gray-200">
-        <h2 class="text-lg font-bold text-primary">Order Details</h2>
-        <button onclick="closeModal('viewModal')" class="text-dark hover:text-primary">
+      <div class="flex justify-between items-center p-5 border-b" style="border-color: #d8f3dc;">
+        <h2 class="text-lg font-bold" style="color: var(--green-dark);">Order Details</h2>
+        <button onclick="closeModal('viewModal')" class="text-gray-500 hover:text-gray-800">
           <i class="fas fa-times text-lg"></i>
         </button>
       </div>
       <div id="viewContent" class="flex-1 overflow-y-auto p-5 space-y-4 text-sm"></div>
-      <div class="p-5 border-t border-gray-200">
+      <div class="p-5 border-t" style="border-color: #d8f3dc;">
         <button onclick="closeModal('viewModal')" class="w-full btn btn-primary">Close</button>
       </div>
     </div>
@@ -222,8 +226,8 @@
   <div id="cancelModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 hidden">
     <div class="bg-white rounded-xl p-6 max-w-md w-full order-card modal-card">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-bold text-primary">Cancel Order?</h2>
-        <button onclick="closeModal('cancelModal')" class="text-dark hover:text-primary">
+        <h2 class="text-lg font-bold" style="color: var(--green-dark);">Cancel Order?</h2>
+        <button onclick="closeModal('cancelModal')" class="text-gray-500 hover:text-gray-800">
           <i class="fas fa-times text-lg"></i>
         </button>
       </div>
@@ -238,36 +242,37 @@
   <!-- Loading -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-xl p-6 order-card text-center">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
-      <p class="text-primary font-semibold">Loading...</p>
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-mid mx-auto mb-3"></div>
+      <p class="text-green-mid font-semibold">Loading...</p>
     </div>
   </div>
 
   <!-- Printable Invoice -->
-  <div id="printableInvoice" class="hidden bg-white p-8 max-w-4xl mx-auto font-sans text-sm print:block">
-    <div class="flex justify-between items-start border-b pb-6 mb-6">
+  <div id="printableInvoice" class="hidden bg-white p-8 max-w-4xl mx-auto" style="font-family: 'Nunito', sans-serif;">
+    <div class="flex justify-between items-start border-b pb-6 mb-6" style="border-color: #d8f3dc;">
       <div>
-        <img src="../Images/logo.png" alt="PharmaCare" class="print-logo w-32 mb-4">
-        <p>Pune, Maharashtra</p>
-        <p><strong>Contact:</strong> +91 9876543210</p>
-        <!-- <p><strong>GST:</strong> 27XXXXX1234X1Z5</p> -->
+        <div class="flex items-center gap-2 mb-4">
+          <span style="font-size: 2rem;">🌿</span>
+          <span class="text-2xl font-bold" style="color: var(--green-dark);">Green<span style="color: var(--green-accent);">Nest</span></span>
+        </div>
+        <p>Green Valley Nursery, Phaltan</p>
+        <p>Dist. Satara, Maharashtra - 415523</p>
+        <p><strong>Contact:</strong> +91 70207 99618</p>
       </div>
       <div class="text-right">
-        <h2 class="text-xl font-bold">TAX INVOICE</h2>
+        <h2 class="text-xl font-bold" style="color: var(--green-dark);">TAX INVOICE</h2>
         <p><strong>Order ID:</strong> #<span id="printOrderId"></span></p>
         <p><strong>Date:</strong> <span id="printOrderDate"></span></p>
-        <!-- <p><strong>Delivery:</strong> <span id="printDeliveryDate"></span></p> -->
       </div>
     </div>
     <div class="grid grid-cols-2 gap-6 mb-6">
       <div>
-        <h3 class="font-bold mb-2">Bill To:</h3>
+        <h3 class="font-bold mb-2" style="color: var(--green-dark);">Bill To:</h3>
         <p id="printCustomerName"></p>
         <p id="printCustomerPhone"></p>
-        <p id="printCustomerEmail">customer@example.com</p>
       </div>
       <div>
-        <h3 class="font-bold mb-2">Shipping To:</h3>
+        <h3 class="font-bold mb-2" style="color: var(--green-dark);">Shipping To:</h3>
         <p id="printShippingName"></p>
         <div id="printShippingAddress"></div>
         <p id="printShippingPhone"></p>
@@ -275,98 +280,134 @@
     </div>
     <table class="w-full border-collapse mb-6">
       <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2 text-left">Product</th>
-          <th class="border p-2 text-center">Qty</th>
-          <th class="border p-2 text-right">Rate</th>
-          <th class="border p-2 text-right">Amount</th>
+        <tr style="background: var(--green-pale);">
+          <th class="border p-2 text-left" style="border-color: #d8f3dc;">Product</th>
+          <th class="border p-2 text-center" style="border-color: #d8f3dc;">Qty</th>
+          <th class="border p-2 text-right" style="border-color: #d8f3dc;">Price</th>
+          <th class="border p-2 text-right" style="border-color: #d8f3dc;">Total</th>
         </tr>
       </thead>
       <tbody id="printItemsTable"></tbody>
       <tfoot>
         <tr>
-          <td colspan="3" class="border p-2 text-right font-bold">Subtotal</td>
-          <td class="border p-2 text-right" id="printSubtotal"></td>
+          <td colspan="3" class="border p-2 text-right font-bold" style="border-color: #d8f3dc;">Subtotal</td>
+          <td class="border p-2 text-right" id="printSubtotal" style="border-color: #d8f3dc;"></td>
         </tr>
-        <!-- <tr>
-          <td colspan="3" class="border p-2 text-right">Tax</td>
-          <td class="border p-2 text-right" id="printTax">₹0.00</td>
-        </tr> -->
-        <!-- <tr>
-          <td colspan="3" class="border p-2 text-right">Discount</td>
-          <td class="border p-2 text-right" id="printDiscount">₹0.00</td>
-        </tr> -->
-        <!-- <tr>
-          <td colspan="3" class="border p-2 text-right">Coupon</td>
-          <td class="border p-2 text-right" id="printCoupon">₹0.00</td>
-        </tr> -->
-        <tr class="font-bold text-lg">
-          <td colspan="3" class="border p-2 text-right bg-gray-100">Total</td>
-          <td class="border p-2 text-right bg-gray-100" id="printTotal"></td>
+        <tr>
+          <td colspan="3" class="border p-2 text-right font-bold" style="border-color: #d8f3dc;">Delivery Fee</td>
+          <td class="border p-2 text-right" id="printShipping" style="border-color: #d8f3dc;"></td>
+        </tr>
+        <tr style="background: var(--green-pale);">
+          <td colspan="3" class="border p-2 text-right font-bold" style="border-color: #d8f3dc;">Total</td>
+          <td class="border p-2 text-right font-bold" id="printTotal" style="border-color: #d8f3dc; color: var(--green-dark);"></td>
         </tr>
       </tfoot>
     </table>
     <div class="text-center text-xs text-gray-600">
-      <p>Thank you for your order!</p>
-      <p>In case of issues, contact: 9876543210</p>
-      <p>Consult your doctor before taking any medication</p>
+      <p>🌱 Thank you for shopping with GreenNest Nursery!</p>
+      <p>For any queries, contact: +91 70207 99618</p>
+      <p>🌿 Happy Gardening! 🌿</p>
     </div>
   </div>
 
   <div id="footer-placeholder"></div>
 
   <script>
-    'use strict';
+    // ==================== FRONTEND-ONLY ORDERS SYSTEM ====================
+    // No backend - All orders stored in localStorage
+    
+    const STORAGE_KEYS = {
+      ORDERS: 'greennest_orders',
+      CART: 'cart'
+    };
 
     let orders = [];
     let currentOrderId = null;
     let activeTab = 'upcoming';
 
-    const API_BASE_URL = 'http://localhost:8083/api/orders';
-
     const statusMap = {
-      'placed': { display: 'Placed', class: 'bg-sky-100 text-sky-800 border-sky-300' },
+      'placed': { display: 'Placed', class: 'bg-green-100 text-green-800 border-green-300' },
       'cancelled': { display: 'Cancelled', class: 'bg-red-100 text-red-800 border-red-300' },
-      'processing': { display: 'Processing', class: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-      'delivered': { display: 'Delivered', class: 'bg-green-100 text-green-800 border-green-300' }
+      'delivered': { display: 'Delivered', class: 'bg-blue-100 text-blue-800 border-blue-300' },
+      'processing': { display: 'Processing', class: 'bg-yellow-100 text-yellow-800 border-yellow-300' }
     };
 
-    function getCurrentUserId() {
-      const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
-      if (!userId) {
-        console.warn("No userId found in storage → user probably not logged in");
-        return null;
-      }
-      return parseInt(userId, 10);
-    }
-
-    function parseDate(dateStr) {
+    // Load orders from localStorage
+    function loadOrders() {
       try {
-        return new Date(dateStr);
+        const savedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
+        if (savedOrders) {
+          orders = JSON.parse(savedOrders);
+          console.log('[Orders] Loaded', orders.length, 'orders from localStorage');
+        } else {
+          orders = [];
+          console.log('[Orders] No orders found, starting fresh');
+        }
       } catch (e) {
-        console.warn("Invalid date format:", dateStr);
-        return new Date();
+        console.error('[Orders] Error loading orders:', e);
+        orders = [];
       }
+      updateTabCounts();
+      renderOrders();
     }
 
-    function isWithinCancellationWindow(dateStr) {
-      const orderTime = parseDate(dateStr);
+    // Save orders to localStorage
+    function saveOrders() {
+      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+      console.log('[Orders] Saved', orders.length, 'orders to localStorage');
+    }
+
+    // Create a new order (called from checkout page)
+    function createOrder(orderData) {
+      const newOrder = {
+        id: Date.now(),
+        orderId: Date.now(),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        status: 'Placed',
+        statusClass: statusMap.placed.class,
+        canCancel: true,
+        items: orderData.items || [],
+        total: orderData.total || 0,
+        subtotal: orderData.subtotal || 0,
+        shipping: orderData.shipping || 49,
+        cancellationNote: 'You can cancel within 30 minutes of placing order',
+        placedOn: new Date().toISOString(),
+        paymentMethod: orderData.paymentMethod || 'COD',
+        address: orderData.address || {},
+        itemCount: (orderData.items || []).length,
+        isDelivered: false
+      };
+      
+      orders.unshift(newOrder);
+      saveOrders();
+      updateTabCounts();
+      renderOrders();
+      
+      // Clear cart after order
+      localStorage.removeItem(STORAGE_KEYS.CART);
+      
+      return newOrder;
+    }
+
+    // Check if order can be cancelled (within 30 minutes)
+    function canCancelOrder(order) {
+      if (order.status !== 'Placed') return false;
+      const orderTime = new Date(order.placedOn);
       const now = new Date();
       const diffMinutes = (now - orderTime) / (1000 * 60);
-      return diffMinutes < 30 && diffMinutes > -10;
+      return diffMinutes < 30;
     }
 
-    function getCancellationNote(dateStr) {
-      const orderTime = parseDate(dateStr);
+    function getCancellationNote(order) {
+      if (order.status !== 'Placed') return 'Order cannot be cancelled at this stage';
+      const orderTime = new Date(order.placedOn);
       const now = new Date();
       const diffMinutes = Math.floor((now - orderTime) / (1000 * 60));
-
-      if (diffMinutes < 30) {
-        const remaining = 30 - diffMinutes;
+      const remaining = 30 - diffMinutes;
+      if (remaining > 0) {
         return `You can cancel within ${remaining} minute${remaining !== 1 ? 's' : ''}`;
-      } else {
-        return "Cancellation window closed (only allowed within 30 mins of placing order)";
       }
+      return "Cancellation window closed (only allowed within 30 mins of placing order)";
     }
 
     function showModal(id) {
@@ -385,176 +426,69 @@
     function switchTab(tab) {
       activeTab = tab;
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('text-primary', 'border-primary');
-        btn.classList.add('text-dark', 'border-transparent');
+        btn.classList.remove('active');
+        btn.classList.add('text-gray-500');
       });
       const activeBtn = document.getElementById(`tab-${tab}`);
       if (activeBtn) {
-        activeBtn.classList.add('text-primary', 'border-primary');
-        activeBtn.classList.remove('text-dark', 'border-transparent');
+        activeBtn.classList.add('active');
+        activeBtn.classList.remove('text-gray-500');
       }
       renderOrders();
     }
 
-    async function fetchOrders() {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        const container = document.getElementById('ordersList');
-        container.innerHTML = `
-          <div class="text-center py-20 order-card">
-            <i class="fas fa-user-lock text-7xl text-primary mb-6"></i>
-            <h2 class="text-3xl font-bold text-primary mb-4">Please log in</h2>
-            <p class="text-gray-600 mb-6">You need to be logged in to view orders.</p>
-            <a href="../Signup/auth.html" class="btn btn-primary">Login</a>
-          </div>`;
-        return;
-      }
-
-      const loading = document.getElementById('loadingOverlay');
-      const container = document.getElementById('ordersList');
-      loading?.classList.remove('hidden');
-      container.innerHTML = '';
-
-      try {
-        const resp = await fetch(`${API_BASE_URL}/get-order-by-userId/${userId}?page=0&size=50&sortBy=orderId&sortDir=desc`);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-        const pageData = await resp.json();
-        const rawOrders = pageData.content || [];
-
-        orders = rawOrders.map(o => {
-        const items = (o.orderItems || []).map(item => ({
-    name: item.itemName || 'Unknown Item',
-    qty: item.quantity || 1,
-    weight: item.selectedSize || item.size || '',
-    price: (item.itemPrice || 0).toFixed(2),
-
-    // === FIXED IMAGE LOGIC: Support both productId and mbpId ===
-    image: (() => {
-      if (item.productId) {
-        return `http://localhost:8083/api/products/${item.productId}/image`;
-      }
-      if (item.mbpId) {
-        return `http://localhost:8083/api/mb/products/${item.mbpId}/image`;
-      }
-      return 'https://via.placeholder.com/120?text=No+Image';
-    })(),
-
-    // Optional: keep IDs for future use (debugging, links, etc.)
-    productId: item.productId || null,
-    mbpId: item.mbpId || null
-  }));
-
-          const statusKey = (o.orderStatus || 'PLACED').toLowerCase();
-          const status = statusMap[statusKey] || { display: statusKey.charAt(0).toUpperCase() + statusKey.slice(1), class: 'bg-gray-100 text-gray-800' };
-
-          const placedOn = o.orderDate || new Date().toISOString();
-          const canCancel = statusKey === 'placed' && isWithinCancellationWindow(placedOn);
-
-          const orderDateObj = parseDate(placedOn);
-
-          const firstName = o.shippingFirstName || '';
-          const lastName = o.shippingLastName || '';
-          const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Not provided';
-
-          return {
-            id: o.orderId,
-            date: orderDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-            status: status.display,
-            statusClass: status.class,
-            canCancel,
-            items,
-            total: (o.totalAmount || 0).toFixed(2),
-            cancellationNote: getCancellationNote(placedOn),
-            placedOn,
-            paymentMethod: o.paymentMethod || 'COD',
-            convenienceFee : `${o.convenienceFee !== null ? `₹${o.convenienceFee}` : 'Free'}`,
-            address: {
-              fullName,
-              mobile: o.shippingPhone || o.customerPhone || 'Not provided',
-              flat: o.shippingAddress || '',
-              area: o.shippingAddress2 || '',
-              city: o.shippingCity || '',
-              state: o.shippingState || '',
-              pincode: o.shippingPincode || ''
-            },
-            itemCount: items.length,
-            isDelivered: statusKey === 'delivered'
-          };
-        }).sort((a, b) => b.id - a.id);
-
-        updateTabCounts();
-        renderOrders();
-
-      } catch (err) {
-        console.error("Orders fetch failed:", err);
-        container.innerHTML = `
-          <div class="text-center py-20 order-card">
-            <i class="fas fa-exclamation-triangle text-7xl text-red-500 mb-6"></i>
-            <h2 class="text-3xl font-bold text-primary mb-4">Failed to load orders</h2>
-            <p class="text-gray-600 mb-6">${err.message}</p>
-            <button onclick="fetchOrders()" class="btn btn-primary">Retry</button>
-          </div>`;
-      } finally {
-        loading?.classList.add('hidden');
-      }
-    }
-
     function updateTabCounts() {
-      const upcoming = orders.filter(o => o.status.toLowerCase() !== 'cancelled').length;
-      const cancelled = orders.filter(o => o.status.toLowerCase() === 'cancelled').length;
-
-      document.getElementById('tab-upcoming').innerHTML = `Upcoming Orders (${upcoming})`;
-      document.getElementById('tab-cancelled').innerHTML = `Cancelled Orders (${cancelled})`;
+      const upcoming = orders.filter(o => o.status !== 'Cancelled').length;
+      const cancelled = orders.filter(o => o.status === 'Cancelled').length;
+      document.getElementById('upcoming-count').textContent = upcoming;
+      document.getElementById('cancelled-count').textContent = cancelled;
     }
 
     function renderOrders() {
       const container = document.getElementById('ordersList');
-      container.innerHTML = '';
+      if (!container) return;
 
       const filteredOrders = activeTab === 'upcoming'
-        ? orders.filter(o => o.status.toLowerCase() !== 'cancelled')
-        : orders.filter(o => o.status.toLowerCase() === 'cancelled');
+        ? orders.filter(o => o.status !== 'Cancelled')
+        : orders.filter(o => o.status === 'Cancelled');
 
       if (!filteredOrders.length) {
         const emptyMsg = activeTab === 'upcoming' ? 'No active orders' : 'No cancelled orders';
         container.innerHTML = `<div class="text-center py-20 order-card">
-          <i class="fas fa-shopping-bag text-7xl text-primary mb-6"></i>
-          <h2 class="text-3xl font-bold text-primary mb-4">${emptyMsg}</h2>
-          <a href="../home.html" class="btn btn-primary">Shop Now</a>
+          <i class="fas fa-shopping-bag text-7xl mb-6" style="color: var(--green-light);"></i>
+          <h2 class="text-2xl font-bold mb-4" style="color: var(--green-dark);">${emptyMsg}</h2>
+          <p class="text-gray-600 mb-6">Start shopping to see your orders here!</p>
+          <a href="../home.html" class="btn btn-primary">Shop Now 🌿</a>
         </div>`;
         return;
       }
 
+      container.innerHTML = '';
       filteredOrders.forEach(order => {
-        const isCancelled = order.status.toLowerCase() === 'cancelled';
-
+        const isCancelled = order.status === 'Cancelled';
+        const canCancel = !isCancelled && canCancelOrder(order);
+        
         let cancelBtn = '';
-        if (!isCancelled && order.canCancel) {
+        if (!isCancelled && canCancel) {
           cancelBtn = `<button class="btn btn-danger cancel-btn" data-id="${order.id}">Cancel Order</button>`;
-        } else if (!isCancelled && order.status.toLowerCase() === 'placed') {
-          cancelBtn = `<button class="btn btn-outline opacity-50 cursor-not-allowed" disabled title="Cancellation only allowed within 30 minutes">Cancel Order</button>`;
-        } else {
+        } else if (!isCancelled && order.status === 'Placed') {
           cancelBtn = `<button class="btn btn-outline opacity-50 cursor-not-allowed" disabled>Cancel Order</button>`;
         }
 
-        const invoiceBtn = order.isDelivered
-          ? `<button class="btn btn-success invoice-btn" data-id="${order.id}">Invoice</button>`
-          : '';
-
-        const viewBtn = `<button class="btn btn-primary view-btn" data-id="${order.id}">Order Details</button>`;
+        const viewBtn = `<button class="btn btn-primary view-btn" data-id="${order.id}">View Details</button>`;
+        const invoiceBtn = `<button class="btn btn-success invoice-btn" data-id="${order.id}">Download Invoice</button>`;
 
         let itemsHtml = '';
         const previewItems = order.items.slice(0, 2);
         previewItems.forEach((item, idx) => {
           itemsHtml += `
             <div class="flex gap-3 items-center ${idx > 0 ? 'mt-3' : ''}">
-              <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover shadow-sm">
+              <img src="${item.image || 'https://picsum.photos/id/116/50/50'}" alt="${item.name}" class="w-12 h-12 rounded-lg object-cover border" style="border-color: #d8f3dc;">
               <div class="flex-1">
-                <p class="font-medium text-primary text-sm">${item.name}</p>
-                <p class="text-xs text-dark">Qty: ${item.qty} ${item.weight ? '× ' + item.weight : ''}</p>
+                <p class="font-medium text-sm" style="color: var(--green-dark);">${item.name}</p>
+                <p class="text-xs text-gray-500">Qty: ${item.qty} ${item.weight ? '× ' + item.weight : ''}</p>
               </div>
-              <p class="text-sm font-medium text-primary">₹${item.price}</p>
+              <p class="text-sm font-medium" style="color: var(--green-dark);">₹${item.price}</p>
             </div>`;
         });
 
@@ -565,15 +499,15 @@
 
         container.innerHTML += `
           <div class="order-card">
-            <div class="flex justify-between items-center mb-3">
+            <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
               <div>
-                <h3 class="text-lg font-bold text-primary">Order #${order.id}</h3>
-                <p class="text-sm text-dark">₹${order.total}</p>
+                <h3 class="text-lg font-bold" style="color: var(--green-dark);">Order #${order.id}</h3>
+                <p class="text-sm font-bold" style="color: var(--green-mid);">₹${order.total}</p>
               </div>
               <div class="flex gap-2 flex-wrap">
                 ${viewBtn}
                 ${invoiceBtn}
-                ${isCancelled ? '' : cancelBtn}
+                ${cancelBtn}
               </div>
             </div>
 
@@ -587,13 +521,12 @@
             </div>
 
             <div class="mb-3">
-              <p class="text-sm text-dark">Payment: <span class="font-medium">${order.paymentMethod}</span></p>
+              <p class="text-sm text-gray-600">Payment: <span class="font-medium" style="color: var(--green-dark);">${order.paymentMethod}</span></p>
             </div>
 
-            ${isCancelled ? `<p class="text-sm font-medium text-red-600 mb-3">This order was cancelled.</p>` : ''}
-
-            <div class="text-xs text-gray-600">
-              <p>${order.itemCount} Item${order.itemCount !== 1 ? 's' : ''} • ${order.paymentMethod} • ${order.cancellationNote}</p>
+            <div class="text-xs text-gray-500">
+              <p>${order.itemCount} Item${order.itemCount !== 1 ? 's' : ''} • ${order.date}</p>
+              <p class="mt-1">${getCancellationNote(order)}</p>
             </div>
           </div>`;
       });
@@ -603,172 +536,162 @@
 
     function attachButtons() {
       document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.onclick = () => handleCancel(btn.dataset.id);
+        btn.onclick = () => handleCancel(parseInt(btn.dataset.id));
       });
       document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.onclick = () => handleView(btn.dataset.id);
+        btn.onclick = () => handleView(parseInt(btn.dataset.id));
       });
       document.querySelectorAll('.invoice-btn').forEach(btn => {
-        btn.onclick = () => generateInvoice(btn.dataset.id);
+        btn.onclick = () => generateInvoice(parseInt(btn.dataset.id));
       });
     }
 
     function handleCancel(id) {
-      const order = orders.find(o => o.id == id);
-      if (!order?.canCancel) return toast('Cancellation not allowed', 'error');
+      const order = orders.find(o => o.id === id);
+      if (!order || !canCancelOrder(order)) {
+        toast('Cancellation not allowed', 'error');
+        return;
+      }
       currentOrderId = id;
+      document.getElementById('cancelWarningText').innerHTML = `
+        <p>Are you sure you want to cancel this order?</p>
+        <p class="mt-2 text-red-600">This action cannot be undone.</p>
+      `;
       showModal('cancelModal');
     }
 
-    async function confirmCancel() {
+    function confirmCancel() {
       if (!currentOrderId) return;
       closeModal('cancelModal');
 
-      const loading = document.getElementById('loadingOverlay');
-      loading?.classList.remove('hidden');
-
-      try {
-        const resp = await fetch(`${API_BASE_URL}/cancel-order/${currentOrderId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!resp.ok) throw new Error(await resp.text().catch(() => resp.statusText));
-
-        const idx = orders.findIndex(o => o.id == currentOrderId);
-        if (idx !== -1) {
-          orders[idx].status = 'Cancelled';
-          orders[idx].statusClass = statusMap.cancelled.class;
-          orders[idx].canCancel = false;
-        }
-
+      const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+      if (orderIndex !== -1 && canCancelOrder(orders[orderIndex])) {
+        orders[orderIndex].status = 'Cancelled';
+        orders[orderIndex].statusClass = statusMap.cancelled.class;
+        orders[orderIndex].canCancel = false;
+        saveOrders();
         updateTabCounts();
         renderOrders();
         toast('Order cancelled successfully!', 'success');
-      } catch (err) {
-        console.error("Cancel failed:", err);
-        toast('Failed to cancel order: ' + err.message, 'error');
-      } finally {
-        loading?.classList.add('hidden');
+      } else {
+        toast('Failed to cancel order', 'error');
       }
+      currentOrderId = null;
     }
 
     function handleView(id) {
-      const order = orders.find(o => o.id == id);
+      const order = orders.find(o => o.id === id);
       if (!order) return;
 
       const itemsHtml = order.items.map(item => `
-        <div class="flex gap-4 items-start pb-3 border-b border-gray-100 last:border-0">
-          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover shadow-sm">
+        <div class="flex gap-4 items-start pb-3 border-b last:border-0" style="border-color: #d8f3dc;">
+          <img src="${item.image || 'https://picsum.photos/id/116/60/60'}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover border" style="border-color: #d8f3dc;">
           <div class="flex-1">
-            <p class="font-medium text-primary">${item.name}</p>
-            <p class="text-xs text-dark">Qty: ${item.qty} ${item.weight ? '× ' + item.weight : ''}</p>
+            <p class="font-medium" style="color: var(--green-dark);">${item.name}</p>
+            <p class="text-xs text-gray-500">Qty: ${item.qty} ${item.weight ? '× ' + item.weight : ''}</p>
           </div>
-          <p class="text-sm font-medium text-primary">₹${item.price}</p>
+          <p class="text-sm font-medium" style="color: var(--green-dark);">₹${item.price}</p>
         </div>`).join('');
 
       let addressHtml = '';
       if (order.address) {
         const addr = order.address;
-        const hasContent = addr.fullName !== 'Not provided' || addr.mobile !== 'Not provided' || addr.flat !== 'Not provided';
-        if (hasContent) {
-          addressHtml = `
-            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p class="font-medium text-primary text-sm mb-2">Delivery Address:</p>
-              ${addr.fullName !== 'Not provided' ? `<p class="text-sm text-dark">${addr.fullName}</p>` : ''}
-              ${addr.mobile !== 'Not provided' ? `<p class="text-sm text-dark">${addr.mobile}</p>` : ''}
-              <p class="text-sm text-dark">${[addr.flat, addr.area].filter(Boolean).join(', ') || 'Address not provided'}</p>
-              <p class="text-sm text-dark">${[addr.city, addr.state].filter(Boolean).join(', ')} ${addr.pincode ? '- ' + addr.pincode : ''}</p>
-            </div>`;
-        }
+        addressHtml = `
+          <div class="mt-4 p-3 rounded-lg" style="background: var(--green-pale);">
+            <p class="font-medium text-sm mb-2" style="color: var(--green-dark);">🌿 Delivery Address:</p>
+            <p class="text-sm">${addr.fullName || 'Customer'}</p>
+            <p class="text-sm">${addr.mobile || ''}</p>
+            <p class="text-sm">${[addr.flat, addr.area].filter(Boolean).join(', ') || 'Address not provided'}</p>
+            <p class="text-sm">${[addr.city, addr.state].filter(Boolean).join(', ')} ${addr.pincode ? '- ' + addr.pincode : ''}</p>
+          </div>`;
       }
 
       document.getElementById('viewContent').innerHTML = `
         <div class="space-y-4">${itemsHtml}</div>
-        <div class="mt-4 space-y-2 text-sm pt-3 border-t border-gray-200">
-          <div class="flex justify-between font-bold text-base"><span class="text-primary">Total</span><span class="text-primary">₹${order.total}</span></div>
-          <div class="flex justify-between"><span class="text-dark">Payment Method</span><span class="font-medium text-primary">${order.paymentMethod}</span></div>
-          <div class="flex justify-between"><span class="text-dark">Convenience Fee :</span><span class="font-medium text-primary">${(order.convenienceFee !== null || order.convenienceFee !== undefined ) ? order.convenienceFee : 0}</span></div>
-
+        <div class="mt-4 space-y-2 text-sm pt-3 border-t" style="border-color: #d8f3dc;">
+          <div class="flex justify-between font-bold text-base">
+            <span style="color: var(--green-dark);">Total</span>
+            <span style="color: var(--green-mid);">₹${order.total}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Payment Method</span>
+            <span class="font-medium" style="color: var(--green-dark);">${order.paymentMethod}</span>
+          </div>
         </div>
-        <div class="mt-5 pt-4 border-t border-gray-200 space-y-2 text-sm">
-          <div class="flex justify-between"><span class="text-dark">Status</span><span class="${order.status.toLowerCase() === 'cancelled' ? 'text-red-600' : 'text-green-600'} font-medium">${order.status}</span></div>
-          <div class="flex justify-between"><span class="text-dark">Order ID</span><span class="font-mono">#${order.id}</span></div>
-          <div class="flex justify-between"><span class="text-dark">Placed On</span><span>${order.date}</span></div>
-          <div class="flex justify-between"><span class="text-dark">Items</span><span>${order.itemCount} items</span></div>
+        <div class="mt-5 pt-4 border-t space-y-2 text-sm" style="border-color: #d8f3dc;">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Status</span>
+            <span class="${order.status === 'Cancelled' ? 'text-red-600' : 'text-green-600'} font-medium">${order.status}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Order ID</span>
+            <span class="font-mono">#${order.id}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Placed On</span>
+            <span>${order.date}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Items</span>
+            <span>${order.itemCount} items</span>
+          </div>
         </div>
         ${addressHtml}
       `;
       showModal('viewModal');
     }
 
-    // ==================== INVOICE GENERATION (FINAL FIX) ====================
     function generateInvoice(orderId) {
-      const order = orders.find(o => o.id == orderId);
+      const order = orders.find(o => o.id === orderId);
       if (!order) {
         toast('Order not found', 'error');
         return;
       }
 
-      // Fill all fields
+      // Fill invoice fields
       document.getElementById('printOrderId').textContent = order.id;
       document.getElementById('printOrderDate').textContent = order.date;
-      document.getElementById('printDeliveryDate').textContent = 
-        order.isDelivered ? new Date().toLocaleDateString('en-IN') : 'Pending Delivery';
-
-      document.getElementById('printCustomerName').textContent = order.address.fullName || 'Customer';
-      document.getElementById('printCustomerPhone').textContent = order.address.mobile || '-';
-      document.getElementById('printCustomerEmail').textContent = 'customer@pharmacy.com';
-
-      document.getElementById('printShippingName').textContent = order.address.fullName || 'Customer';
-      document.getElementById('printShippingPhone').textContent = order.address.mobile || '-';
+      document.getElementById('printCustomerName').textContent = order.address?.fullName || 'Customer';
+      document.getElementById('printCustomerPhone').textContent = order.address?.mobile || '-';
+      document.getElementById('printShippingName').textContent = order.address?.fullName || 'Customer';
+      document.getElementById('printShippingPhone').textContent = order.address?.mobile || '-';
 
       const addressLines = [
-        order.address.flat,
-        order.address.area,
-        `${order.address.city}, ${order.address.state} - ${order.address.pincode}`
+        order.address?.flat,
+        order.address?.area,
+        `${order.address?.city || ''}, ${order.address?.state || ''} - ${order.address?.pincode || ''}`
       ].filter(Boolean).join('<br>');
-
       document.getElementById('printShippingAddress').innerHTML = addressLines || 'Address not provided';
 
-      // Build items table
       let itemsHtml = '';
       let subtotal = 0;
       order.items.forEach(item => {
-        const rate = parseFloat(item.price);
-        const amount = rate * item.qty;
+        const price = parseFloat(item.price);
+        const amount = price * item.qty;
         subtotal += amount;
-
         itemsHtml += `
           <tr>
-            <td class="border p-2 text-left">${item.name} ${item.weight ? `(${item.weight})` : ''}</td>
-            <td class="border p-2 text-center">${item.qty}</td>
-            <td class="border p-2 text-right">₹${rate.toFixed(2)}</td>
-            <td class="border p-2 text-right">₹${amount.toFixed(2)}</td>
+            <td class="border p-2 text-left" style="border-color: #d8f3dc;">${item.name} ${item.weight ? `(${item.weight})` : ''}</td>
+            <td class="border p-2 text-center" style="border-color: #d8f3dc;">${item.qty}</td>
+            <td class="border p-2 text-right" style="border-color: #d8f3dc;">₹${price.toFixed(2)}</td>
+            <td class="border p-2 text-right" style="border-color: #d8f3dc;">₹${amount.toFixed(2)}</td>
           </tr>`;
       });
 
-      document.getElementById('printItemsTable').innerHTML = itemsHtml || 
-        '<tr><td colspan="4" class="border p-2 text-center text-gray-500">No items found</td></tr>';
-
+      document.getElementById('printItemsTable').innerHTML = itemsHtml || '<tr><td colspan="4" class="border p-2 text-center">No items found</td></tr>';
       document.getElementById('printSubtotal').textContent = '₹' + subtotal.toFixed(2);
-      // document.getElementById('printTax').textContent = '₹0.00';
-      // document.getElementById('printDiscount').textContent = '₹0.00';
-      // document.getElementById('printCoupon').textContent = '₹0.00';
-      document.getElementById('printTotal').textContent = '₹' + order.total;
+      document.getElementById('printShipping').textContent = order.shipping === 0 ? 'FREE' : '₹' + order.shipping;
+      document.getElementById('printTotal').textContent = '₹' + parseFloat(order.total).toFixed(2);
 
-      // === FINAL ROBUST PRINT FIX ===
       const printable = document.getElementById('printableInvoice');
       printable.classList.remove('hidden');
 
-      // Use multiple techniques to ensure DOM is fully rendered before print
       requestAnimationFrame(() => {
         setTimeout(() => {
           window.print();
-        }, 500); // Increased to 500ms for reliability
+        }, 300);
       });
 
-      // Hide again after a safe delay (in case user cancels print)
       setTimeout(() => {
         printable.classList.add('hidden');
       }, 2000);
@@ -780,43 +703,45 @@
         duration: 3000,
         gravity: "top",
         position: "right",
-        backgroundColor: type === 'success' ? "#10b981" : type === 'error' ? "#EF4444" : "#3B82F6",
+        backgroundColor: type === 'success' ? "#40916c" : type === 'error' ? "#EF4444" : "#3B82F6",
       }).showToast();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchOrders();
-    });
-  </script>
-   <script>
+    // Header and Footer loading
     function loadHeader() {
-        fetch('../Header/header.html')
-            .then(r => { if (!r.ok) throw r; return r.text(); })
-            .then(html => {
-                document.getElementById('header-placeholder').innerHTML = html;
-                const script = document.createElement('script');
-                script.src = '../../Header/header.js';
-                script.onload = () => console.log('Header JS loaded');
-                document.body.appendChild(script);
-            })
-            .catch(err => console.error('Header load failed:', err));
+      fetch('../Header/header.html')
+        .then(r => { if (!r.ok) throw r; return r.text(); })
+        .then(html => {
+          document.getElementById('header-placeholder').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../Header/header.js';
+          script.onload = () => console.log('Header JS loaded');
+          document.body.appendChild(script);
+        })
+        .catch(err => console.error('Header load failed:', err));
     }
 
     function loadFooter() {
-        fetch('../Footer/footer.html')
-            .then(r => { if (!r.ok) throw r; return r.text(); })
-            .then(html => {
-                document.getElementById('footer-placeholder').innerHTML = html;
-            })
-            .catch(err => console.error('Footer load failed:', err));
+      fetch('../Footer/footer.html')
+        .then(r => { if (!r.ok) throw r; return r.text(); })
+        .then(html => {
+          document.getElementById('footer-placeholder').innerHTML = html;
+        })
+        .catch(err => console.error('Footer load failed:', err));
     }
 
+    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
-        loadHeader();
-        loadFooter();
-        // ... rest of your code
+      loadHeader();
+      loadFooter();
+      loadOrders();
     });
-</script>
-</body>
 
+    // Expose functions globally
+    window.switchTab = switchTab;
+    window.closeModal = closeModal;
+    window.confirmCancel = confirmCancel;
+    window.createOrder = createOrder;
+  </script>
+</body>
 </html>

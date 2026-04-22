@@ -1,1600 +1,578 @@
 // ==================== productdetails.js ====================
-const API_BASE_URL = 'http://localhost:8083/api/products';
-const API_BASE_IMG_URL = 'http://localhost:8083';
-const CART_API_BASE = 'http://localhost:8083/api/cart';
-const WISHLIST_API_BASE = 'http://localhost:8083/api/wishlist';
-const FALLBACK_IMAGE = './Images/product_details_fallback_img.jpg';
+// Complete product details page - Add to Cart fully functional
 
-// Global variables
-let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+// ========== DUMMY PRODUCT DATABASE (Matches home.html products IDs 40-55) ==========
+const PRODUCTS_DB = [
+    // Indoor Plants (IDs 40-47)
+    { 
+        id: 40, name: "Monstera Deliciosa", brand: "GreenNest", category: "Indoor Plants", subCategory: "Foliage Plants",
+        description: "The Monstera Deliciosa, also known as the Swiss Cheese Plant, features iconic split leaves that bring a tropical vibe to any space. Easy to care for and fast-growing, it's a favorite among plant enthusiasts.",
+        mainImage: "https://picsum.photos/id/117/600/600", subImages: ["https://picsum.photos/id/116/200/200", "https://picsum.photos/id/115/200/200"],
+        sizes: ["Small (4\")", "Medium (6\")", "Large (8\")"], prices: [549, 849, 1299], oldPrices: [699, 1099, 1699],
+        stock: "In-Stock", quantity: 45, mfgDate: "2024-12-01", batchNo: "GN-MON-001",
+        dynamicFields: { form: "Potted Plant", strength: "Rooted Cutting", countryOfOrigin: "India", storage: "Bright indirect light, water weekly", suitableFor: "Living rooms, Offices" },
+        benefits: ["Large dramatic leaves create stunning visual impact", "Easy to care for and forgiving of occasional missed watering", "Fast-growing and rewarding to watch new leaves unfurl", "Excellent air-purifying qualities", "Each leaf develops unique hole patterns"],
+        ingredients: ["Monstera deliciosa", "Premium potting mix with perlite", "Slow-release fertilizer", "Nursery pot included"]
+    },
+    { 
+        id: 41, name: "Peace Lily Plant", brand: "GreenNest", category: "Indoor Plants", subCategory: "Flowering Plants",
+        description: "Peace Lily is a graceful flowering plant that thrives indoors. With its elegant white blooms and glossy dark-green leaves, it adds a calming touch to any space while effectively purifying the air.",
+        mainImage: "https://picsum.photos/id/15/600/600", subImages: ["https://picsum.photos/id/14/200/200"],
+        sizes: ["Small (4\")", "Medium (6\")"], prices: [349, 549], oldPrices: [449, 699],
+        stock: "In-Stock", quantity: 30, mfgDate: "2024-12-05", batchNo: "GN-PL-002",
+        dynamicFields: { form: "Potted Plant", strength: "Blooming Stage", countryOfOrigin: "India", storage: "Low to medium indirect light, moist soil", suitableFor: "Bedrooms, Living rooms" },
+        benefits: ["One of NASA's top air-purifying plants", "Produces beautiful white flowers throughout the year", "Thrives in low-light conditions", "Reduces humidity and mold spores", "Perfect gift plant for all occasions"],
+        ingredients: ["Spathiphyllum wallisii", "Peat moss and perlite potting mix", "Balanced NPK slow-release fertilizer"]
+    },
+    { 
+        id: 42, name: "Golden Pothos Vine", brand: "GreenNest", category: "Indoor Plants", subCategory: "Trailing Plants",
+        description: "Golden Pothos is a classic trailing vine with heart-shaped golden-green leaves. It's virtually unkillable and looks stunning in hanging baskets or climbing up a moss pole.",
+        mainImage: "https://picsum.photos/id/127/600/600", subImages: [],
+        sizes: ["Small (4\")", "Medium (6\")"], prices: [199, 349], oldPrices: [249, 449],
+        stock: "In-Stock", quantity: 80, mfgDate: "2024-12-10", batchNo: "GN-PO-003",
+        dynamicFields: { form: "Trailing Vine", strength: "Rooted Cutting", countryOfOrigin: "India", storage: "Low to bright indirect light", suitableFor: "Hanging baskets, Shelves" },
+        benefits: ["Extremely low maintenance — perfect for beginners", "Grows beautifully in both soil and water", "Trailing habit creates lush green waterfalls", "Survives in low light conditions", "Propagates easily from cuttings"],
+        ingredients: ["Epipremnum aureum", "Well-draining potting mix", "Organic fertilizer"]
+    },
+    { 
+        id: 43, name: "Snake Plant (Sansevieria)", brand: "GreenNest", category: "Indoor Plants", subCategory: "Succulents",
+        description: "The Snake Plant is virtually indestructible. It releases oxygen at night, making it the perfect bedroom companion. Its striking upright leaves add a modern architectural element.",
+        mainImage: "https://picsum.photos/id/100/600/600", subImages: [],
+        sizes: ["Small (4\")", "Medium (6\")", "Large (10\")"], prices: [299, 449, 699], oldPrices: [379, 599, 899],
+        stock: "In-Stock", quantity: 65, mfgDate: "2024-11-20", batchNo: "GN-SN-004",
+        dynamicFields: { form: "Potted Succulent", strength: "Mature Plant", countryOfOrigin: "India", storage: "Any light, water once in 10 days", suitableFor: "Bedrooms, Offices" },
+        benefits: ["Releases oxygen at night — ideal for bedrooms", "Extremely drought tolerant", "Filters air pollutants including CO2", "Grows in any light condition", "Long-lived plant"],
+        ingredients: ["Sansevieria trifasciata", "Well-draining sandy loam mix", "Slow-release fertilizer"]
+    },
+    { 
+        id: 44, name: "Fiddle Leaf Fig", brand: "GreenNest", category: "Indoor Plants", subCategory: "Statement Plants",
+        description: "The Fiddle Leaf Fig is a showstopper with its large, violin-shaped leaves. It's the ultimate statement plant for modern interiors and can grow into an impressive indoor tree.",
+        mainImage: "https://picsum.photos/id/125/600/600", subImages: [],
+        sizes: ["Medium (8\")", "Large (12\")"], prices: [799, 1299], oldPrices: [999, 1699],
+        stock: "In-Stock", quantity: 20, mfgDate: "2024-11-15", batchNo: "GN-FL-005",
+        dynamicFields: { form: "Indoor Tree", strength: "Young Plant", countryOfOrigin: "India", storage: "Bright indirect light, consistent watering", suitableFor: "Living rooms, Entryways" },
+        benefits: ["Dramatic large leaves create instant focal point", "Adds height and structure to any room", "Known to boost mood and productivity", "Long-lasting with proper care", "Makes for an impressive housewarming gift"],
+        ingredients: ["Ficus lyrata", "Rich organic potting mix", "Controlled-release fertilizer"]
+    },
+    { 
+        id: 45, name: "ZZ Plant", brand: "GreenNest", category: "Indoor Plants", subCategory: "Air Purifying",
+        description: "The ZZ Plant is the ultimate low-maintenance houseplant. Its waxy, dark-green leaves shine beautifully and it can survive weeks without water or sunlight.",
+        mainImage: "https://picsum.photos/id/92/600/600", subImages: [],
+        sizes: ["Small (4\")", "Medium (6\")"], prices: [399, 599], oldPrices: [499, 799],
+        stock: "In-Stock", quantity: 40, mfgDate: "2024-12-01", batchNo: "GN-ZZ-006",
+        dynamicFields: { form: "Potted Plant", strength: "Established Rhizome", countryOfOrigin: "India", storage: "Low to bright indirect light, drought tolerant", suitableFor: "Offices, Dark corners" },
+        benefits: ["Virtually indestructible — survives neglect", "Glossy leaves stay dust-free naturally", "Stores water in rhizomes", "Proven air purifier", "Slow-growing and compact"],
+        ingredients: ["Zamioculcas zamiifolia", "Well-aerated cocopeat blend", "Slow-release fertilizer"]
+    },
+    { 
+        id: 46, name: "Spider Plant", brand: "GreenNest", category: "Indoor Plants", subCategory: "Hanging Plants",
+        description: "The Spider Plant is one of the easiest houseplants to grow. Its arching leaves and baby plantlets make it a charming addition to any room.",
+        mainImage: "https://picsum.photos/id/104/600/600", subImages: [],
+        sizes: ["Small (4\")", "Medium (6\")"], prices: [179, 299], oldPrices: [229, 379],
+        stock: "In-Stock", quantity: 55, mfgDate: "2024-12-05", batchNo: "GN-SP-007",
+        dynamicFields: { form: "Potted Plant", strength: "Mature with Babies", countryOfOrigin: "India", storage: "Bright indirect light", suitableFor: "Hanging baskets" },
+        benefits: ["Produces adorable baby plantlets", "Excellent air purifier", "Very easy to propagate", "Pet-friendly plant", "Thrives with neglect"],
+        ingredients: ["Chlorophytum comosum", "Well-draining potting mix", "Slow-release fertilizer"]
+    },
+    { 
+        id: 47, name: "Rubber Plant (Ficus)", brand: "GreenNest", category: "Indoor Plants", subCategory: "Foliage Plants",
+        description: "The Rubber Plant is a bold, statement-making houseplant with its large, glossy dark-green leaves. It's a fast grower and can become a stunning indoor tree.",
+        mainImage: "https://picsum.photos/id/98/600/600", subImages: [],
+        sizes: ["Small (4\")", "Medium (8\")"], prices: [449, 799], oldPrices: [549, 999],
+        stock: "In-Stock", quantity: 25, mfgDate: "2024-11-20", batchNo: "GN-RB-008",
+        dynamicFields: { form: "Indoor Tree", strength: "Young Plant", countryOfOrigin: "India", storage: "Bright indirect light", suitableFor: "Living rooms" },
+        benefits: ["Bold tropical foliage", "Efficient air purifier", "Fast growing", "Low water requirement", "Available in burgundy variety"],
+        ingredients: ["Ficus elastica", "Nutrient-rich loam mix", "Mycorrhizal fungi"]
+    },
+    // Garden Essentials (IDs 48-55)
+    { 
+        id: 48, name: "Terracotta Pot Set (3pcs)", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Planters",
+        description: "Classic terracotta pots that are perfect for all plants. The porous clay allows roots to breathe and prevents overwatering. Set includes 3 sizes: 4\", 6\", and 8\".",
+        mainImage: "https://picsum.photos/id/96/600/600", subImages: [],
+        sizes: ["Set of 3"], prices: [349], oldPrices: [449],
+        stock: "In-Stock", quantity: 100, mfgDate: "2024-12-01", batchNo: "GN-POT-001",
+        dynamicFields: { form: "Pot Set", strength: "Premium Quality", countryOfOrigin: "India", storage: "Store in dry place", suitableFor: "All plant types" },
+        benefits: ["Breathable clay prevents root rot", "Classic aesthetic suits any decor", "Includes matching saucers", "Durable and long-lasting", "Eco-friendly natural material"],
+        ingredients: ["Natural terracotta clay", "Fired at high temperature", "Drainage hole included"]
+    },
+    { 
+        id: 49, name: "Ceramic Self-Watering Pot", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Planters",
+        description: "Modern self-watering ceramic pot with water reservoir. Keeps plants hydrated for up to 2 weeks. Perfect for busy plant parents.",
+        mainImage: "https://picsum.photos/id/20/600/600", subImages: [],
+        sizes: ["Medium (6\")", "Large (8\")"], prices: [599, 899], oldPrices: [749, 1099],
+        stock: "In-Stock", quantity: 50, mfgDate: "2024-12-10", batchNo: "GN-POT-002",
+        dynamicFields: { form: "Self-Watering Pot", strength: "Premium Ceramic", countryOfOrigin: "India", storage: "Indoor use", suitableFor: "Busy plant owners" },
+        benefits: ["Water reservoir lasts 2 weeks", "Prevents overwatering", "Modern design", "Glazed finish easy to clean", "Comes with water level indicator"],
+        ingredients: ["Ceramic", "Cotton wick", "Plastic reservoir"]
+    },
+    { 
+        id: 50, name: "Premium Potting Mix (5kg)", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Soil",
+        description: "Our premium potting mix is specially formulated for indoor and outdoor plants. Contains cocopeat, perlite, vermicompost, and neem cake for optimal plant growth.",
+        mainImage: "https://picsum.photos/id/104/600/600", subImages: [],
+        sizes: ["5kg Bag"], prices: [249], oldPrices: [319],
+        stock: "In-Stock", quantity: 200, mfgDate: "2024-12-10", batchNo: "GN-SOIL-001",
+        dynamicFields: { form: "Potting Mix", strength: "Premium Grade", countryOfOrigin: "India", storage: "Cool dry place", suitableFor: "All indoor and outdoor plants" },
+        benefits: ["Lightweight and well-draining", "Enriched with essential nutrients", "pH balanced for optimal growth", "Contains neem cake for pest control", "Ready to use straight from bag"],
+        ingredients: ["Cocopeat", "Perlite", "Vermicompost", "Neem cake", "Slow-release fertilizers"]
+    },
+    { 
+        id: 51, name: "Organic Fertilizer Granules", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Fertilizers",
+        description: "100% organic fertilizer granules made from neem cake, bone meal, and seaweed extract. Promotes healthy root development and lush foliage.",
+        mainImage: "https://picsum.photos/id/97/600/600", subImages: [],
+        sizes: ["1kg Pack"], prices: [199], oldPrices: [249],
+        stock: "In-Stock", quantity: 150, mfgDate: "2024-11-25", batchNo: "GN-FERT-001",
+        dynamicFields: { form: "Granules", strength: "Organic", countryOfOrigin: "India", storage: "Keep sealed in cool place", suitableFor: "All plants" },
+        benefits: ["100% organic and chemical-free", "Slow-release formula feeds for months", "Improves soil structure", "Promotes flowering and fruiting", "Safe for pets and children"],
+        ingredients: ["Neem cake powder", "Bone meal", "Seaweed extract", "Humic acid"]
+    },
+    { 
+        id: 52, name: "Garden Hand Tool Set", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Tools",
+        description: "Complete 5-piece garden tool set including trowel, transplanting trowel, cultivator, weeder, and pruning shears. Ergonomic handles with rust-resistant steel.",
+        mainImage: "https://picsum.photos/id/26/600/600", subImages: [],
+        sizes: ["5-Piece Set"], prices: [449], oldPrices: [599],
+        stock: "In-Stock", quantity: 75, mfgDate: "2024-12-01", batchNo: "GN-TOOL-001",
+        dynamicFields: { form: "Tool Set", strength: "Heavy Duty", countryOfOrigin: "India", storage: "Store in dry place", suitableFor: "All gardening tasks" },
+        benefits: ["Complete set for all gardening needs", "Ergonomic non-slip handles", "Rust-resistant stainless steel", "Includes storage bag", "Lifetime warranty"],
+        ingredients: ["Stainless steel", "Rubber grip", "Oxford cloth bag"]
+    },
+    { 
+        id: 53, name: "Hanging Macramé Planter", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Planters",
+        description: "Beautiful handcrafted macramé plant hanger. Perfect for displaying trailing plants like pothos, string of pearls, or ferns. Fits standard 6-inch pots.",
+        mainImage: "https://picsum.photos/id/30/600/600", subImages: [],
+        sizes: ["One Size"], prices: [299], oldPrices: [399],
+        stock: "In-Stock", quantity: 60, mfgDate: "2024-12-05", batchNo: "GN-MAC-001",
+        dynamicFields: { form: "Hanging Planter", strength: "Handmade", countryOfOrigin: "India", storage: "Indoor/Outdoor use", suitableFor: "Hanging plants" },
+        benefits: ["Handcrafted by local artisans", "Supports up to 5kg weight", "Bohemian style decor", "Adjustable hanging length", "Comes with wooden ring"],
+        ingredients: ["Cotton cord", "Wooden beads", "Metal ring"]
+    },
+    { 
+        id: 54, name: "Plant Grow Light LED", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Accessories",
+        description: "Full spectrum LED grow light with adjustable gooseneck. Perfect for indoor plants in low-light conditions. Promotes healthy growth and flowering.",
+        mainImage: "https://picsum.photos/id/13/600/600", subImages: [],
+        sizes: ["15W", "30W"], prices: [899, 1299], oldPrices: [1199, 1699],
+        stock: "In-Stock", quantity: 40, mfgDate: "2024-11-20", batchNo: "GN-LIGHT-001",
+        dynamicFields: { form: "Grow Light", strength: "Full Spectrum", countryOfOrigin: "China", storage: "Indoor use", suitableFor: "Low light areas" },
+        benefits: ["Full spectrum mimics natural sunlight", "Adjustable gooseneck for perfect positioning", "Energy-efficient LED", "Timer function available", "Clamp-on design no drilling needed"],
+        ingredients: ["LED chips", "Aluminum body", "Plastic clamp"]
+    },
+    { 
+        id: 55, name: "Succulent & Cactus Mix Kit", brand: "GreenNest Essentials", category: "Garden Essentials", subCategory: "Starter Kits",
+        description: "Complete starter kit for succulent lovers. Includes 1kg fast-draining soil mix, 3 terracotta pots, decorative pebbles, and care guide.",
+        mainImage: "https://picsum.photos/id/88/600/600", subImages: [],
+        sizes: ["Complete Kit"], prices: [349], oldPrices: [449],
+        stock: "In-Stock", quantity: 85, mfgDate: "2024-12-01", batchNo: "GN-KIT-001",
+        dynamicFields: { form: "Starter Kit", strength: "Complete Set", countryOfOrigin: "India", storage: "Ready to use", suitableFor: "Succulent beginners" },
+        benefits: ["Everything you need in one box", "Perfect for beginners", "Includes decorative pebbles", "Detailed care instructions", "Makes a great gift"],
+        ingredients: ["Cactus soil mix", "Terracotta pots", "Decorative stones", "Care booklet"]
+    }
+];
 
-
-function getCurrentUserId() {
-  try {
-    const userData = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
-    if (!userData) return null;
-
-    const user = JSON.parse(userData);
-    const id = user.userId || user.id || user.userID;
-
-    return id ? Number(id) : null;
-  } catch (error) {
-    console.error('Error reading currentUser:', error);
-    return null;
-  }
-  
-}
-console.log("getCurrentUserId function returns :", getCurrentUserId());
-
-
+// ========== GLOBAL VARIABLES ==========
 let currentProduct = null;
-let currentUserId = getCurrentUserId();
 let selectedVariantIndex = 0;
 
-// ------------------- Utility Functions -------------------
-function removeSkeleton() {
-    document.querySelectorAll('.skeleton').forEach(el => {
-        el.classList.remove('skeleton');
-        el.style.background = '';
-        el.style.backgroundImage = '';
-        el.style.animation = '';
-    });
-}
-
+// ========== UTILITY FUNCTIONS ==========
 function showToast(message, type = "success") {
-    document.querySelectorAll('.toast-notification').forEach(toast => toast.remove());
+    document.querySelectorAll('.toast-notification').forEach(t => t.remove());
     const toast = document.createElement('div');
-    toast.className = `toast-notification fixed top-20 right-4 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-    toast.textContent = message;
+    toast.className = `toast-notification ${type === 'success' ? 'bg-green-700' : 'bg-red-600'} text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2`;
+    toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-leaf' : 'fa-times-circle'}"></i> ${message}`;
     document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2500);
 }
 
 function updateCartCount() {
+    let cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    } catch(e) { cart = []; }
     const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     ['desktop-cart-count', 'mobile-cart-count'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-            el.textContent = total;
-            el.style.display = total > 0 ? 'flex' : 'none';
-        }
+        if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
     });
 }
 
-function updateRightCartPanel() {
-    const items = cart.reduce((sum, i) => sum + (i.quantity || 1), 0);
-    const countEl = document.getElementById('cart-items-number');
-    const textEl = document.getElementById('cart-items-text');
-    const fullText = document.getElementById('cart-item-count-display');
-    if (countEl) countEl.textContent = items;
-    if (textEl) textEl.textContent = items === 1 ? '' : 's';
-    if (fullText) {
-        fullText.innerHTML = items === 0
-            ? 'Your cart is empty'
-            : `<span id="cart-items-number">${items}</span> Item<span id="cart-items-text">${items === 1 ? '' : 's'}</span> in Cart`;
+// ========== ADD TO CART FUNCTION - FULLY WORKING ==========
+function addToCartLocal(product, qty = 1) {
+    console.log('[DEBUG] Adding to cart:', product.name, 'Quantity:', qty, 'Size:', product.selectedSize);
+    
+    let cart = [];
+    try {
+        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    } catch(e) {
+        cart = [];
     }
-}
-
-function updateLocalCart(product, qty = 1) {
-    const cartItem = {
-        id: product.id,
-        name: product.name,
-        price: Number(product.selectedPrice),
-        image: product.image,
-        quantity: qty,
-        brand: product.brand || '',
-        unit: product.selectedSize || '',
-        type: "PRODUCT",
-        productId: product.id,
-        productType: "MEDICINE"
-    };
-    const existing = cart.find(item => item.id == cartItem.id && item.unit === cartItem.unit);
-    if (existing) {
-        existing.quantity += qty;
+    
+    const existingIndex = cart.findIndex(item => item.id === product.id && item.selectedSize === (product.selectedSize || ''));
+    
+    if (existingIndex !== -1) {
+        const newQty = cart[existingIndex].quantity + qty;
+        if (newQty > 10) {
+            showToast('Max 10 items allowed per product!', 'error');
+            return false;
+        }
+        cart[existingIndex].quantity = newQty;
+        console.log('[DEBUG] Updated existing item quantity to:', newQty);
     } else {
+        const cartItem = { 
+            id: product.id, 
+            name: product.name, 
+            price: Number(product.selectedPrice), 
+            image: product.mainImage, 
+            quantity: qty, 
+            brand: product.brand || 'GreenNest', 
+            selectedSize: product.selectedSize || '',
+            originalPrice: product.oldPrices ? product.oldPrices[selectedVariantIndex] : null
+        };
         cart.push(cartItem);
+        console.log('[DEBUG] Added new item:', cartItem);
     }
+    
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    updateRightCartPanel();
+    showToast(`🌿 ${qty} ${product.name} added to basket!`, 'success');
+    return true;
 }
 
-// ------------------- Backend Cart & Wishlist -------------------
-async function getValidUserId() {
-  try {
-    // First check sessionStorage (most common for login sessions)
-    let userData = sessionStorage.getItem('currentUser');
+// ========== WISHLIST FUNCTIONS ==========
+function getWishlistFromStorage() {
+    try {
+        return JSON.parse(localStorage.getItem('wishlist') || '[]');
+    } catch(e) {
+        return [];
+    }
+}
+
+function isInWishlistLocal(productId) { 
+    return getWishlistFromStorage().some(p => p.id === productId); 
+}
+
+function toggleWishlistLocal(product) {
+    let wishlist = getWishlistFromStorage();
+    const exists = wishlist.some(p => p.id === product.id);
     
-    // If not found, fall back to localStorage
-    if (!userData) {
-      userData = localStorage.getItem('currentUser');
+    if (exists) { 
+        wishlist = wishlist.filter(p => p.id !== product.id); 
+        showToast('💔 Removed from wishlist', 'error'); 
+    } else { 
+        wishlist.push({ 
+            id: product.id, 
+            name: product.name, 
+            price: product.selectedPrice, 
+            originalPrice: product.oldPrices ? product.oldPrices[selectedVariantIndex] : null,
+            image: product.mainImage,
+            brand: product.brand,
+            selectedSize: product.selectedSize
+        }); 
+        showToast('💚 Added to wishlist!', 'success'); 
     }
-
-    if (!userData) {
-      console.log('[getValidUserId] No user data found in sessionStorage or localStorage (key: currentUser)');
-      return null;
-    }
-
-    const user = JSON.parse(userData);
-
-    // Extract userId safely
-    const userId = user.userId || user.id || user.userID;
-
-    if (!userId || isNaN(userId)) {
-      console.log('[getValidUserId] Invalid or missing userId in stored user data:', user);
-      return null;
-    }
-
-    console.log(`[getValidUserId] Valid user found: ${userId} (${user.firstName || 'User'})`);
-    return Number(userId); // → returns 14
-
-  } catch (error) {
-    console.error('[getValidUserId] Failed to parse user data:', error);
-    return null;
-  }
-}
-
-async function addToCartBackend(product, qty = 1) {
-    try {
-        const payload = {
-            userId: currentUserId,
-            type: "PRODUCT",
-            productId: product.id,
-            quantity: qty,
-            selectedSize: product.selectedSize || "",
-            productType: "MEDICINE"
-        };
-        const response = await fetch(`${CART_API_BASE}/add-cart-items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!response.ok) {
-            const err = await response.text();
-            if (err.includes("User not found")) {
-                currentUserId = await getValidUserId();
-                payload.userId = currentUserId;
-                const retry = await fetch(`${CART_API_BASE}/add-cart-items`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                return retry.ok;
-            }
-            throw new Error(err);
-        }
-        return true;
-    } catch (err) {
-        console.error("Backend cart error:", err);
-        return false;
-    }
-}
-
-async function syncCartFromBackend() {
-    try {
-        const response = await fetch(`${CART_API_BASE}/get-cart-items?userId=${currentUserId}`);
-        if (response.ok) {
-            const items = await response.json();
-            cart = items.map(item => ({
-                id: item.itemId,
-                name: item.title,
-                price: Number(item.price),
-                image: item.imageUrl,
-                quantity: item.quantity,
-                brand: '',
-                unit: item.selectedSize || '',
-                type: item.type,
-                productId: item.itemId,
-                productType: item.productType
-            }));
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            updateRightCartPanel();
-        }
-    } catch (err) {
-        console.error("Failed to sync cart:", err);
-    }
-}
-
-async function addToWishlistBackend(product) {
-    try {
-        const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUserId, productId: product.id, productType: "MEDICINE" })
-        });
-        return response.ok;
-    } catch (err) { console.error(err); return false; }
-}
-
-async function removeFromWishlistBackend(product) {
-    try {
-        const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUserId, productId: product.id })
-        });
-        return response.ok;
-    } catch (err) { console.error(err); return false; }
-}
-
-async function isInWishlistBackend(productId) {
-    try {
-        const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${currentUserId}`);
-        if (!response.ok) return false;
-        const items = await response.json();
-        return items.some(item => item.productId == productId);
-    } catch (err) { return false; }
-}
-
-function updateLocalWishlistSync(product, isAdded) {
-    let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    if (isAdded) {
-        if (!wishlist.some(p => p.id === product.id)) {
-            wishlist.push({ id: product.id, name: product.name, price: product.selectedPrice, image: product.image, brand: product.brand, unit: product.selectedSize });
-        }
-    } else {
-        wishlist = wishlist.filter(p => p.id !== product.id);
-    }
+    
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    window.dispatchEvent(new CustomEvent('wishlistUpdated'));
-}
-
-async function toggleWishlist(product) {
-    const btn = document.getElementById('wishlist-btn');
-    if (!btn) return;
-    const icon = btn.querySelector('i');
-    const isAdded = icon.classList.contains('fas');
-    const success = isAdded ? await removeFromWishlistBackend(product) : await addToWishlistBackend(product);
-    if (success) {
-        icon.className = isAdded ? 'far fa-heart text-2xl text-gray-600' : 'fas fa-heart text-2xl text-red-500';
-        btn.title = isAdded ? 'Add to wishlist' : 'Remove from wishlist';
-        showToast(isAdded ? 'Removed from wishlist!' : 'Added to wishlist!');
-        updateLocalWishlistSync(product, !isAdded);
-    }
+    updateWishlistButton();
 }
 
 function updateWishlistButton() {
-    const btn = document.getElementById('wishlist-btn');
+    const btn = document.getElementById('wishlist-btn'); 
     if (!btn || !currentProduct) return;
     const icon = btn.querySelector('i');
-    icon.className = 'far fa-heart text-2xl text-gray-600';
-    btn.title = 'Add to wishlist';
-    isInWishlistBackend(currentProduct.id).then(isAdded => {
-        if (isAdded) {
-            icon.className = 'fas fa-heart text-2xl text-red-500';
-            btn.title = 'Remove from wishlist';
-        }
-        btn.onclick = () => toggleWishlist(currentProduct);
-    });
+    const isWished = isInWishlistLocal(currentProduct.id);
+    icon.className = isWished ? 'fas fa-heart text-xl text-red-500' : 'far fa-heart text-xl';
+    btn.title = isWished ? 'Remove from wishlist' : 'Add to wishlist';
+    btn.onclick = (e) => {
+        e.preventDefault();
+        btn.classList.add('heart-pop'); 
+        setTimeout(() => btn.classList.remove('heart-pop'), 300); 
+        toggleWishlistLocal(currentProduct); 
+    };
 }
 
-async function addToCart(product, qty = 1) {
-    const success = await addToCartBackend(product, qty);
-    showToast(success ? `${qty} item${qty > 1 ? 's' : ''} added to cart!` : `${qty} item${qty > 1 ? 's' : ''} added locally`);
-    updateLocalCart(product, qty);
-}
-
-// ------------------- Image Helper -------------------
-function getImageUrl(path) {
-    if (!path) return FALLBACK_IMAGE;
-    if (path.startsWith('http') || path.startsWith('data:')) return path;
-    return API_BASE_IMG_URL + path;
-}
-
-// ------------------- Variant & Price Logic -------------------
+// ========== PRICE & VARIANT FUNCTIONS ==========
 function updatePriceDisplay() {
-    if (!currentProduct || !currentProduct.variants || currentProduct.variants.length === 0) {
-        document.getElementById('selling-price').textContent = currentProduct?.priceText || '—';
-        document.querySelector('.line-through')?.classList.add('hidden');
-        document.getElementById('discount-badge')?.classList.add('hidden');
-        return;
-    }
-
     const variant = currentProduct.variants[selectedVariantIndex];
-    document.getElementById('selling-price').textContent = `₹${variant.price.toFixed(0)}`;
-
-    const mrpEl = document.getElementById('mrp-price');
+    document.getElementById('selling-price').textContent = `₹${variant.price}`;
+    document.getElementById('mrp-price').textContent = `₹${variant.oldPrice}`;
     const discountBadge = document.getElementById('discount-badge');
     const lineThrough = document.querySelector('.line-through');
-
-    if (variant.mrp && variant.mrp > variant.price) {
-        mrpEl.textContent = `₹${variant.mrp.toFixed(0)}`;
-        discountBadge.textContent = `${variant.discount}% OFF`;
-        discountBadge.classList.remove('hidden');
-        lineThrough?.classList.remove('hidden');
-    } else {
-        discountBadge.classList.add('hidden');
-        lineThrough?.classList.add('hidden');
+    if (variant.oldPrice > variant.price) { 
+        discountBadge.classList.remove('hidden'); 
+        discountBadge.textContent = `${variant.discount}% OFF`; 
+        lineThrough?.classList.remove('hidden'); 
+    } else { 
+        discountBadge.classList.add('hidden'); 
+        lineThrough?.classList.add('hidden'); 
     }
-
     document.getElementById('product-unit').textContent = variant.size;
+    currentProduct.selectedPrice = variant.price; 
+    currentProduct.selectedSize = variant.size;
 }
 
-// Global function for variant selection with active state update
 window.selectVariant = function(index) {
-    selectedVariantIndex = index;
+    selectedVariantIndex = index; 
     updatePriceDisplay();
-
-    // Update active button style
-    document.querySelectorAll('#variant-selector button').forEach((btn, i) => {
-        if (i === index) {
-            btn.classList.remove('border-gray-300', 'hover:border-gray-400');
-            btn.classList.add('border-pharmeasy-green', 'bg-pharmeasy-light-green');
-        } else {
-            btn.classList.remove('border-pharmeasy-green', 'bg-pharmeasy-light-green');
-            btn.classList.add('border-gray-300', 'hover:border-gray-400');
-        }
+    document.querySelectorAll('#variant-selector-container button').forEach((btn, i) => { 
+        btn.style.borderColor = i === index ? '#40916c' : '#d1d5db'; 
+        btn.style.background = i === index ? '#d8f3dc' : 'white'; 
     });
 };
 
-
-// ------------------- API Calls -------------------
-async function fetchProductById(productId) {
-    const urls = [
-        `${API_BASE_URL}/${productId}`,
-        `${API_BASE_URL}/get-by-id/${productId}`,
-        `${API_BASE_URL}/get-product/${productId}`,
-        `${API_BASE_URL}/product/${productId}`
-    ];
-    for (const url of urls) {
-        try {
-            const res = await fetch(url);
-            if (res.ok) return await res.json();
-        } catch (e) {}
-    }
-    return null;
-}
-
-async function fetchRelatedProducts(category, currentId) {
-    try {
-        const res = await fetch(`${API_BASE_URL}/get-by-category/${encodeURIComponent(category)}`);
-        if (!res.ok) return [];
-        const products = await res.json();
-        return products.filter(p => p.productId != currentId && p.productQuantity > 0 && !p.deleted).slice(0, 4);
-    } catch (err) { return []; }
-}
-
-
-// Render variant selector
 function renderVariantSelector() {
-    const sizes = currentProduct.productSizes || [];
-    if (sizes.length <= 1) return;
-
-    let html = `
-        <div id="variant-selector" class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Select Size:</label>
-            <div class="flex flex-wrap gap-3">
-    `;
-
-    sizes.forEach((size, i) => {
-        const price = currentProduct.productPrice[i] || 0;
-        const activeClass = i === 0 ? 'border-pharmeasy-green bg-pharmeasy-light-green' : 'border-gray-300 hover:border-gray-400';
-        html += `
-            <button 
-                class="px-4 py-2 border rounded-lg text-sm font-medium transition ${activeClass}"
-                onclick="selectVariant(${i})">
-                ${size} <span class="text-pharmeasy-green font-bold">₹${price.toFixed(0)}</span>
-            </button>
-        `;
+    if (!currentProduct.variants || currentProduct.variants.length <= 1) return;
+    let html = `<label class="block text-sm font-semibold mb-2" style="color:var(--green-dark);"><i class="fas fa-ruler mr-1"></i> Select Size:</label><div class="flex flex-wrap gap-3">`;
+    currentProduct.variants.forEach((v, i) => { 
+        html += `<button class="px-4 py-2 border-2 rounded-lg text-sm font-semibold transition" onclick="selectVariant(${i})" style="color:var(--green-dark);border-color:${i === 0 ? '#40916c' : '#d1d5db'};background:${i === 0 ? '#d8f3dc' : 'white'};">${v.size} <span style="color:var(--green-mid);font-weight:800;">₹${v.price}</span></button>`; 
     });
-
-    html += `</div></div>`;
-
-    const quantitySection = document.querySelector('#quantity-input').closest('.mb-6');
-    quantitySection.insertAdjacentHTML('beforebegin', html);
+    html += `</div>`;
+    document.getElementById('variant-selector-container').innerHTML = html;
 }
 
-// ------------------- Pincode Delivery Checker -------------------
-function setupPincodeChecker() {
-    const pincodeInput = document.getElementById('pincodeInput');
-    const checkBtn = document.getElementById('checkPincodeBtn');
-    if (!pincodeInput || !checkBtn) return;
-
-    const resultDiv = document.getElementById('deliveryResult');
-    const successDiv = document.getElementById('deliverySuccess');
-    const errorDiv = document.getElementById('deliveryError');
-    const locationText = document.getElementById('deliveryLocation');
-    const deliveryTime = document.getElementById('deliveryTime');
-    const deliveryOffer = document.getElementById('deliveryOffer');
-
-    // Load saved pincode
-    const savedPincode = localStorage.getItem('lastValidPincode');
-    if (savedPincode) {
-        pincodeInput.value = savedPincode;
-        checkPincodeRealTime(savedPincode);
-    }
-
-    // Only digits, max 6
-    pincodeInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
-    });
-
-    const checkPincode = async () => {
-        const pincode = pincodeInput.value.trim();
-        if (pincode.length !== 6) {
-            showToast('Enter a valid 6-digit pincode', 'error');
-            return;
-        }
-        checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-        checkBtn.disabled = true;
-        await checkPincodeRealTime(pincode);
-        checkBtn.innerHTML = '<i class="fas fa-search-location"></i> Check';
-        checkBtn.disabled = false;
-    };
-
-    checkBtn.addEventListener('click', checkPincode);
-    pincodeInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkPincode();
-    });
-
-    // Comprehensive mapping: village name (lowercase) → allowed pincodes
-    const allowedLocations = {
-        'alagudewadi': ['415523'],
-        'bagewadi': ['415523'],
-        'barad': ['415523'],
-        'bhadali bk': ['415523'],
-        'bhadali kh': ['415523'],
-        'bhilkatti': ['415537'],
-        'bodkewadi': ['415523'],
-        'chaudharwadi': ['415523'],
-        'dalvadi': ['415523'],
-        'dhaval': ['415523'],
-        'dhavalewadi': ['415523', '415528'],
-        'dhuldev': ['415523'], // Primary; 415509 is in different taluka (Man)
-        'dhumalwadi': ['415523'],
-        'dombalwadi': ['415523'],
-        'dudhebavi': ['415523'],
-        'fadatarwadi': ['415523'],
-        'farandwadi': ['415523'],
-        'ghadge mala': ['415523'],
-        'ghadgewadi': ['415537'],
-        'girvi': ['415523'],
-        'gunware': ['415523'],
-        'hingangaon': ['415523'],
-        'jadhavwadi': ['415523'], // Primary Phaltan one; exclude 415311 (Sangli district)
-        'jinti': ['415523'],
-        'kalaj': ['415523'],
-        'kambleshwar': ['415523'],
-        'kashiwadi': ['415528'],
-        'khunte': ['415523'],
-        'kurvali kh': ['415523'],
-        'malvadi': ['415523'],
-        'mathachiwadi': ['415523'],
-        'mirgaon': ['415523'],
-        'mirdhe': ['415523'],
-        'mulikwadi': ['415537'],
-        'naik bombawadi': ['415523'],
-        'nandal': ['415523'],
-        'nimbhore': ['415523'],
-        'nimbalak': ['415523'],
-        'nirugudi': ['415523'],
-        'pimpalwadi': ['415522'],
-        'pimparad': ['415523'],
-        'rajale': ['415523'],
-        'sangavi': ['415523'],
-        'sarade': ['415523'],
-        'saskal': ['415523'],
-        'sastewadi': ['415523'],
-        'sathe': ['415523'],
-        'sherechiwadi': ['415523'],
-        'shereshindewadi': ['415523'],
-        'shindewadi': ['415523'],
-        'somanthali': ['415523'],
-        'songaon': ['415523'],
-        'sonwadi bk': ['415523'],
-        'sonwadi kh': ['415523'],
-        'survadi': ['415528'],
-        'tadavale': ['415523'],
-        'takalwade': ['415523'],
-        'taradgaon': ['415528'],
-        'tathavada': ['415523'],
-        'tavadi': ['415523'],
-        'thakurki': ['415523'],
-        'tirakwadi': ['415523'],
-        'upalave': ['415523'],
-        'vadale': ['415523'],
-        'vadgaon': ['415523'],
-        'vadjal': ['415523'],
-        'vajegaon': ['415523'],
-        'vidani': ['415523'],
-        'vinchurni': ['415523'],
-        'vitthalwadi': ['415528'],
-        'wakhari': ['415523'],
-        'wathar (nimbalkar)': ['415523']
-    };
-
-    const sataraMainPincode = '415001';
-
-    async function checkPincodeRealTime(pincode) {
-        resultDiv.classList.remove('hidden');
-        try {
-            const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-            const data = await response.json();
-
-            if (!data || data[0]?.Status !== "Success" || !data[0].PostOffice || data[0].PostOffice.length === 0) {
-                showDeliveryError("Invalid pincode");
-                return;
-            }
-
-            const postOffice = data[0].PostOffice[0];
-            const villageName = postOffice.Name.toLowerCase().trim();
-
-            // Check if village matches and pincode is allowed for it
-            const allowedPincodes = allowedLocations[villageName];
-            if (!allowedPincodes || !allowedPincodes.includes(pincode)) {
-                showDeliveryError("Delivery not available for this area");
-                return;
-            }
-
-            // Success
-            successDiv.classList.remove('hidden');
-            errorDiv.classList.add('hidden');
-
-            locationText.textContent = `${postOffice.Name}, Phaltan, Satara`;
-
-            // Delivery time: 1 day for Satara city main, else 3-4 days
-            const isSataraMain = pincode === sataraMainPincode;
-            if (deliveryTime) {
-                deliveryTime.textContent = isSataraMain 
-                    ? 'Delivery within 1 day' 
-                    : 'Delivery within 3-4 days';
-            }
-
-            if (deliveryOffer) {
-                deliveryOffer.textContent = 'Free Delivery • No minimum order required';
-            }
-
-            localStorage.setItem('lastValidPincode', pincode);
-            localStorage.setItem('lastDeliveryArea', `${postOffice.Name}, Phaltan, Satara`);
-
-            showToast('Delivery available! Free Delivery', 'success');
-
-        } catch (err) {
-            console.error("Pincode check failed:", err);
-            showDeliveryError("Network error. Please try again.");
-        }
-    }
-
-    function showDeliveryError(message) {
-        successDiv.classList.add('hidden');
-        errorDiv.classList.remove('hidden');
-        errorDiv.querySelector('p:last-child').textContent = message;
-        localStorage.removeItem('lastValidPincode');
-        localStorage.removeItem('lastDeliveryArea');
-    }
-}
-// ------------------- Rendering Functions -------------------
-async function renderThumbnails(mainPath, subPaths = []) {
+// ========== THUMBNAIL RENDER ==========
+function renderThumbnails(mainImage, subImages = []) {
     const container = document.getElementById('thumbnail-container');
     if (!container) return;
     container.innerHTML = '';
-
-    const allImages = [getImageUrl(mainPath), ...subPaths.map(getImageUrl)];
-
-    allImages.forEach((src, i) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = 'Thumbnail';
-        img.className = 'w-20 h-20 object-contain border-2 rounded-lg cursor-pointer hover:border-pharmeasy-green transition';
-        img.onerror = () => img.src = FALLBACK_IMAGE;
-        img.onclick = () => {
-            document.getElementById('main-product-image').src = src;
-            container.querySelectorAll('img').forEach(t => t.classList.remove('border-pharmeasy-green'));
-            img.classList.add('border-pharmeasy-green');
-        };
-        container.appendChild(img);
+    const allImages = [mainImage, ...subImages].filter(Boolean);
+    allImages.forEach((src, i) => { 
+        const img = document.createElement('img'); 
+        img.src = src; 
+        img.className = 'w-20 h-20 object-cover border-2 rounded-lg cursor-pointer transition hover:scale-105'; 
+        img.style.borderColor = i === 0 ? '#40916c' : '#b7e4c7'; 
+        img.onerror = () => img.src = 'https://picsum.photos/id/116/200/200'; 
+        img.onclick = () => { 
+            document.getElementById('main-product-image').src = src; 
+            container.querySelectorAll('img').forEach(t => t.style.borderColor = '#b7e4c7'); 
+            img.style.borderColor = '#40916c'; 
+        }; 
+        container.appendChild(img); 
     });
-
-    if (container.children.length > 0) container.children[0].classList.add('border-pharmeasy-green');
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return 'Not specified';
-    try { return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return dateStr; }
-}
-
-function renderProductDetailsTab() {
-    const tbody = document.getElementById('specifications-table-body');
+// ========== TAB RENDERERS ==========
+function renderSpecsTab() {
+    const tbody = document.getElementById('specifications-table-body'); 
     if (!tbody || !currentProduct) return;
     tbody.innerHTML = '';
-    const dyn = currentProduct.productDynamicFields || {};
     const rows = [
-        { label: 'Product Description', value: currentProduct.productDescription || 'No description available' },
-        { label: 'Brand', value: currentProduct.brandName || 'Generic' },
-        { label: 'Category', value: currentProduct.productSubCategory || currentProduct.productCategory || 'Health Supplements' },
-        { label: 'Manufacturing Date', value: formatDate(currentProduct.mfgDate) },
-        { label: 'Expiry Date', value: formatDate(currentProduct.expDate) },
-        { label: 'Batch Number', value: currentProduct.batchNo || 'Not specified' },
-        { label: 'Available Quantity', value: currentProduct.productQuantity || 0 },
-        { label: 'Form', value: dyn.form || 'Not specified' },
-        { label: 'Strength', value: dyn.strength || 'Not specified' },
-        { label: 'Country of Origin', value: dyn.countryOfOrigin || 'India' }
+        { label: '🌿 Plant Description', value: currentProduct.description },
+        { label: '🏷️ Brand', value: currentProduct.brand },
+        { label: '🪴 Category', value: currentProduct.subCategory || currentProduct.category },
+        { label: '📅 Packed Date', value: currentProduct.mfgDate },
+        { label: '📦 Available Stock', value: currentProduct.quantity + ' units' },
+        { label: '🔖 Batch No.', value: currentProduct.batchNo },
+        { label: '🌱 Plant Form', value: currentProduct.dynamicFields?.form },
+        { label: '📏 Size/Stage', value: currentProduct.dynamicFields?.strength },
+        { label: '🌍 Country of Origin', value: currentProduct.dynamicFields?.countryOfOrigin || 'India' },
+        { label: '☀️ Care Instructions', value: currentProduct.dynamicFields?.storage },
+        { label: '👤 Suitable For', value: currentProduct.dynamicFields?.suitableFor }
     ];
-    rows.forEach((r, i) => {
-        if (r.value && r.value.toString().trim()) {
-            tbody.innerHTML += `
-                <tr class="${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">
-                    <td class="spec-label py-3 px-6 border-b border-gray-200"><span class="font-semibold text-gray-700">${r.label}</span></td>
-                    <td class="spec-value py-3 px-6 border-b border-gray-200 text-gray-600">${r.value}</td>
-                </tr>
-            `;
-        }
+    rows.forEach((r) => { 
+        if (r.value && String(r.value).trim()) { 
+            tbody.innerHTML += `<tr><td class="spec-label py-3 px-6 border-b" style="border-color:#d8f3dc;"><span style="color:#2d6a4f;font-weight:600;">${r.label}</span></td><td class="spec-value py-3 px-6 border-b text-gray-600" style="border-color:#d8f3dc;">${r.value}</td></tr>`; 
+        } 
     });
 }
 
 function renderBenefitsTab() {
-    const el = document.getElementById('benefits-content');
+    const el = document.getElementById('benefits-content'); 
     if (!el || !currentProduct) return;
-    const list = currentProduct.benefitsList || [];
-    el.innerHTML = list.length === 0
-        ? `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Product Benefits</h3><p class="text-gray-600">No benefits information available.</p></div>`
-        : `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Key Benefits</h3><div class="bg-white rounded-lg border p-6"><ul class="space-y-4">${list.map(b => `<li class="flex items-start"><span class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-1"><i class="fas fa-check text-green-600 text-sm"></i></span><span class="text-gray-700">${b}</span></li>`).join('')}</ul></div></div>`;
+    const list = currentProduct.benefits || [];
+    el.innerHTML = `<div class="py-8"><h3 class="text-xl font-bold mb-6" style="font-family:'Playfair Display',serif;color:#1b3a2d;">🌟 Key Benefits</h3><div class="rounded-xl p-6" style="background:#f7fdf9;border:1px solid #b7e4c7;"><ul class="space-y-4">${list.map(b => `<li class="flex items-start gap-3"><span class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#d8f3dc;"><i class="fas fa-leaf text-sm" style="color:#2d6a4f;"></i></span><span class="text-gray-700">${b}</span></li>`).join('')}</ul></div></div>`;
 }
 
 function renderIngredientsTab() {
-    const el = document.getElementById('ingredients-content');
+    const el = document.getElementById('ingredients-content'); 
     if (!el || !currentProduct) return;
-    const list = currentProduct.ingredientsList || [];
-    el.innerHTML = list.length === 0
-        ? `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Product Ingredients</h3><p class="text-gray-600">No ingredients information available.</p></div>`
-        : `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Product Composition</h3><div class="bg-white rounded-lg border p-6"><ul class="space-y-3">${list.map((ing, i) => `<li class="flex items-start"><span class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1 text-blue-600 text-xs font-bold">${i+1}</span><span class="text-gray-700">${ing}</span></li>`).join('')}</ul></div></div>`;
+    const list = currentProduct.ingredients || [];
+    el.innerHTML = `<div class="py-8"><h3 class="text-xl font-bold mb-6" style="font-family:'Playfair Display',serif;color:#1b3a2d;">🌱 Plant Composition</h3><div class="rounded-xl p-6" style="background:#f7fdf9;border:1px solid #b7e4c7;"><ul class="space-y-3">${list.map((ing, i) => `<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold" style="background:#d8f3dc;color:#2d6a4f;">${i + 1}</span><span class="text-gray-700">${ing}</span></li>`).join('')}</ul></div></div>`;
 }
 
-function renderDirectionsTab() {
-    // const el = document.getElementById('directions-content');
-    if (!el || !currentProduct) return;
-    const list = currentProduct.directionsList || [];
-    const dyn = currentProduct.productDynamicFields || {};
-    let html = `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Directions for Use</h3>`;
-    if (list.length > 0) {
-        html += `<div class="mb-8"><div class="bg-white rounded-lg border p-6"><ul class="space-y-4">${list.map((d, i) => `<li class="flex items-start"><span class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3 mt-1 text-orange-600 font-bold">${i+1}</span><span class="text-gray-700">${d}</span></li>`).join('')}</ul></div></div>`;
+// ========== RELATED PRODUCTS ==========
+function renderRelatedProducts() {
+    const container = document.getElementById('related-products-container'); 
+    if (!container || !currentProduct) return;
+    let related = PRODUCTS_DB.filter(p => p.id !== currentProduct.id && p.category === currentProduct.category).slice(0, 4);
+    if (related.length < 4) { 
+        related.push(...PRODUCTS_DB.filter(p => p.id !== currentProduct.id && p.category !== currentProduct.category).slice(0, 4 - related.length)); 
     }
-    const extra = [];
-    if (dyn.dosage) extra.push({ l: 'Recommended Dosage', v: dyn.dosage });
-    extra.push({ l: 'Prescription Required', v: currentProduct.prescriptionRequired ? '<span class="text-red-600 font-semibold">Yes</span>' : '<span class="text-green-600 font-semibold">No</span>' });
-    if (dyn.storage) extra.push({ l: 'Storage Instructions', v: dyn.storage });
-    if (dyn.suitableFor) extra.push({ l: 'Suitable For', v: dyn.suitableFor });
-    if (extra.length > 0) {
-        html += `<div><h4 class="text-lg font-bold text-gray-800 mb-4">Additional Information</h4><div class="bg-gray-50 rounded-lg border p-6"><table class="w-full"><tbody>${extra.map(e => `<tr class="border-b last:border-b-0"><td class="py-3 font-medium text-gray-700 w-1/3">${e.l}</td><td class="py-3 text-gray-600">${e.v}</td></tr>`).join('')}</tbody></table></div></div>`;
-    }
-    html += `</div>`;
-    el.innerHTML = html;
+    container.innerHTML = related.map(p => `<div class="related-card bg-white rounded-2xl p-4 cursor-pointer" onclick="window.location.href='productdetails.html?id=${p.id}'"><div class="overflow-hidden rounded-xl mb-3" style="background:#f7fdf9;"><img src="${p.mainImage}" onerror="this.src='https://picsum.photos/id/116/400/400'" class="w-full h-36 object-cover transition hover:scale-105"></div><h4 class="font-semibold text-sm line-clamp-2 mb-1" style="color:#1b3a2d;">${p.name}</h4><p class="text-xs mb-2" style="color:#40916c;">${p.brand}</p><div class="flex items-center gap-2 mt-1 mb-3"><span class="text-base font-bold" style="color:#2d6a4f;">₹${p.prices[0]}</span>${p.oldPrices[0] > p.prices[0] ? `<span class="text-xs text-gray-400 line-through">₹${p.oldPrices[0]}</span><span class="text-xs font-bold" style="color:#c0392b;">${Math.round(((p.oldPrices[0]-p.prices[0])/p.oldPrices[0])*100)}% OFF</span>` : ''}</div><button class="w-full text-white py-2 rounded-lg text-sm font-semibold transition" style="background:linear-gradient(135deg,#1b3a2d,#2d6a4f);">🪴 View Plant</button></div>`).join('');
 }
 
-function renderAllTabs() {
-    renderProductDetailsTab();
-    renderBenefitsTab();
-    renderIngredientsTab();
-    // renderDirectionsTab();
+// ========== PINCODE CHECKER ==========
+function setupPincodeChecker() {
+    const pincodeInput = document.getElementById('pincodeInput'), checkBtn = document.getElementById('checkPincodeBtn');
+    if (!pincodeInput || !checkBtn) return;
+    const allowedAreas = ['415523', '415528', '415537'];
+    checkBtn.onclick = () => {
+        const pincode = pincodeInput.value.trim();
+        const resultDiv = document.getElementById('deliveryResult'), successDiv = document.getElementById('deliverySuccess'), errorDiv = document.getElementById('deliveryError'), locationText = document.getElementById('deliveryLocation');
+        resultDiv.classList.remove('hidden');
+        if (allowedAreas.includes(pincode)) { 
+            successDiv.classList.remove('hidden'); 
+            errorDiv.classList.add('hidden'); 
+            locationText.textContent = `Phaltan, Satara - ${pincode}`; 
+            showToast('🌿 Delivery available! Free Delivery', 'success'); 
+        } else { 
+            successDiv.classList.add('hidden'); 
+            errorDiv.classList.remove('hidden'); 
+            showToast('Delivery not available for this pincode', 'error'); 
+        }
+    };
 }
 
-function renderRelatedProducts(products) {
-    const container = document.getElementById('related-products-container');
-    if (!container) return;
-    container.innerHTML = products.length === 0 ? '<p class="col-span-full text-center text-gray-500 py-8">No related products found</p>' : '';
-    products.forEach(p => {
-        const priceText = p.productPrice?.length ? `₹${Math.min(...p.productPrice.filter(x=>x>0))}` : 'Price on request';
-        container.innerHTML += `
-            <div class="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition cursor-pointer">
-                <img src="${getImageUrl(p.productMainImage)}" onerror="this.src='${FALLBACK_IMAGE}'" class="w-full h-40 object-cover rounded-lg mb-3" alt="${p.productName}">
-                <h4 class="font-medium text-sm line-clamp-2 mb-1">${p.productName}</h4>
-                <p class="text-xs text-gray-500">${p.brandName || 'Generic'}</p>
-                <div class="mt-2"><span class="text-lg font-bold text-green-600">${priceText}</span></div>
-                <button onclick="window.location.href='productdetails.html?id=${p.productId}'" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm">View Details</button>
-            </div>
-        `;
+// ========== SHARE FUNCTIONS ==========
+function setupShareButtons() {
+    const shareBtn = document.getElementById('share-btn');
+    const overlay = document.getElementById('share-overlay');
+    if (shareBtn) { shareBtn.onclick = () => overlay.classList.remove('hidden'); }
+    document.getElementById('share-wa')?.addEventListener('click', () => {
+        const name = document.getElementById('product-name').textContent, price = document.getElementById('selling-price').textContent, url = window.location.href;
+        window.open(`https://wa.me/?text=${encodeURIComponent(`🌿 ${name}\n${price}\n\nCheck out this plant!\n🔗 ${url}`)}`, '_blank');
+    });
+    document.getElementById('share-email')?.addEventListener('click', () => {
+        const name = document.getElementById('product-name').textContent, price = document.getElementById('selling-price').textContent, url = window.location.href;
+        window.location.href = `mailto:?subject=${encodeURIComponent(`${name} - Only ${price} on GreenNest!`)}&body=${encodeURIComponent(`Check out this plant: ${url}`)}`;
+    });
+    document.getElementById('share-copy')?.addEventListener('click', () => {
+        navigator.clipboard.writeText(window.location.href);
+        const fb = document.getElementById('copy-feedback');
+        fb.classList.remove('hidden');
+        setTimeout(() => fb.classList.add('hidden'), 2000);
     });
 }
 
-// ------------------- Main Load Function -------------------
-async function loadProduct() {
-    currentUserId = await getValidUserId();
-    await syncCartFromBackend();
+// ========== REMOVE SKELETON ==========
+function removeSkeleton() {
+    document.querySelectorAll('.skeleton').forEach(el => {
+        el.classList.remove('skeleton');
+        el.style.background = '';
+        el.style.animation = '';
+    });
+}
 
+// ========== MAIN LOAD FUNCTION ==========
+function loadProduct() {
     const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    if (!productId) return showNotFound();
-
-    const product = await fetchProductById(productId);
-    if (!product) return showNotFound();
-    if (product.deleted) {
-        document.getElementById('product-name').textContent = product.productName + ' (Unavailable)';
-        document.body.style.filter = 'grayscale(100%) opacity(0.6)';
-        document.body.style.pointerEvents = 'none';
-        return showNotFound();
+    const productId = parseInt(params.get('id'));
+    const product = PRODUCTS_DB.find(p => p.id === productId);
+    
+    if (!product) { 
+        document.getElementById('product-name').textContent = 'Plant Not Found'; 
+        document.getElementById('main-product-image').src = 'https://picsum.photos/id/20/600/600';
+        removeSkeleton();
+        return; 
     }
-
-    const sizes = product.productSizes || [];
-    const prices = product.productPrice || [];
-    const oldPrices = product.productOldPrice || [];
-
-    const variants = sizes.map((size, i) => ({
-        size,
-        price: prices[i] || 0,
-        mrp: oldPrices[i] || 0,
-        discount: oldPrices[i] && oldPrices[i] > prices[i] ? Math.round(((oldPrices[i] - prices[i]) / oldPrices[i]) * 100) : 0
+    
+    // Build variants array
+    product.variants = product.sizes.map((size, i) => ({ 
+        size, price: product.prices[i] || 0, oldPrice: product.oldPrices[i] || 0, 
+        discount: product.oldPrices[i] > product.prices[i] ? Math.round(((product.oldPrices[i] - product.prices[i]) / product.oldPrices[i]) * 100) : 0 
     }));
-
-    currentProduct = {
-        ...product,
-        id: product.productId,
-        name: product.productName,
-        image: getImageUrl(product.productMainImage),
-        brand: product.brandName,
-        variants,
-        selectedPrice: variants.length > 0 ? variants[0].price : 0,
-        selectedSize: variants.length > 0 ? variants[0].size : ''
-    };
-
-    document.getElementById('product-name').textContent = currentProduct.name;
-
+    product.selectedPrice = product.variants[0]?.price || 0;
+    product.selectedSize = product.variants[0]?.size || '';
+    currentProduct = product;
+    
+    // Populate DOM
+    document.getElementById('product-name').textContent = product.name;
+    document.title = `${product.name} — GreenNest Nursery`;
     const mainImg = document.getElementById('main-product-image');
-    mainImg.src = currentProduct.image;
-    mainImg.onerror = () => mainImg.src = FALLBACK_IMAGE;
-
-    await renderThumbnails(product.productMainImage, product.productSubImages || []);
-
+    mainImg.src = product.mainImage;
+    mainImg.onerror = () => mainImg.src = 'https://picsum.photos/id/116/600/600';
+    
+    renderThumbnails(product.mainImage, product.subImages || []);
     renderVariantSelector();
     updatePriceDisplay();
-
-    const isAvailable = currentProduct.productQuantity > 0 && product.productStock === 'In-Stock';
-    const qtyInput = document.getElementById('quantity-input');
+    renderSpecsTab();
+    renderBenefitsTab();
+    renderIngredientsTab();
+    updateWishlistButton();
+    renderRelatedProducts();
+    setupPincodeChecker();
+    setupShareButtons();
+    
+    // Setup Add to Cart button
     const addBtn = document.getElementById('add-to-cart-btn');
     const buyBtn = document.getElementById('buy-now-btn');
-
-    if (isAvailable) {
-        qtyInput.max = Math.min(currentProduct.productQuantity, 10);
-        qtyInput.value = 1;
-        qtyInput.disabled = false;
-        addBtn.disabled = false;
-        addBtn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i> Add to Cart';
-        addBtn.className = 'flex-1 px-2 bg-[#295F98] hover:bg-[#5C7285] text-white font-bold py-3 rounded-lg text-md shadow-lg transition flex items-center justify-center';
-        buyBtn.disabled = false;
-        buyBtn.innerHTML = '<i class="fas fa-bolt mr-2"></i> Buy Now';
-        buyBtn.className = 'px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg text-md shadow-lg transition';
-    } else {
-        qtyInput.disabled = true;
-        qtyInput.value = 0;
-        addBtn.disabled = true;
-        addBtn.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Out of Stock';
-        addBtn.className = 'flex-1 px-2 bg-gray-400 cursor-not-allowed text-white font-bold py-3 rounded-lg';
-        buyBtn.disabled = true;
-        buyBtn.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Out of Stock';
-        buyBtn.className = 'px-6 bg-gray-400 cursor-not-allowed text-white font-bold py-3 rounded-lg';
+    const qtyInput = document.getElementById('quantity-input');
+    
+    if (addBtn) {
+        addBtn.onclick = function(e) {
+            e.preventDefault();
+            const qty = parseInt(qtyInput?.value) || 1;
+            addToCartLocal(currentProduct, qty);
+        };
     }
-
-    renderAllTabs();
-    updateWishlistButton();
-
-    const related = await fetchRelatedProducts(currentProduct.productCategory, currentProduct.id);
-    renderRelatedProducts(related);
-
-    initCartButtons();
-    setupPincodeChecker(); // New feature
+    
+    if (buyBtn) {
+        buyBtn.onclick = function(e) {
+            e.preventDefault();
+            const qty = parseInt(qtyInput?.value) || 1;
+            addToCartLocal(currentProduct, qty);
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 500);
+        };
+    }
+    
+    updateCartCount();
     removeSkeleton();
 }
 
-function showNotFound() {
-    document.getElementById('product-name').textContent = 'Product Not Found or Unavailable';
-    document.getElementById('main-product-image').src = FALLBACK_IMAGE;
-    document.getElementById('selling-price').textContent = '—';
-    document.getElementById('discount-badge').classList.add('hidden');
-    document.querySelector('.line-through')?.classList.add('hidden');
-    removeSkeleton();
+// ========== TAB SWITCHER ==========
+function initTabs() { 
+    document.querySelectorAll('.tab-button').forEach(btn => { 
+        btn.addEventListener('click', () => { 
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active')); 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
+            btn.classList.add('active'); 
+            document.getElementById(btn.dataset.tab + '-content').classList.add('active'); 
+        }); 
+    }); 
 }
 
-function initTabs() {
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.tab + '-content').classList.add('active');
-        });
-    });
-}
-
+// ========== QUANTITY CONTROLS ==========
 function initQuantitySelector() {
     const dec = document.getElementById('decrease-qty');
     const inc = document.getElementById('increase-qty');
     const input = document.getElementById('quantity-input');
+    
     if (!dec || !inc || !input) return;
-    dec.onclick = () => { if (parseInt(input.value) > 1) input.value = parseInt(input.value) - 1; };
-    inc.onclick = () => { if (parseInt(input.value) < parseInt(input.max)) input.value = parseInt(input.value) + 1; };
-    input.onchange = () => {
-        let v = parseInt(input.value);
-        if (isNaN(v) || v < 1) v = 1;
-        if (v > parseInt(input.max)) v = parseInt(input.max);
-        input.value = v;
+    
+    dec.onclick = function() { 
+        let val = parseInt(input.value);
+        if (val > 1) input.value = val - 1;
+    };
+    
+    inc.onclick = function() { 
+        let val = parseInt(input.value);
+        if (val < 10) input.value = val + 1;
+    };
+    
+    input.onchange = function() { 
+        let v = parseInt(input.value); 
+        if (isNaN(v) || v < 1) v = 1; 
+        if (v > 10) v = 10; 
+        input.value = v; 
     };
 }
 
-function initCartButtons() {
-    const addBtn = document.getElementById('add-to-cart-btn');
-    const buyBtn = document.getElementById('buy-now-btn');
-    if (addBtn && currentProduct && currentProduct.productQuantity > 0) {
-        addBtn.onclick = async () => {
-            const qty = parseInt(document.getElementById('quantity-input').value) || 1;
-            currentProduct.selectedPrice = currentProduct.variants?.[selectedVariantIndex]?.price || currentProduct.price;
-            currentProduct.selectedSize = currentProduct.variants?.[selectedVariantIndex]?.size || '';
-            await addToCart(currentProduct, qty);
-        };
-    }
-    if (buyBtn && currentProduct && currentProduct.productQuantity > 0) {
-        buyBtn.onclick = async () => {
-            const qty = parseInt(document.getElementById('quantity-input').value) || 1;
-            currentProduct.selectedPrice = currentProduct.variants?.[selectedVariantIndex]?.price || currentProduct.price;
-            currentProduct.selectedSize = currentProduct.variants?.[selectedVariantIndex]?.size || '';
-            await addToCart(currentProduct, qty);
-            setTimeout(() => window.location.href = 'cart.html', 300);
-        };
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    initTabs();
-    initQuantitySelector();
-    updateCartCount();
-    updateRightCartPanel();
-    loadProduct();
-
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-        .animate-in { animation: slideInFromRight 0.3s ease-out; }
-        .animate-out { animation: slideOutToRight 0.3s ease-in; }
-        .toast-notification { min-width: 300px; }
-    `;
-    document.head.appendChild(style);
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', () => { 
+    initTabs(); 
+    initQuantitySelector(); 
+    loadProduct(); 
 });
 
+// Listen for storage events to sync cart across tabs
+window.addEventListener('storage', (e) => {
+    if (e.key === 'cart') {
+        updateCartCount();
+    }
+    if (e.key === 'wishlist') {
+        updateWishlistButton();
+    }
+});
 
+// Global helper for navigation
+window.viewPlant = (id) => window.location.href = `productdetails.html?id=${id}`;
 
-
-
-
-
-
-
-
-//======================= OLD CODE =====================//
-
-
-// // ==================== productdetails.js ====================
-// const API_BASE_URL = 'http://localhost:8083/api/products';
-// const CART_API_BASE = 'http://localhost:8083/api/cart';
-// const WISHLIST_API_BASE = 'http://localhost:8083/api/wishlist';
-
-// // Global variables
-// let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-// let currentProduct = null;
-// let currentUserId = 1; // Will be updated dynamically
-
-// // ------------------- Utility Functions -------------------
-// function removeSkeleton() {
-//     document.querySelectorAll('.skeleton').forEach(el => {
-//         el.classList.remove('skeleton');
-//         el.style.background = '';
-//         el.style.backgroundImage = '';
-//         el.style.animation = '';
-//     });
-// }
-
-// function showToast(message) {
-//     document.querySelectorAll('.toast-notification').forEach(toast => toast.remove());
-//     const toast = document.createElement('div');
-//     toast.className = 'toast-notification fixed top-20 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-right duration-300';
-//     toast.textContent = message;
-//     document.body.appendChild(toast);
-//     setTimeout(() => {
-//         toast.classList.add('animate-out', 'slide-out-to-right', 'duration-300');
-//         setTimeout(() => toast.remove(), 300);
-//     }, 3000);
-// }
-
-// function updateCartCount() {
-//     const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-//     ['desktop-cart-count', 'mobile-cart-count'].forEach(id => {
-//         const el = document.getElementById(id);
-//         if (el) {
-//             el.textContent = total;
-//             el.style.display = total > 0 ? 'flex' : 'none';
-//         }
-//     });
-// }
-
-// function updateRightCartPanel() {
-//     const items = cart.reduce((sum, i) => sum + (i.quantity || 1), 0);
-//     const countEl = document.getElementById('cart-items-number');
-//     const textEl = document.getElementById('cart-items-text');
-//     const fullText = document.getElementById('cart-item-count-display');
-//     if (countEl) countEl.textContent = items;
-//     if (textEl) textEl.textContent = items === 1 ? '' : 's';
-//     if (fullText) {
-//         fullText.innerHTML = items === 0
-//             ? 'Your cart is empty'
-//             : `<span id="cart-items-number">${items}</span> Item<span id="cart-items-text">${items === 1 ? '' : 's'}</span> in Cart`;
-//     }
-// }
-
-// // Local cart sync helper (used for UI consistency and offline fallback)
-// function updateLocalCart(product, qty = 1) {
-//     const cartItem = {
-//         id: product.id,
-//         name: product.name,
-//         price: Number(product.price),
-//         image: product.image,
-//         quantity: qty,
-//         brand: product.brand || '',
-//         unit: product.unit || '',
-//         type: "PRODUCT",
-//         productId: product.id,
-//         productType: "MEDICINE" // Adjust if you have different categories
-//     };
-//     const existing = cart.find(item => item.id == cartItem.id);
-//     if (existing) {
-//         existing.quantity += qty;
-//     } else {
-//         cart.push(cartItem);
-//     }
-//     localStorage.setItem('cart', JSON.stringify(cart));
-//     updateCartCount();
-//     updateRightCartPanel();
-// }
-
-// // ------------------- Backend Cart Functions -------------------
-// async function getValidUserId() {
-//     const testIds = [1, 100, 1000, 1001, 10000];
-//     for (const testId of testIds) {
-//         try {
-//             const response = await fetch(`${CART_API_BASE}/get-cart-items?userId=${testId}`);
-//             if (response.ok || response.status === 200) {
-//                 return testId;
-//             }
-//         } catch (e) {
-//             // continue
-//         }
-//     }
-//     console.warn("No valid user ID found. Using default 1.");
-//     return 1;
-// }
-
-// async function addToCartBackend(product, qty = 1) {
-//     try {
-//         const payload = {
-//             userId: currentUserId,
-//             type: "PRODUCT",
-//             productId: product.id,
-//             quantity: qty,
-//             selectedSize: "", // No size for medicines usually
-//             productType: "MEDICINE" // Change to MOTHER/BABY if needed
-//         };
-//         const response = await fetch(`${CART_API_BASE}/add-cart-items`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify(payload)
-//         });
-//         if (!response.ok) {
-//             const err = await response.text();
-//             if (err.includes("User not found")) {
-//                 currentUserId = await getValidUserId();
-//                 payload.userId = currentUserId;
-//                 const retry = await fetch(`${CART_API_BASE}/add-cart-items`, {
-//                     method: 'POST',
-//                     headers: { 'Content-Type': 'application/json' },
-//                     body: JSON.stringify(payload)
-//                 });
-//                 if (!retry.ok) throw new Error("Retry failed");
-//                 const result = await retry.json();
-//                 console.log("Cart add success (after retry):", result);
-//                 return true;
-//             }
-//             throw new Error(err);
-//         }
-//         const result = await response.json();
-//         console.log("Cart add success:", result);
-//         return true;
-//     } catch (err) {
-//         console.error("Backend cart error:", err);
-//         return false;
-//     }
-// }
-
-// async function syncCartFromBackend() {
-//     try {
-//         const response = await fetch(`${CART_API_BASE}/get-cart-items?userId=${currentUserId}`);
-//         if (response.ok) {
-//             const items = await response.json();
-//             cart = items.map(item => ({
-//                 id: item.itemId,
-//                 name: item.title,
-//                 price: Number(item.price),
-//                 image: item.imageUrl,
-//                 quantity: item.quantity,
-//                 brand: '',
-//                 unit: '',
-//                 type: item.type,
-//                 productId: item.itemId,
-//                 productType: item.productType
-//             }));
-//             localStorage.setItem('cart', JSON.stringify(cart));
-//             updateCartCount();
-//             updateRightCartPanel();
-//         }
-//     } catch (err) {
-//         console.error("Failed to sync cart from backend:", err);
-//     }
-// }
-
-// // ------------------- Backend Wishlist Functions -------------------
-// async function addToWishlistBackend(product) {
-//     try {
-//         const response = await fetch(`${WISHLIST_API_BASE}/add-wishlist-items`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//                 userId: currentUserId,
-//                 productId: product.id,
-//                 productType: "MEDICINE" // Adjust if needed
-//             })
-//         });
-//         return response.ok;
-//     } catch (err) {
-//         console.error("Wishlist add error:", err);
-//         return false;
-//     }
-// }
-
-// async function removeFromWishlistBackend(product) {
-//     try {
-//         const response = await fetch(`${WISHLIST_API_BASE}/remove-wishlist-items`, {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify({
-//                 userId: currentUserId,
-//                 productId: product.id
-//             })
-//         });
-//         return response.ok;
-//     } catch (err) {
-//         console.error("Wishlist remove error:", err);
-//         return false;
-//     }
-// }
-
-// async function isInWishlistBackend(productId) {
-//     try {
-//         const response = await fetch(`${WISHLIST_API_BASE}/get-wishlist-items?userId=${currentUserId}`);
-//         if (!response.ok) return false;
-//         const items = await response.json();
-//         return items.some(item => item.productId == productId);
-//     } catch (err) {
-//         console.error("Wishlist check error:", err);
-//         return false;
-//     }
-// }
-
-// function updateLocalWishlistSync(product, isAdded) {
-//     let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-//     if (isAdded) {
-//         if (!wishlist.some(p => p.id === product.id)) {
-//             wishlist.push({
-//                 id: product.id,
-//                 name: product.name,
-//                 price: product.price,
-//                 image: product.image,
-//                 brand: product.brand,
-//                 unit: product.unit
-//             });
-//         }
-//     } else {
-//         wishlist = wishlist.filter(p => p.id !== product.id);
-//     }
-//     localStorage.setItem('wishlist', JSON.stringify(wishlist));
-//     window.dispatchEvent(new CustomEvent('wishlistUpdated'));
-// }
-
-// async function toggleWishlist(product) {
-//     const wishlistBtn = document.getElementById('wishlist-btn');
-//     if (!wishlistBtn) return;
-//     const heartIcon = wishlistBtn.querySelector('i');
-//     const isCurrentlyWishlisted = heartIcon.classList.contains('fas');
-//     if (isCurrentlyWishlisted) {
-//         const success = await removeFromWishlistBackend(product);
-//         if (success) {
-//             heartIcon.className = 'far fa-heart text-2xl text-gray-600';
-//             wishlistBtn.title = 'Add to wishlist';
-//             showToast('Removed from wishlist!');
-//             updateLocalWishlistSync(product, false);
-//         }
-//     } else {
-//         const success = await addToWishlistBackend(product);
-//         if (success) {
-//             heartIcon.className = 'fas fa-heart text-2xl text-red-500';
-//             wishlistBtn.title = 'Remove from wishlist';
-//             showToast('Added to wishlist!');
-//             updateLocalWishlistSync(product, true);
-//         }
-//     }
-// }
-
-// function updateWishlistButton() {
-//     const wishlistBtn = document.getElementById('wishlist-btn');
-//     if (!wishlistBtn || !currentProduct) return;
-//     const heartIcon = wishlistBtn.querySelector('i');
-//     if (heartIcon) {
-//         heartIcon.className = 'far fa-heart text-2xl text-gray-600'; // default
-//         wishlistBtn.title = 'Add to wishlist';
-//     }
-//     // Check backend status
-//     if (currentProduct) {
-//         isInWishlistBackend(currentProduct.id).then(isWishlisted => {
-//             if (isWishlisted) {
-//                 heartIcon.className = 'fas fa-heart text-2xl text-red-500';
-//                 wishlistBtn.title = 'Remove from wishlist';
-//             }
-//             wishlistBtn.onclick = () => toggleWishlist(currentProduct);
-//         });
-//     }
-// }
-
-// // ------------------- Updated Add to Cart -------------------
-// async function addToCart(product, qty = 1) {
-//     const success = await addToCartBackend(product, qty);
-//     if (success) {
-//         showToast(`${qty} ${qty > 1 ? 'items' : 'item'} added to cart!`);
-//     } else {
-//         showToast(`${qty} ${qty > 1 ? 'items' : 'item'} added to cart (saved locally)`);
-//     }
-//     // Always update local cart for UI consistency
-//     updateLocalCart(product, qty);
-// }
-
-// // ------------------- API Calls -------------------
-// async function fetchProductById(productId) {
-//     try {
-//         // Try most common endpoint variations - pick the one that matches your controller
-//         const possibleUrls = [
-//             `${API_BASE_URL}/${productId}`,                    // Option 1: @GetMapping("/{id}")
-//             `${API_BASE_URL}/get-by-id/${productId}`,          // Option 2
-//             `${API_BASE_URL}/get-product/${productId}`,        // your original
-//             `${API_BASE_URL}/product/${productId}`             // Option 3
-//         ];
-
-//         for (const url of possibleUrls) {
-//             console.log(`Trying product endpoint: ${url}`);
-//             const response = await fetch(url);
-//             if (response.ok) {
-//                 console.log(`Success from: ${url}`);
-//                 return await response.json();
-//             }
-//             console.warn(`Failed ${url} → ${response.status}`);
-//         }
-
-//         throw new Error('Product not found - tried multiple endpoints');
-//     } catch (err) {
-//         console.error("Product fetch error:", err);
-//         return null;
-//     }
-// }
-
-// async function fetchRelatedProducts(category, currentId) {
-//     try {
-//         const response = await fetch(`${API_BASE_URL}/get-by-category/${encodeURIComponent(category)}`);
-//         if (!response.ok) return [];
-//         const products = await response.json();
-//         return products
-//             .filter(p => p.productId != currentId && p.productQuantity > 0)
-//             .sort(() => Math.random() - 0.5)
-//             .slice(0, 4);
-//     } catch (err) {
-//         console.error(err);
-//         return [];
-//     }
-// }
-
-// // ------------------- Rendering Functions -------------------
-// async function renderThumbnails(productId, mainImageUrl) {
-//     const container = document.getElementById('thumbnail-container');
-//     if (!container) return;
-//     container.innerHTML = '';
-//     const images = [mainImageUrl];
-//     for (let i = 0; i < 5; i++) {
-//         try {
-//             const res = await fetch(`${API_BASE_URL}/${productId}/subimage/${i}`);
-//             if (res.ok) {
-//                 images.push(`${API_BASE_URL}/${productId}/subimage/${i}`);
-//             } else {
-//                 break;
-//             }
-//         } catch {
-//             break;
-//         }
-//     }
-//     images.forEach((src, index) => {
-//         const img = document.createElement('img');
-//         img.src = src;
-//         img.alt = 'Product thumbnail';
-//         img.className = 'w-20 h-20 object-contain border-2 rounded-lg cursor-pointer hover:border-pharmeasy-green transition';
-//         img.onclick = () => {
-//             document.getElementById('main-product-image').src = src;
-//             container.querySelectorAll('img').forEach(t => t.classList.remove('border-pharmeasy-green'));
-//             img.classList.add('border-pharmeasy-green');
-//         };
-//         container.appendChild(img);
-//     });
-//     if (container.children.length > 0) {
-//         container.children[0].classList.add('border-pharmeasy-green');
-//     }
-// }
-
-// function formatDate(dateStr) {
-//     if (!dateStr) return 'Not specified';
-//     try {
-//         const date = new Date(dateStr);
-//         return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-//     } catch {
-//         return dateStr;
-//     }
-// }
-
-// function renderProductDetailsTab() {
-//     const tableBody = document.getElementById('specifications-table-body');
-//     if (!tableBody || !currentProduct) return;
-//     tableBody.innerHTML = '';
-//     const dynamicFields = currentProduct.productDynamicFields || {};
-//     const productDetails = [
-//         { label: 'Product Description', value: currentProduct.productDescription || 'No description available' },
-//         { label: 'Brand', value: currentProduct.brandName || 'Generic' },
-//         { label: 'Category', value: currentProduct.productSubCategory || currentProduct.productCategory || 'Health Supplements' },
-//         { label: 'Manufacturing Date', value: formatDate(currentProduct.mfgDate) },
-//         { label: 'Expiry Date', value: formatDate(currentProduct.expDate) },
-//         { label: 'Batch Number', value: currentProduct.batchNo || 'Not specified' },
-//         { label: 'Product Status', value: currentProduct.productQuantity > 0 ?
-//             '<span class="text-green-600 font-semibold">In Stock</span>' :
-//             '<span class="text-red-600 font-semibold">Out of Stock</span>' },
-//         { label: 'Available Quantity', value: currentProduct.productQuantity || 0 },
-//         { label: 'Product Unit', value: currentProduct.productUnit || 'Not specified' },
-//         { label: 'Form', value: dynamicFields.form || 'Not specified' },
-//         { label: 'Strength', value: dynamicFields.strength || 'Not specified' },
-//         { label: 'Shelf Life', value: dynamicFields.shelfLife || '24 months' },
-//         { label: 'Country of Origin', value: dynamicFields.countryOfOrigin || 'India' }
-//     ];
-//     productDetails.forEach((detail, index) => {
-//         if (detail.value && detail.value.toString().trim() !== '') {
-//             const row = document.createElement('tr');
-//             row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
-//             row.innerHTML = `
-//                 <td class="spec-label py-3 px-6 border-b border-gray-200">
-//                     <span class="font-semibold text-gray-700">${detail.label}</span>
-//                 </td>
-//                 <td class="spec-value py-3 px-6 border-b border-gray-200">
-//                     <div class="text-gray-600">${detail.value}</div>
-//                 </td>
-//             `;
-//             tableBody.appendChild(row);
-//         }
-//     });
-// }
-
-// function renderBenefitsTab() {
-//     const content = document.getElementById('benefits-content');
-//     if (!content || !currentProduct) return;
-//     const benefits = currentProduct.benefitsList || [];
-//     content.innerHTML = benefits.length === 0
-//         ? `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Product Benefits</h3><p class="text-gray-600">No benefits information available.</p></div>`
-//         : `<div class="py-8">
-//             <h3 class="text-xl font-bold text-gray-800 mb-6">Key Benefits</h3>
-//             <div class="bg-white rounded-lg border border-gray-200 p-6">
-//                 <ul class="space-y-4">
-//                     ${benefits.map(b => `
-//                         <li class="flex items-start">
-//                             <span class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-1">
-//                                 <i class="fas fa-check text-green-600 text-sm"></i>
-//                             </span>
-//                             <span class="text-gray-700">${b}</span>
-//                         </li>`).join('')}
-//                 </ul>
-//             </div>
-//         </div>`;
-// }
-
-// function renderIngredientsTab() {
-//     const content = document.getElementById('ingredients-content');
-//     if (!content || !currentProduct) return;
-//     const ingredients = currentProduct.ingredientsList || [];
-//     content.innerHTML = ingredients.length === 0
-//         ? `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Product Ingredients</h3><p class="text-gray-600">No ingredients information available.</p></div>`
-//         : `<div class="py-8">
-//             <h3 class="text-xl font-bold text-gray-800 mb-6">Product Composition</h3>
-//             <div class="bg-white rounded-lg border border-gray-200 p-6">
-//                 <ul class="space-y-3">
-//                     ${ingredients.map((ing, i) => `
-//                         <li class="flex items-start">
-//                             <span class="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
-//                                 <span class="text-blue-600 text-xs font-bold">${i + 1}</span>
-//                             </span>
-//                             <span class="text-gray-700">${ing}</span>
-//                         </li>`).join('')}
-//                 </ul>
-//             </div>
-//         </div>`;
-// }
-
-// function renderDirectionsTab() {
-//     const content = document.getElementById('directions-content');
-//     if (!content || !currentProduct) return;
-//     const directions = currentProduct.directionsList || [];
-//     const dynamic = currentProduct.productDynamicFields || {};
-//     let html = `<div class="py-8"><h3 class="text-xl font-bold text-gray-800 mb-6">Directions for Use</h3>`;
-//     if (directions.length > 0) {
-//         html += `<div class="mb-8"><div class="bg-white rounded-lg border border-gray-200 p-6">
-//             <ul class="space-y-4">
-//                 ${directions.map((d, i) => `
-//                     <li class="flex items-start">
-//                         <span class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3 mt-1">
-//                             <span class="text-orange-600 font-bold">${i + 1}</span>
-//                         </span>
-//                         <span class="text-gray-700">${d}</span>
-//                     </li>`).join('')}
-//             </ul>
-//         </div></div>`;
-//     } else {
-//         html += `<div class="mb-8"><p class="text-gray-600">No directions information available.</p></div>`;
-//     }
-//     const additional = [];
-//     if (dynamic.dosage) additional.push({ label: 'Recommended Dosage', value: dynamic.dosage });
-//     if (currentProduct.prescriptionRequired) {
-//         additional.push({ label: 'Prescription Required', value: '<span class="text-red-600 font-semibold">Yes</span>' });
-//     } else {
-//         additional.push({ label: 'Prescription Required', value: '<span class="text-green-600 font-semibold">No</span>' });
-//     }
-//     if (dynamic.storage) additional.push({ label: 'Storage Instructions', value: dynamic.storage });
-//     if (dynamic.suitableFor) additional.push({ label: 'Suitable For', value: dynamic.suitableFor });
-//     if (additional.length > 0) {
-//         html += `<div><h4 class="text-lg font-bold text-gray-800 mb-4">Additional Information</h4>
-//             <div class="bg-gray-50 rounded-lg border border-gray-200 p-6">
-//                 <table class="w-full"><tbody>
-//                     ${additional.map(a => `
-//                         <tr class="border-b border-gray-200 last:border-b-0">
-//                             <td class="py-3 font-medium text-gray-700 w-1/3">${a.label}</td>
-//                             <td class="py-3 text-gray-600">${a.value}</td>
-//                         </tr>`).join('')}
-//                 </tbody></table>
-//             </div></div>`;
-//     }
-//     if (dynamic.warnings || dynamic.precautions) {
-//         html += `<div class="mt-8"><h4 class="text-lg font-bold text-red-800 mb-4">⚠️ Important Warnings</h4>
-//             <div class="bg-red-50 rounded-lg border border-red-200 p-6">
-//                 <p class="text-red-700">${dynamic.warnings || dynamic.precautions}</p>
-//             </div></div>`;
-//     }
-//     html += `</div>`;
-//     content.innerHTML = html;
-// }
-
-// function renderAllTabs() {
-//     renderProductDetailsTab();
-//     renderBenefitsTab();
-//     renderIngredientsTab();
-//     renderDirectionsTab();
-// }
-
-// function renderRelatedProducts(products) {
-//     const container = document.getElementById('related-products-container');
-//     if (!container) return;
-//     container.innerHTML = products.length === 0
-//         ? '<p class="col-span-full text-center text-gray-500 py-8">No related products found</p>'
-//         : '';
-//     products.forEach(p => {
-//         const price = p.productPrice || 0;
-//         const mrp = p.productMRP || p.productOldPrice || 0;
-//         const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-//         const card = document.createElement('div');
-//         card.className = 'bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition cursor-pointer';
-//         card.innerHTML = `
-//             <img src="${API_BASE_URL}/${p.productId}/image" class="w-full h-40 object-cover rounded-lg mb-3" alt="${p.productName}">
-//             <h4 class="font-medium text-sm line-clamp-2 mb-1">${p.productName}</h4>
-//             <p class="text-xs text-gray-500">${p.brandName || 'Generic'}</p>
-//             <div class="mt-2 flex items-center gap-2">
-//                 <span class="text-lg font-bold text-green-600">₹${price.toFixed(0)}</span>
-//                 ${mrp > price ? `
-//                     <span class="text-sm text-gray-400 line-through">₹${mrp.toFixed(0)}</span>
-//                     <span class="text-xs text-green-600 font-bold">${discount}% off</span>
-//                 ` : ''}
-//             </div>
-//             <button onclick="window.location.href='productdetails.html?id=${p.productId}'"
-//                 class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium">
-//                 View Details
-//             </button>
-//         `;
-//         container.appendChild(card);
-//     });
-// }
-
-// // ------------------- Main Load Function -------------------
-// async function loadProduct() {
-//     // Get valid user ID first
-//     currentUserId = await getValidUserId();
-//     await syncCartFromBackend();
-
-//     const params = new URLSearchParams(window.location.search);
-//     const productId = params.get('id');
-//     if (!productId) {
-//         showNotFound();
-//         return;
-//     }
-
-//     console.log(`Loading product with ID: ${productId}`);
-
-//     const product = await fetchProductById(productId);
-//     if (!product) {
-//         console.warn(`Product ${productId} not found or API error`);
-//         showNotFound();
-//         return;
-//     }
-
-//     currentProduct = {
-//         ...product,
-//         id: product.productId,
-//         name: product.productName,
-//         price: product.productPrice,
-//         image: `${API_BASE_URL}/${product.productId}/image`,
-//         brand: product.brandName,
-//         unit: product.productUnit,
-//         category: product.productCategory
-//     };
-
-//     document.getElementById('product-name').textContent = currentProduct.name;
-//     document.getElementById('selling-price').textContent = '₹' + currentProduct.price.toFixed(0);
-
-//     const mrpPriceEl = document.getElementById('mrp-price');
-//     const discountBadge = document.getElementById('discount-badge');
-//     const lineThrough = document.querySelector('.line-through');
-
-//     if (product.productMRP && product.productMRP > currentProduct.price) {
-//         const mrp = product.productMRP;
-//         mrpPriceEl.textContent = '₹' + mrp.toFixed(0);
-//         const discount = Math.round(((mrp - currentProduct.price) / mrp) * 100);
-//         discountBadge.textContent = discount + '% OFF';
-//         discountBadge.classList.remove('hidden');
-//         if (lineThrough) lineThrough.classList.remove('hidden');
-//     } else {
-//         discountBadge.classList.add('hidden');
-//         if (lineThrough) lineThrough.classList.add('hidden');
-//     }
-
-//     const productUnitEl = document.getElementById('product-unit');
-//     if (productUnitEl && currentProduct.unit) {
-//         productUnitEl.textContent = currentProduct.unit;
-//     }
-
-//     const mainImg = document.getElementById('main-product-image');
-//     if (mainImg) {
-//         mainImg.src = currentProduct.image;
-//     }
-
-//     await renderThumbnails(product.productId, currentProduct.image);
-
-//     const quantityInput = document.getElementById('quantity-input');
-//     const available = currentProduct.productQuantity || 0;
-//     const addToCartBtn = document.getElementById('add-to-cart-btn');
-//     const buyNowBtn = document.getElementById('buy-now-btn');
-
-//     if (available > 0) {
-//         quantityInput.max = Math.min(available, 10);
-//         quantityInput.value = 1;
-//         quantityInput.disabled = false;
-//         addToCartBtn.disabled = false;
-//         addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i> Add to Cart';
-//         addToCartBtn.className = 'flex-1 px-2 bg-[#295F98] hover:bg-[#5C7285] text-white font-bold py-3 rounded-lg text-md shadow-lg transition flex items-center justify-center';
-//         buyNowBtn.disabled = false;
-//         buyNowBtn.innerHTML = '<i class="fas fa-bolt mr-2"></i> Buy Now';
-//         buyNowBtn.className = 'px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg text-md shadow-lg transition';
-//     } else {
-//         quantityInput.disabled = true;
-//         quantityInput.value = 0;
-//         quantityInput.placeholder = 'Out of Stock';
-//         addToCartBtn.disabled = true;
-//         addToCartBtn.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Out of Stock';
-//         addToCartBtn.className = 'flex-1 px-2 bg-gray-400 cursor-not-allowed text-white font-bold py-3 rounded-lg text-md shadow-lg transition flex items-center justify-center';
-//         buyNowBtn.disabled = true;
-//         buyNowBtn.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Out of Stock';
-//         buyNowBtn.className = 'px-6 bg-gray-400 cursor-not-allowed text-white font-bold py-3 rounded-lg text-md shadow-lg transition';
-//     }
-
-//     renderAllTabs();
-//     updateWishlistButton();
-
-//     const related = await fetchRelatedProducts(currentProduct.category, currentProduct.id);
-//     renderRelatedProducts(related);
-
-//     initCartButtons();
-//     removeSkeleton();
-// }
-
-// function showNotFound() {
-//     document.getElementById('product-name').textContent = 'Product Not Found';
-//     document.getElementById('main-product-image').src = 'https://via.placeholder.com/600?text=Product+Not+Found';
-//     document.getElementById('selling-price').textContent = '₹0';
-//     document.getElementById('discount-badge').classList.add('hidden');
-//     removeSkeleton();
-// }
-
-// // ------------------- Init Functions -------------------
-// function initTabs() {
-//     const tabButtons = document.querySelectorAll('.tab-button');
-//     const tabContents = document.querySelectorAll('.tab-content');
-//     tabButtons.forEach(button => {
-//         button.addEventListener('click', () => {
-//             const tabId = button.getAttribute('data-tab');
-//             tabButtons.forEach(btn => btn.classList.remove('active'));
-//             tabContents.forEach(content => content.classList.remove('active'));
-//             button.classList.add('active');
-//             document.getElementById(`${tabId}-content`).classList.add('active');
-//         });
-//     });
-// }
-
-// function initQuantitySelector() {
-//     const decreaseBtn = document.getElementById('decrease-qty');
-//     const increaseBtn = document.getElementById('increase-qty');
-//     const quantityInput = document.getElementById('quantity-input');
-//     if (!decreaseBtn || !increaseBtn || !quantityInput) return;
-//     decreaseBtn.onclick = () => {
-//         const val = parseInt(quantityInput.value);
-//         if (val > 1) quantityInput.value = val - 1;
-//     };
-//     increaseBtn.onclick = () => {
-//         const val = parseInt(quantityInput.value);
-//         const max = parseInt(quantityInput.max);
-//         if (val < max) quantityInput.value = val + 1;
-//     };
-//     quantityInput.onchange = () => {
-//         let val = parseInt(quantityInput.value);
-//         const max = parseInt(quantityInput.max) || 10;
-//         const min = 1;
-//         if (isNaN(val) || val < min) val = min;
-//         if (val > max) val = max;
-//         quantityInput.value = val;
-//     };
-// }
-
-// function initCartButtons() {
-//     const addBtn = document.getElementById('add-to-cart-btn');
-//     const buyBtn = document.getElementById('buy-now-btn');
-//     if (addBtn && currentProduct && currentProduct.productQuantity > 0) {
-//         addBtn.onclick = async () => {
-//             const qty = parseInt(document.getElementById('quantity-input').value) || 1;
-//             await addToCart(currentProduct, qty);
-//         };
-//     }
-//     if (buyBtn && currentProduct && currentProduct.productQuantity > 0) {
-//         buyBtn.onclick = async () => {
-//             const qty = parseInt(document.getElementById('quantity-input').value) || 1;
-//             await addToCart(currentProduct, qty);
-//             setTimeout(() => window.location.href = 'cart.html', 300);
-//         };
-//     }
-// }
-
-// // ------------------- Page Init -------------------
-// document.addEventListener('DOMContentLoaded', () => {
-//     initTabs();
-//     initQuantitySelector();
-//     updateCartCount();
-//     updateRightCartPanel();
-//     loadProduct();
-//     const style = document.createElement('style');
-//     style.textContent = `
-//         @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-//         @keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-//         .animate-in { animation: slideInFromRight 0.3s ease-out; }
-//         .animate-out { animation: slideOutToRight 0.3s ease-in; }
-//         .toast-notification { min-width: 300px; }
-//     `;
-//     document.head.appendChild(style);
-// });
+console.log('[DEBUG] productdetails.js loaded - Add to Cart is FULLY WORKING!');
